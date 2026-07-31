@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/grabmyticket}
+    username: ${DATABASE_USERNAME:grabmyticket}
+    password: ${DATABASE_PASSWORD:grabmyticket}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cache:
+    type: redis
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
