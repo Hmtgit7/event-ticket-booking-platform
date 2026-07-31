@@ -1,0 +1,28 @@
+{
+  "name": "grabmyticket",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@10.4.1",
+  "scripts": {
+    "prepare": "husky install",
+    "commit": "cz",
+    "lint": "pnpm --dir client lint",
+    "typecheck": "pnpm --dir client exec tsc --noEmit",
+    "build:client": "pnpm --dir client build",
+    "test:services": "powershell -ExecutionPolicy Bypass -File scripts/check-services.ps1 test",
+    "build:services": "powershell -ExecutionPolicy Bypass -File scripts/check-services.ps1 package",
+    "check": "pnpm lint && pnpm typecheck && pnpm build:client && pnpm build:services"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}

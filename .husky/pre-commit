@@ -1,0 +1,3 @@
+pnpm lint
+pnpm typecheck
+powershell -ExecutionPolicy Bypass -File scripts/check-services.ps1 test
