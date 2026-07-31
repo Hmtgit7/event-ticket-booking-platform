@@ -1,0 +1,38 @@
+name: Spring Boot services
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pom.xml"
+      - "services/**"
+      - ".github/workflows/services.yml"
+  pull_request:
+    paths:
+      - "pom.xml"
+      - "services/**"
+      - ".github/workflows/services.yml"
+jobs:
+  build-test:
+    name: Build and test services
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth-service, event-service, booking-service, notification-service]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Test
+        run: ./mvnw test
+      - name: Package
+        run: ./mvnw package -DskipTests
+

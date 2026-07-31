@@ -1,0 +1,39 @@
+name: Client
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/client.yml"
+  pull_request:
+    paths:
+      - "client/**"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/client.yml"
+jobs:
+  lint-typecheck-build:
+    name: Lint, typecheck, and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm --dir client install --frozen-lockfile
+      - name: Lint
+        run: pnpm --dir client lint
+      - name: Typecheck
+        run: pnpm --dir client exec tsc --noEmit
+      - name: Build
+        run: pnpm --dir client build
+
