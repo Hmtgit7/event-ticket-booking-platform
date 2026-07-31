@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: auth-service
+  profiles:
+    default: local
+
+server:
+  port: ${SERVER_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  jwt:
+    issuer: grabmyticket-auth
+    secret: ${JWT_SECRET:change-me-local-development-secret-change-me}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:15m}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL:7d}
+  recaptcha:
+    secret: ${RECAPTCHA_SECRET:}
+
