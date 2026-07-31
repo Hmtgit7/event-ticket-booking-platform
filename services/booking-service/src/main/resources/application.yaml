@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: booking-service
+  profiles:
+    default: local
+
+server:
+  port: ${SERVER_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  jwt:
+    issuer: grabmyticket-auth
+    secret: ${JWT_SECRET:change-me-local-development-secret-change-me}
+  booking:
+    hold-ttl: ${BOOKING_HOLD_TTL:5m}
+    events-topic: ${BOOKING_EVENTS_TOPIC:booking-events}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+  recaptcha:
+    secret: ${RECAPTCHA_SECRET:}
+
