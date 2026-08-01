@@ -1,6 +1,8 @@
 packages:
   - client
 
+minimumReleaseAge: 0
+
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

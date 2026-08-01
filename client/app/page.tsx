@@ -6,80 +6,25 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
-  Compass,
   MapPin,
   RefreshCw,
   ShieldCheck,
   Sparkles,
   Ticket,
-  WandSparkles,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ApiError, apiClient } from "@/lib/api-client";
-import { useBookingFlowStore, type BookingStep } from "@/stores/booking-flow-store";
+import {
+  useBookingFlowStore,
+  type BookingStep,
+} from "@/stores/booking-flow-store";
 import { useUIStore } from "@/stores/ui-store";
-
-const bookingSteps: Array<{ id: BookingStep; label: string; description: string }> = [
-  {
-    id: "select-tickets",
-    label: "Select tickets",
-    description: "Pick seats, passes, and the right quantity.",
-  },
-  {
-    id: "attendee-info",
-    label: "Attendee info",
-    description: "Capture contact details and preferences.",
-  },
-  {
-    id: "payment",
-    label: "Payment",
-    description: "Confirm pricing and finalize payment.",
-  },
-  {
-    id: "confirmation",
-    label: "Confirmation",
-    description: "Deliver the ticket and receipt.",
-  },
-];
-
-const featureCards = [
-  {
-    icon: WandSparkles,
-    title: "Centralized API client",
-    description:
-      "All service calls flow through one helper with consistent JSON handling and typed errors.",
-  },
-  {
-    icon: Compass,
-    title: "React Query cache",
-    description:
-      "Server state stays in a single cache with retry, refetch, and invalidation boundaries.",
-  },
-  {
-    icon: Ticket,
-    title: "Booking flow store",
-    description:
-      "Checkout state persists locally so refreshes do not wipe the current reservation flow.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "UI state store",
-    description:
-      "Browser-only concerns like drawers and modals stay out of the server-data layer.",
-  },
-];
-
-const quickStats = [
-  { label: "API base", value: "Gateway-first" },
-  { label: "Query mode", value: "Manual probe" },
-  { label: "State model", value: "Zustand + React Query" },
-];
-
-type HealthResponse = {
-  status?: string;
-};
+import { featureCards } from "@/constants/featureCards";
+import { bookingSteps } from "@/constants/bookingSteps";
+import { quickStats } from "@/constants/quickStats";
+import { HealthResponse } from "@/types/healthResponse";
 
 function stepIndex(step: BookingStep) {
   return bookingSteps.findIndex((item) => item.id === step);
@@ -87,7 +32,11 @@ function stepIndex(step: BookingStep) {
 
 function describeError(error: unknown) {
   if (error instanceof ApiError) {
-    if (typeof error.body === "object" && error.body && "message" in error.body) {
+    if (
+      typeof error.body === "object" &&
+      error.body &&
+      "message" in error.body
+    ) {
       const message = (error.body as { message?: unknown }).message;
       if (typeof message === "string") {
         return `${error.status}: ${message}`;
@@ -175,14 +124,14 @@ export default function Home() {
               </div>
 
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                Book tickets with one UI, one API client, and one source of truth for
-                local state.
+                Book tickets with one UI, one API client, and one source of
+                truth for local state.
               </h1>
 
               <p className="mt-4 max-w-2xl text-base leading-7 text-ink-muted">
-                The homepage now acts as a control room: start a booking, move through
-                the flow, probe the gateway, and keep browser-only state in Zustand
-                while server data stays in React Query.
+                The homepage now acts as a control room: start a booking, move
+                through the flow, probe the gateway, and keep browser-only state
+                in Zustand while server data stays in React Query.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -204,18 +153,26 @@ export default function Home() {
                   />
                   Probe API
                 </Button>
-                <Button variant="secondary" onClick={() => openModal("booking-help")}>
+                <Button
+                  variant="secondary"
+                  onClick={() => openModal("booking-help")}
+                >
                   Open helper
                 </Button>
               </div>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 {quickStats.map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-line bg-background p-4">
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-line bg-background p-4"
+                  >
                     <p className="text-xs uppercase tracking-[0.22em] text-ink-muted">
                       {item.label}
                     </p>
-                    <p className="mt-2 text-lg font-medium text-ink">{item.value}</p>
+                    <p className="mt-2 text-lg font-medium text-ink">
+                      {item.value}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -290,7 +247,9 @@ export default function Home() {
                             )}
                             {item.label}
                           </div>
-                          <p className="mt-1 text-sm text-ink-muted">{item.description}</p>
+                          <p className="mt-1 text-sm text-ink-muted">
+                            {item.description}
+                          </p>
                         </div>
 
                         {active ? (
@@ -371,7 +330,8 @@ export default function Home() {
                     Query cache
                   </p>
                   <p className="mt-2 text-sm text-on-elevated/85">
-                    React Query handles request state, retries, and future invalidation.
+                    React Query handles request state, retries, and future
+                    invalidation.
                   </p>
                 </div>
 
@@ -380,7 +340,8 @@ export default function Home() {
                     UI state
                   </p>
                   <p className="mt-2 text-sm text-on-elevated/85">
-                    Zustand keeps modal and flow state local without polluting server data.
+                    Zustand keeps modal and flow state local without polluting
+                    server data.
                   </p>
                 </div>
               </div>
@@ -413,16 +374,18 @@ export default function Home() {
                 Notes from the flow
               </div>
               <p className="mt-3 text-sm leading-6 text-ink-muted">
-                The booking store persists the current step and selection state only.
-                Server reads and writes stay behind the API client so error handling and
-                request formatting stay centralized.
+                The booking store persists the current step and selection state
+                only. Server reads and writes stay behind the API client so
+                error handling and request formatting stay centralized.
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink-muted">
                 <span className="rounded-full border border-line bg-background px-3 py-1">
                   {canAdvance ? "Flow can advance" : "Flow completed"}
                 </span>
                 <span className="rounded-full border border-line bg-background px-3 py-1">
-                  {healthQuery.isError ? "Probe error visible" : "Probe dormant"}
+                  {healthQuery.isError
+                    ? "Probe error visible"
+                    : "Probe dormant"}
                 </span>
                 <span className="rounded-full border border-line bg-background px-3 py-1">
                   {activeModal ? `Modal: ${activeModal}` : "No modal open"}
