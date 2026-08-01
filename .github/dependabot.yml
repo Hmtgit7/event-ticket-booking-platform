@@ -1,0 +1,145 @@
+version: 2
+updates:
+  # Client (pnpm/npm)
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      client-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "client"
+    commit-message:
+      prefix: "chore(client)"
+
+  # Spring Boot services (Maven) — one entry per service, each is its own build
+  - package-ecosystem: "maven"
+    directory: "/services/auth-service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      auth-service-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "auth-service"
+    commit-message:
+      prefix: "chore(auth-service)"
+
+  - package-ecosystem: "maven"
+    directory: "/services/event-service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      event-service-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "event-service"
+    commit-message:
+      prefix: "chore(event-service)"
+
+  - package-ecosystem: "maven"
+    directory: "/services/booking-service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      booking-service-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "booking-service"
+    commit-message:
+      prefix: "chore(booking-service)"
+
+  - package-ecosystem: "maven"
+    directory: "/services/notification-service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      notification-service-minor-patch:
+        update-types: ["minor", "patch"]
+    labels:
+      - "dependencies"
+      - "notification-service"
+    commit-message:
+      prefix: "chore(notification-service)"
+
+  # Root aggregator pom (rarely changes, but keep it covered)
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(root)"
+
+  # GitHub Actions used in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "chore(ci)"
+
+  # Docker images referenced in infra/docker-compose.yml (and any Dockerfiles under services/)
+  - package-ecosystem: "docker"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "infra"
+    commit-message:
+      prefix: "chore(infra)"
+
+  - package-ecosystem: "docker"
+    directory: "/services/auth-service"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "auth-service"
+    commit-message:
+      prefix: "chore(auth-service)"
+
+  - package-ecosystem: "docker"
+    directory: "/services/event-service"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "event-service"
+    commit-message:
+      prefix: "chore(event-service)"
+
+  - package-ecosystem: "docker"
+    directory: "/services/booking-service"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "booking-service"
+    commit-message:
+      prefix: "chore(booking-service)"
+
+  - package-ecosystem: "docker"
+    directory: "/services/notification-service"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "notification-service"
+    commit-message:
+      prefix: "chore(notification-service)"
