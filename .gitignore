@@ -11,3 +11,5 @@ target/
 .env.*
 !.env.example
 .pnpm-store/
+logs/
+.pids/
