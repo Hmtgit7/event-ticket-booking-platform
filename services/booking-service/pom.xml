@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.7</version>
+        <version>4.1.0</version>
         <relativePath/>
     </parent>
     <groupId>com.grabmyticket</groupId>
@@ -15,7 +15,7 @@
     <description>GrabMyTicket Booking Service.</description>
     <properties>
         <java.version>21</java.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.13.0</jjwt.version>
     </properties>
     <dependencies>
         <dependency>
@@ -73,7 +73,7 @@
         </dependency>        <dependency>
             <groupId>com.razorpay</groupId>
             <artifactId>razorpay-java</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.9</version>
         </dependency>        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
