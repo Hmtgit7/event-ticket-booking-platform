@@ -2,7 +2,7 @@
   "extends": ["@commitlint/config-conventional"],
   "rules": {
     "type-enum": [2, "always", ["build", "chore", "ci", "docs", "feat", "fix", "perf", "refactor", "revert", "style", "test"]],
-    "scope-enum": [2, "always", ["auth-service", "event-service", "booking-service", "notification-service", "monorepo", "github-actions", "client", "infra", "docs", "deps"]]
+    "scope-enum": [2, "always", ["auth-service", "event-service", "booking-service", "notification-service", "monorepo", "github-actions", "client", "infra", "docs", "deps", "scripts"]]
   }
 }
 
