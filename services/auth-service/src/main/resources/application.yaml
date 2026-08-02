@@ -48,3 +48,5 @@ app:
   frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
+  admin:
+    bootstrap-secret: ${ADMIN_BOOTSTRAP_SECRET:}

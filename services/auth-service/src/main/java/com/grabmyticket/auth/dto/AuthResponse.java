@@ -6,8 +6,9 @@ import java.util.stream.Collectors;
 import com.grabmyticket.auth.entity.Role;
 import com.grabmyticket.auth.entity.User;
 
-public record    AuthResponse(
+public record AuthResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         long expiresIn,
         String userId,
@@ -16,13 +17,14 @@ public record    AuthResponse(
         boolean emailVerified,
         Set<String> roles
 ) {
-    public static AuthResponse bearer(String accessToken, long expiresIn, User user) {
+    public static AuthResponse bearer(String accessToken, String refreshToken, long expiresIn, User user) {
         Set<String> roleNames = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
 
         return new AuthResponse(
                 accessToken,
+                refreshToken,
                 "Bearer",
                 expiresIn,
                 user.getId().toString(),

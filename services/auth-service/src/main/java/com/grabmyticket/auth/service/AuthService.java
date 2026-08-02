@@ -32,6 +32,7 @@ public class AuthService {
     private final VerificationTokenService verificationTokenService;
     private final GoogleAuthService googleAuthService;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(
             UserRepository userRepository,
@@ -40,7 +41,8 @@ public class AuthService {
             JwtService jwtService,
             VerificationTokenService verificationTokenService,
             GoogleAuthService googleAuthService,
-            GoogleIdTokenVerifier googleIdTokenVerifier
+            GoogleIdTokenVerifier googleIdTokenVerifier,
+            RefreshTokenService refreshTokenService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -49,6 +51,7 @@ public class AuthService {
         this.verificationTokenService = verificationTokenService;
         this.googleAuthService = googleAuthService;
         this.googleIdTokenVerifier = googleIdTokenVerifier;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
@@ -79,11 +82,10 @@ public class AuthService {
         user = userRepository.save(user);
         verificationTokenService.issueAndSend(user);
 
-        String accessToken = jwtService.generateAccessToken(user);
-        return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);
+        return issueTokenPair(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         String normalizedEmail = request.email().trim().toLowerCase();
 
@@ -97,8 +99,7 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken = jwtService.generateAccessToken(user);
-        return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);
+        return issueTokenPair(user);
     }
 
     @Transactional
@@ -111,8 +112,25 @@ public class AuthService {
 
         User user = googleAuthService.findOrCreateUser(googleSub, email, fullName);
 
+        return issueTokenPair(user);
+    }
+
+    @Transactional
+    public AuthResponse refresh(String rawRefreshToken) {
+        RefreshTokenService.RotationResult result = refreshTokenService.rotate(rawRefreshToken);
+        String accessToken = jwtService.generateAccessToken(result.user());
+        return AuthResponse.bearer(accessToken, result.rawRefreshToken(), jwtService.getAccessTokenTtlSeconds(), result.user());
+    }
+
+    @Transactional
+    public void logout(String rawRefreshToken) {
+        refreshTokenService.revoke(rawRefreshToken);
+    }
+
+    private AuthResponse issueTokenPair(User user) {
         String accessToken = jwtService.generateAccessToken(user);
-        return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);
+        String refreshToken = refreshTokenService.issue(user);
+        return AuthResponse.bearer(accessToken, refreshToken, jwtService.getAccessTokenTtlSeconds(), user);
     }
 
     private Role requireRole(RoleName roleName) {

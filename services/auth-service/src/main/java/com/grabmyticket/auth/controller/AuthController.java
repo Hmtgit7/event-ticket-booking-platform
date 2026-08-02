@@ -11,6 +11,7 @@ import com.grabmyticket.auth.dto.AuthResponse;
 import com.grabmyticket.auth.dto.GoogleAuthRequest;
 import com.grabmyticket.auth.dto.LoginRequest;
 import com.grabmyticket.auth.dto.MessageResponse;
+import com.grabmyticket.auth.dto.RefreshTokenRequest;
 import com.grabmyticket.auth.dto.ResendVerificationRequest;
 import com.grabmyticket.auth.dto.SignupRequest;
 import com.grabmyticket.auth.dto.VerifyEmailRequest;
@@ -44,6 +45,17 @@ public class AuthController {
     @PostMapping("/oauth2/google")
     public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
         return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request.refreshToken());
+        return ResponseEntity.ok(new MessageResponse("Logged out"));
     }
 
     @PostMapping("/verify-email")

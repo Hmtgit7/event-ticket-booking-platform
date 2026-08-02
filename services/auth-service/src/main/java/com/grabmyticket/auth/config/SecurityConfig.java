@@ -48,8 +48,12 @@ public class SecurityConfig {
                                 "/auth/signup",
                                 "/auth/login",
                                 "/auth/oauth2/google",
+                                "/auth/refresh",
+                                "/auth/logout",
                                 "/auth/verify-email",
                                 "/auth/resend-verification",
+                                "/auth/admin/login",
+                                "/auth/admin/bootstrap",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
