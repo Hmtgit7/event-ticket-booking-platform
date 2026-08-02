@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/grabmyticket}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:15432/grabmyticket}
     username: ${DATABASE_USERNAME:grabmyticket}
     password: ${DATABASE_PASSWORD:grabmyticket}
   data:
@@ -11,6 +11,6 @@ spring:
     type: redis
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
 
