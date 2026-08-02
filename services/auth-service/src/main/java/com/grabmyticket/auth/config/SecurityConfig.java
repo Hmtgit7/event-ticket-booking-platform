@@ -19,25 +19,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.grabmyticket.auth.security.JwtAuthenticationFilter;
-import com.grabmyticket.auth.security.OAuth2LoginFailureHandler;
-import com.grabmyticket.auth.security.OAuth2LoginSuccessHandler;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter,
-            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-            OAuth2LoginFailureHandler oAuth2LoginFailureHandler
-    ) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
-        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
     }
 
     @Bean
@@ -52,27 +42,18 @@ public class SecurityConfig {
                 // Stateless JWT API, no browser session/cookies involved -> CSRF protection
                 // (which Spring Security 7 now enforces by default even on APIs) doesn't apply here.
                 .csrf(AbstractHttpConfigurer::disable)
-                // IF_REQUIRED, not STATELESS: Google's OAuth2 redirect dance needs a short-lived
-                // session to carry the "state"/PKCE values across the two separate requests
-                // (browser -> Google -> back to us). JwtAuthenticationFilter never touches this
-                // session, so every other endpoint is still authenticated purely via the JWT header.
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/signup",
                                 "/auth/login",
+                                "/auth/oauth2/google",
                                 "/auth/verify-email",
                                 "/auth/resend-verification",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
                         .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureHandler(oAuth2LoginFailureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

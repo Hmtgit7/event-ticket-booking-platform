@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabmyticket.auth.dto.AuthResponse;
+import com.grabmyticket.auth.dto.GoogleAuthRequest;
 import com.grabmyticket.auth.dto.LoginRequest;
 import com.grabmyticket.auth.dto.MessageResponse;
 import com.grabmyticket.auth.dto.ResendVerificationRequest;
@@ -38,6 +39,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/oauth2/google")
+    public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
     }
 
     @PostMapping("/verify-email")

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
 import com.grabmyticket.auth.repository.RoleRepository;
 import com.grabmyticket.auth.repository.UserRepository;
+import com.grabmyticket.auth.security.GoogleIdTokenVerifier;
 import com.grabmyticket.auth.security.JwtService;
 
 @Service
@@ -28,19 +30,25 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final VerificationTokenService verificationTokenService;
+    private final GoogleAuthService googleAuthService;
+    private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            VerificationTokenService verificationTokenService
+            VerificationTokenService verificationTokenService,
+            GoogleAuthService googleAuthService,
+            GoogleIdTokenVerifier googleIdTokenVerifier
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.verificationTokenService = verificationTokenService;
+        this.googleAuthService = googleAuthService;
+        this.googleIdTokenVerifier = googleIdTokenVerifier;
     }
 
     @Transactional
@@ -88,6 +96,20 @@ public class AuthService {
             // never let the response reveal which one it was.
             throw new InvalidCredentialsException();
         }
+
+        String accessToken = jwtService.generateAccessToken(user);
+        return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);
+    }
+
+    @Transactional
+    public AuthResponse loginWithGoogle(String rawIdToken) {
+        Jwt googleToken = googleIdTokenVerifier.verify(rawIdToken);
+
+        String googleSub = googleToken.getSubject();
+        String email = googleToken.getClaimAsString("email");
+        String fullName = googleToken.getClaimAsString("name");
+
+        User user = googleAuthService.findOrCreateUser(googleSub, email, fullName);
 
         String accessToken = jwtService.generateAccessToken(user);
         return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);
