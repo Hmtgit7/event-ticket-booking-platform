@@ -1,0 +1,4 @@
+package com.grabmyticket.auth.dto;
+
+public record MessageResponse(String message) {
+}

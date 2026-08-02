@@ -27,17 +27,20 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final VerificationTokenService verificationTokenService;
 
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            VerificationTokenService verificationTokenService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.verificationTokenService = verificationTokenService;
     }
 
     @Transactional
@@ -66,6 +69,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
+        verificationTokenService.issueAndSend(user);
 
         String accessToken = jwtService.generateAccessToken(user);
         return AuthResponse.bearer(accessToken, jwtService.getAccessTokenTtlSeconds(), user);

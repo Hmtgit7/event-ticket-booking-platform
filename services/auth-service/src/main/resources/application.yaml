@@ -42,3 +42,7 @@ app:
     secret: ${RECAPTCHA_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  verification:
+    token-ttl: ${VERIFICATION_TOKEN_TTL:24h}
+    resend-cooldown: ${VERIFICATION_RESEND_COOLDOWN:60s}
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
