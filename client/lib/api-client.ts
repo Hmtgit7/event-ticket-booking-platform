@@ -1,10 +1,12 @@
 /**
- * Single entry point for all API calls. Points at one base URL — currently
- * the nginx gateway, later a Spring Cloud Gateway service registered in
- * Eureka — so the client never needs to know about individual service
- * ports (8081-8084).
+ * Factory, not a single instance: no API gateway in this architecture (see
+ * Render deployment plan) - each backend service is called directly, so we
+ * need one client per base URL. Auto-attaches the access token and retries
+ * once via refreshAccessToken() on a 401.
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+import { env } from "@/lib/env";
+import { refreshAccessToken } from "@/lib/refresh-token";
+import { tokenStorage } from "@/lib/token-storage";
 
 export class ApiError extends Error {
   status: number;
@@ -20,6 +22,8 @@ export class ApiError extends Error {
 
 interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
+  /** Skip attaching the Authorization header - for signup/login/etc before a token exists. */
+  skipAuth?: boolean;
 }
 
 function shouldSerializeAsJson(body: unknown) {
@@ -33,51 +37,59 @@ function shouldSerializeAsJson(body: unknown) {
   );
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { body, headers, ...rest } = options;
-  const serializeAsJson = shouldSerializeAsJson(body);
+function createApiClient(baseUrl: string) {
+  async function request<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
+    const { body, headers, skipAuth, ...rest } = options;
+    const serializeAsJson = shouldSerializeAsJson(body);
+    const accessToken = skipAuth ? null : tokenStorage.getAccessToken();
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    headers: {
-      ...(serializeAsJson ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    body:
-      body !== undefined
-        ? serializeAsJson
-          ? JSON.stringify(body)
-          : (body as BodyInit)
-        : undefined,
-    credentials: "include", // send auth cookies once auth-service is wired up
-  });
+    const res = await fetch(`${baseUrl}${path}`, {
+      ...rest,
+      headers: {
+        ...(serializeAsJson ? { "Content-Type": "application/json" } : {}),
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...headers,
+      },
+      body:
+        body !== undefined ? (serializeAsJson ? JSON.stringify(body) : (body as BodyInit)) : undefined,
+    });
 
-  if (!res.ok) {
-    let parsedBody: unknown;
-    try {
-      parsedBody = await res.json();
-    } catch {
-      // response wasn't JSON, ignore
+    if (res.status === 401 && !skipAuth && !isRetry) {
+      const newAccessToken = await refreshAccessToken();
+      if (newAccessToken) {
+        return request<T>(path, options, true);
+      }
     }
-    throw new ApiError(res.status, `${options.method ?? "GET"} ${path} failed`, parsedBody);
+
+    if (!res.ok) {
+      let parsedBody: unknown;
+      try {
+        parsedBody = await res.json();
+      } catch {
+        // response wasn't JSON, ignore
+      }
+      throw new ApiError(res.status, `${options.method ?? "GET"} ${path} failed`, parsedBody);
+    }
+
+    if (res.status === 204) {
+      return undefined as T;
+    }
+
+    return res.json() as Promise<T>;
   }
 
-  if (res.status === 204) {
-    return undefined as T;
-  }
-
-  return res.json() as Promise<T>;
+  return {
+    get: <T>(path: string, options?: RequestOptions) => request<T>(path, { ...options, method: "GET" }),
+    post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+      request<T>(path, { ...options, method: "POST", body }),
+    put: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+      request<T>(path, { ...options, method: "PUT", body }),
+    patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+      request<T>(path, { ...options, method: "PATCH", body }),
+    delete: <T>(path: string, options?: RequestOptions) => request<T>(path, { ...options, method: "DELETE" }),
+  };
 }
 
-export const apiClient = {
-  get: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "GET" }),
-  post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "POST", body }),
-  put: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "PUT", body }),
-  patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "PATCH", body }),
-  delete: <T>(path: string, options?: RequestOptions) =>
-    request<T>(path, { ...options, method: "DELETE" }),
-};
+export const authApiClient = createApiClient(env.authApiUrl);
+export const eventApiClient = createApiClient(env.eventApiUrl);
+export const bookingApiClient = createApiClient(env.bookingApiUrl);
