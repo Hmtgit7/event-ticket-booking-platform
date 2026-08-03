@@ -1,16 +1,14 @@
 "use client";
 
 import { Bell, Mail, Menu, Search } from "lucide-react";
-import { Avatar } from "@/components/common/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { ProfileMenu } from "./profile-menu";
 
 interface DashboardTopbarProps {
   section: string;
   crumb: string;
 }
-
-const CURRENT_USER = { name: "Shareef Deen", email: "shareefdeen20@gmail.com" };
 
 /** Sticky top bar: breadcrumb + search on the left, quick actions (theme
  * toggle, messages, notifications) and the signed-in user on the right.
@@ -48,13 +46,7 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
         <ThemeToggle />
         <IconButton icon={Mail} label="Messages" />
         <IconButton icon={Bell} label="Notifications" />
-        <div className="ml-1 hidden items-center gap-2 sm:flex">
-          <Avatar name={CURRENT_USER.name} className="size-10" />
-          <div className="min-w-0 leading-tight">
-            <p className="truncate text-sm font-semibold text-ink">{CURRENT_USER.name}</p>
-            <p className="truncate text-xs text-ink-muted">{CURRENT_USER.email}</p>
-          </div>
-        </div>
+        <ProfileMenu />
       </div>
     </header>
   );
