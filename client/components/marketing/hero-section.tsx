@@ -23,7 +23,7 @@ export function HeroSection() {
                 Browse events
               </Link>
               <Link href="/auth/signup" className="inline-flex h-12 items-center gap-2 rounded-xl bg-on-elevated px-5 text-sm font-bold text-[#17140f] shadow-lg shadow-black/20">
-                Start selling
+                Start free
                 <ArrowRight className="size-4" />
               </Link>
             </div>
