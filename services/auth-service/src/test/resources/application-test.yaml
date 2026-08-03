@@ -8,4 +8,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+  flyway:
+    # Flyway migrations use PostgreSQL-specific syntax (gen_random_uuid, TIMESTAMPTZ).
+    # In tests we let Hibernate generate the schema from entities instead.
+    enabled: false
 

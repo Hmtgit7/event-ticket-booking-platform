@@ -2,6 +2,7 @@ package com.grabmyticket.auth.service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -16,6 +17,7 @@ import com.grabmyticket.auth.entity.Role;
 import com.grabmyticket.auth.entity.RoleName;
 import com.grabmyticket.auth.entity.User;
 import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
+import com.grabmyticket.auth.exception.EmailNotVerifiedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
 import com.grabmyticket.auth.repository.RoleRepository;
 import com.grabmyticket.auth.repository.UserRepository;
@@ -125,6 +127,24 @@ public class AuthService {
     @Transactional
     public void logout(String rawRefreshToken) {
         refreshTokenService.revoke(rawRefreshToken);
+    }
+
+    /** Self-service USER -> USER+ORGANIZER upgrade, gated on email_verified (Option A from our RBAC plan). */
+    @Transactional
+    public AuthResponse becomeOrganizer(String currentUserId) {
+        User user = userRepository.findById(UUID.fromString(currentUserId))
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found - id: " + currentUserId));
+
+        if (!user.isEmailVerified()) {
+            throw new EmailNotVerifiedException();
+        }
+
+        if (!user.hasRole(RoleName.ROLE_ORGANIZER)) {
+            user.getRoles().add(requireRole(RoleName.ROLE_ORGANIZER));
+            user = userRepository.save(user);
+        }
+
+        return issueTokenPair(user);
     }
 
     private AuthResponse issueTokenPair(User user) {

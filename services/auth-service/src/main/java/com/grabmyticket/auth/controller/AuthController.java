@@ -2,6 +2,7 @@ package com.grabmyticket.auth.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +57,12 @@ public class AuthController {
     public ResponseEntity<MessageResponse> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request.refreshToken());
         return ResponseEntity.ok(new MessageResponse("Logged out"));
+    }
+
+    /** Requires a valid access token - anyRequest().authenticated() covers this, not in the permitAll list. */
+    @PostMapping("/roles/organizer")
+    public ResponseEntity<AuthResponse> becomeOrganizer(Authentication authentication) {
+        return ResponseEntity.ok(authService.becomeOrganizer(authentication.getName()));
     }
 
     @PostMapping("/verify-email")
