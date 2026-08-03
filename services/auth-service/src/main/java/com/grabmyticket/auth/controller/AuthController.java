@@ -3,6 +3,7 @@ package com.grabmyticket.auth.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import com.grabmyticket.auth.dto.MessageResponse;
 import com.grabmyticket.auth.dto.RefreshTokenRequest;
 import com.grabmyticket.auth.dto.ResendVerificationRequest;
 import com.grabmyticket.auth.dto.SignupRequest;
+import com.grabmyticket.auth.dto.UserProfileResponse;
 import com.grabmyticket.auth.dto.VerifyEmailRequest;
 import com.grabmyticket.auth.service.AuthService;
 import com.grabmyticket.auth.service.VerificationTokenService;
@@ -57,6 +59,11 @@ public class AuthController {
     public ResponseEntity<MessageResponse> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request.refreshToken());
         return ResponseEntity.ok(new MessageResponse("Logged out"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
+        return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
     }
 
     /** Requires a valid access token - anyRequest().authenticated() covers this, not in the permitAll list. */

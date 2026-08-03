@@ -33,17 +33,22 @@ public class GoogleIdTokenVerifier {
 
     private final NimbusJwtDecoder jwtDecoder;
 
-    public GoogleIdTokenVerifier(@Value("${app.google.client-id:}") String googleClientId) {
+    public GoogleIdTokenVerifier(@Value("${app.google.client-id}") String googleClientId) {
+        if (googleClientId == null || googleClientId.isBlank()) {
+            throw new IllegalStateException(
+                    "GOOGLE_CLIENT_ID is not set. Add it to .env (or export it) before starting auth-service.");
+        }
+
         this.jwtDecoder = NimbusJwtDecoder.withIssuerLocation(GOOGLE_ISSUER).build();
 
         OAuth2TokenValidator<Jwt> defaultValidators = JwtValidators.createDefaultWithIssuer(GOOGLE_ISSUER);
         OAuth2TokenValidator<Jwt> audienceValidator = jwt -> {
             List<String> audiences = jwt.getAudience();
-            if (!googleClientId.isBlank() && audiences != null && audiences.contains(googleClientId)) {
+            if (audiences != null && audiences.contains(googleClientId)) {
                 return OAuth2TokenValidatorResult.success();
             }
             return OAuth2TokenValidatorResult.failure(
-                    new OAuth2Error("invalid_token", "ID token was not issued for this application", null));
+                    new OAuth2Error("invalid_token", "ID token was not issued for this application (aud mismatch)", null));
         };
 
         this.jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(defaultValidators, audienceValidator));

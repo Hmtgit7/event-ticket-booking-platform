@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.grabmyticket.auth.dto.AuthResponse;
 import com.grabmyticket.auth.dto.LoginRequest;
 import com.grabmyticket.auth.dto.SignupRequest;
+import com.grabmyticket.auth.dto.UserProfileResponse;
 import com.grabmyticket.auth.entity.AuthProvider;
 import com.grabmyticket.auth.entity.Role;
 import com.grabmyticket.auth.entity.RoleName;
@@ -19,6 +20,7 @@ import com.grabmyticket.auth.entity.User;
 import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
 import com.grabmyticket.auth.exception.EmailNotVerifiedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
+import com.grabmyticket.auth.exception.UserNotFoundException;
 import com.grabmyticket.auth.repository.RoleRepository;
 import com.grabmyticket.auth.repository.UserRepository;
 import com.grabmyticket.auth.security.GoogleIdTokenVerifier;
@@ -127,6 +129,14 @@ public class AuthService {
     @Transactional
     public void logout(String rawRefreshToken) {
         refreshTokenService.revoke(rawRefreshToken);
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileResponse getCurrentUser(String currentUserId) {
+        User user = userRepository.findById(UUID.fromString(currentUserId))
+                .orElseThrow(UserNotFoundException::new);
+
+        return UserProfileResponse.from(user);
     }
 
     /** Self-service USER -> USER+ORGANIZER upgrade, gated on email_verified (Option A from our RBAC plan). */
