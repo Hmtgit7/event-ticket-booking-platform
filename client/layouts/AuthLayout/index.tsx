@@ -19,8 +19,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="mb-8 text-ink lg:hidden">
             <AuthBrandRow />
           </div>
-          <div className="flex flex-1 items-center justify-center">
-            {children}
+          <div className="flex-1 overflow-y-auto lg:min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-h-full items-center justify-center py-6">
+              {children}
+            </div>
           </div>
         </section>
       </div>

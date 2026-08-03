@@ -8,7 +8,7 @@ export function SignupPage() {
       <div className="w-full max-w-[420px]">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-muted">
-            Start selling
+            Start free
           </p>
           <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
             Create your organizer account.
