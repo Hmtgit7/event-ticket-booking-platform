@@ -1,31 +1,32 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
+
 import { GrabMyTicketLogoMark } from "@/icons/grabmyticket-logo";
-import { NAV_SECTIONS } from "@/constants/nav-items";
+import { ADMIN_NAV_SECTIONS } from "@/constants/nav-items";
 import { useActiveNav } from "@/hooks/use-active-nav";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useLogout } from "@/modules/auth/hooks/use-logout";
 import { cn } from "@/lib/utils";
-import { SidebarNavItem } from "./sidebar-nav-item";
-import { SidebarDownloadCard } from "./sidebar-download-card";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
+import { SidebarNavItem } from "@/components/dashboard/sidebar/sidebar-nav-item";
 
-/** Persistent left navigation for the /dashboard route group. Collapse
- * state lives in the shared UI store so it survives route changes. */
-export function DashboardSidebar() {
+/**
+ * Super-admin sidebar. Reuses the same nav-item primitive as the
+ * organizer sidebar — only ADMIN_NAV_SECTIONS differ. The download card
+ * is omitted here since admins don't need the mobile app promo.
+ */
+export function AdminDashboardSidebar() {
   const { collapsed, toggle } = useSidebar();
   const logout = useLogout();
-  const pathname = usePathname() ?? "";
+
   const allItems = useMemo(
-    () => NAV_SECTIONS.flatMap((section) => section.items),
+    () => ADMIN_NAV_SECTIONS.flatMap((s) => s.items),
     [],
   );
-  const matchedId = useActiveNav(allItems);
-  const activeId = pathname.endsWith("/insights") ? "insights" : matchedId;
+  const activeId = useActiveNav(allItems);
 
   return (
     <aside
@@ -51,9 +52,14 @@ export function DashboardSidebar() {
         <div className="flex min-h-[57px] shrink-0 items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2.5">
             <GrabMyTicketLogoMark className="size-9 shrink-0 rounded-xl" />
-            <span className="text-[16px] font-bold italic leading-none tracking-wide font-[family-name:var(--font-playfair)] whitespace-nowrap">
-              GrabMyTicket
-            </span>
+            <div className="leading-tight">
+              <span className="block text-[15px] font-bold italic font-[family-name:var(--font-playfair)]">
+                GrabMyTicket
+              </span>
+              <span className="block text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+                Admin
+              </span>
+            </div>
           </div>
           <button
             type="button"
@@ -68,11 +74,8 @@ export function DashboardSidebar() {
 
       {/* ── Nav sections — scrollable middle zone ── */}
       <nav className="sidebar-scroll mt-4 flex flex-1 flex-col gap-5 overflow-y-auto py-1">
-        {NAV_SECTIONS.map((section) => (
-          <div
-            key={section.title ?? "section"}
-            className="flex flex-col gap-0.5"
-          >
+        {ADMIN_NAV_SECTIONS.map((section) => (
+          <div key={section.title ?? "section"} className="flex flex-col gap-0.5">
             {section.title && !collapsed && (
               <p className="px-3 pb-1 text-xs font-medium uppercase tracking-widest text-sidebar-foreground/40">
                 {section.title}
@@ -90,14 +93,13 @@ export function DashboardSidebar() {
         ))}
       </nav>
 
-      {/* ── Bottom actions — pinned, never scrolls ── */}
-      <div className="mt-3 flex shrink-0 flex-col gap-3">
-        <SidebarDownloadCard collapsed={collapsed} />
+      {/* ── Logout — pinned to bottom, never scrolls ── */}
+      <div className="mt-3 shrink-0">
         <button
           type="button"
           onClick={logout}
           className={cn(
-            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
             collapsed && "justify-center px-0",
           )}
         >
