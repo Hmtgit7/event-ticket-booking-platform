@@ -12,11 +12,16 @@ interface DashboardShellProps {
 }
 
 const STATIC_CRUMBS: Record<string, { section: string; crumb: string }> = {
-  [NavRoute.Dashboard]: { section: "Dashboard", crumb: "Dashboard" },
-  [NavRoute.Events]: { section: "Dashboard/ Event", crumb: "Event" },
-  [NavRoute.AttendeeInsights]: { section: "Dashboard/ Insights", crumb: "Attendee Insights" },
-  [NavRoute.Settings]: { section: "Dashboard/ Settings", crumb: "Settings" },
-  [NavRoute.Help]: { section: "Dashboard/ Help", crumb: "Help & Support" },
+  [NavRoute.Dashboard]:     { section: "Dashboard",                  crumb: "Overview"          },
+  [NavRoute.Events]:        { section: "Dashboard / Events",         crumb: "My Events"         },
+  [NavRoute.CreateEvent]:   { section: "Dashboard / Events",         crumb: "Create Event"      },
+  [NavRoute.AttendeeInsights]:{ section: "Dashboard / Insights",     crumb: "Attendee Insights" },
+  [NavRoute.Media]:         { section: "Dashboard / Media",          crumb: "Media Library"     },
+  [NavRoute.Revenue]:       { section: "Dashboard / Finance",        crumb: "Revenue"           },
+  [NavRoute.Promotions]:    { section: "Dashboard / Finance",        crumb: "Promotions"        },
+  [NavRoute.Notifications]: { section: "Dashboard",                  crumb: "Notifications"     },
+  [NavRoute.Settings]:      { section: "Dashboard / Settings",       crumb: "Settings"          },
+  [NavRoute.Help]:          { section: "Dashboard / Help",           crumb: "Help & Support"    },
 };
 
 /** Derives the topbar's "section / crumb" text from the current route so
