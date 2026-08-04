@@ -9,4 +9,6 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /workspace/target/event-service-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8082
+# Activate the prod profile so application-prod.yaml is loaded (not application-local.yaml)
+ENV SPRING_PROFILES_ACTIVE=prod
 ENTRYPOINT ["java", "-jar", "app.jar"]

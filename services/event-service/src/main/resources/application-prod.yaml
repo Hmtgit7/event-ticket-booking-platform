@@ -5,7 +5,12 @@ spring:
     password: ${DATABASE_PASSWORD}
   data:
     redis:
+      # Upstash Redis - use the full rediss:// URL with TLS.
+      # Format: rediss://default:<UPSTASH_REDIS_REST_TOKEN>@<host>:<port>
+      # Set REDIS_URL on Render to: rediss://default:<token>@<host>:6380
       url: ${REDIS_URL}
+      ssl:
+        enabled: true
   cache:
     type: redis
   jpa:
