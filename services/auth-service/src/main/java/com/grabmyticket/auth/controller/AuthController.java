@@ -10,12 +10,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabmyticket.auth.dto.AuthResponse;
+import com.grabmyticket.auth.dto.ChangePasswordRequest;
+import com.grabmyticket.auth.dto.ForgotPasswordRequest;
 import com.grabmyticket.auth.dto.GoogleAuthRequest;
+import com.grabmyticket.auth.dto.LinkPasswordConfirmRequest;
 import com.grabmyticket.auth.dto.LoginRequest;
 import com.grabmyticket.auth.dto.MessageResponse;
 import com.grabmyticket.auth.dto.RefreshTokenRequest;
 import com.grabmyticket.auth.dto.ResendVerificationRequest;
+import com.grabmyticket.auth.dto.ResetPasswordRequest;
 import com.grabmyticket.auth.dto.SignupRequest;
+import com.grabmyticket.auth.dto.SignupResponse;
 import com.grabmyticket.auth.dto.UserProfileResponse;
 import com.grabmyticket.auth.dto.VerifyEmailRequest;
 import com.grabmyticket.auth.service.AuthService;
@@ -36,8 +41,10 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(request));
+    public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
+        SignupResponse result = authService.signup(request);
+        HttpStatus status = result.accountCreated() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(result);
     }
 
     @PostMapping("/login")
@@ -72,16 +79,51 @@ public class AuthController {
         return ResponseEntity.ok(authService.becomeOrganizer(authentication.getName()));
     }
 
+    /** Declining the "also host events?" prompt - stops it resurfacing on future Google logins. */
+    @PostMapping("/role-prompt/dismiss")
+    public ResponseEntity<MessageResponse> dismissRolePrompt(Authentication authentication) {
+        authService.dismissRolePrompt(authentication.getName());
+        return ResponseEntity.ok(new MessageResponse("Preference saved"));
+    }
+
     @PostMapping("/verify-email")
     public ResponseEntity<MessageResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        verificationTokenService.verify(request.token());
+        verificationTokenService.verifyEmail(request.token());
         return ResponseEntity.ok(new MessageResponse("Email verified successfully"));
     }
 
     @PostMapping("/resend-verification")
     public ResponseEntity<MessageResponse> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
-        verificationTokenService.resend(request.email());
+        verificationTokenService.resendVerifyEmail(request.email());
         return ResponseEntity.ok(new MessageResponse(
                 "If an account with that email exists and isn't verified yet, a new link has been sent"));
+    }
+
+    /** Google-only account confirming password link, from the email sent during a colliding /auth/signup. */
+    @PostMapping("/link-password/confirm")
+    public ResponseEntity<AuthResponse> confirmLinkPassword(@Valid @RequestBody LinkPasswordConfirmRequest request) {
+        return ResponseEntity.ok(authService.confirmLinkPassword(request.token(), request.newPassword()));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.email());
+        return ResponseEntity.ok(new MessageResponse(
+                "If an account with that email exists, a password reset link has been sent"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request.token(), request.newPassword()));
+    }
+
+    /** Authenticated Settings-page change. currentPassword is optional - see AuthService.changePassword. */
+    @PostMapping("/change-password")
+    public ResponseEntity<MessageResponse> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(authentication.getName(), request.currentPassword(), request.newPassword());
+        return ResponseEntity.ok(new MessageResponse("Password updated"));
     }
 }

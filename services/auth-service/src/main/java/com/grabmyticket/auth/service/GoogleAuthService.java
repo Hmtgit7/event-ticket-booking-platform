@@ -53,6 +53,11 @@ public class GoogleAuthService {
         if (!existing.isEmailVerified()) {
             existing.setEmailVerified(true);
         }
+        if (!existing.isRolePromptSeen()) {
+            // LOCAL signup already asked wantsToOrganize - never re-prompt just
+            // because they're now also linking Google.
+            existing.setRolePromptSeen(true);
+        }
         return userRepository.save(existing);
     }
 
@@ -71,6 +76,9 @@ public class GoogleAuthService {
                 .providerId(googleSub)
                 // Google already verified ownership of this email - no verification email needed.
                 .emailVerified(true)
+                // Brand-new account with no organizer/admin role yet - OAuthBridgePage
+                // will show the "also host events?" prompt once.
+                .rolePromptSeen(false)
                 .roles(roles)
                 .build();
 

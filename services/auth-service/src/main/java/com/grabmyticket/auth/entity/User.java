@@ -43,7 +43,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /** Null for accounts created purely via Google OAuth. */
+    /** Null for accounts created purely via Google OAuth (until they link a password - see AuthService.confirmLinkPassword). */
     @Column(name = "password_hash")
     private String passwordHash;
 
@@ -62,6 +62,16 @@ public class User {
     /** Google's `sub` claim, when provider = GOOGLE. */
     @Column(name = "provider_id")
     private String providerId;
+
+    /**
+     * Whether the "also host events as an organizer?" prompt (shown after a
+     * fresh Google sign-in with no organizer/admin role yet) has already been
+     * shown once - true immediately for LOCAL signups since wantsToOrganize
+     * already captures that choice at signup time.
+     */
+    @Column(name = "role_prompt_seen", nullable = false)
+    @Builder.Default
+    private boolean rolePromptSeen = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

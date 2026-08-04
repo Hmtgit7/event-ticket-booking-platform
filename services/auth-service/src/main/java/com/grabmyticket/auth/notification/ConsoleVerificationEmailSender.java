@@ -8,14 +8,10 @@ import org.springframework.stereotype.Component;
 import com.grabmyticket.auth.entity.User;
 
 /**
- * TEMPORARY stub. Logs the verification link instead of emailing it.
+ * TEMPORARY stub. Logs each link instead of emailing it.
  *
- * TODO (post-notification-service SMTP setup): replace with either
- *   (a) a direct SMTP call, or
- *   (b) publishing a "user.verification-requested" event to Kafka for
- *       notification-service to consume - matches the pattern booking-service
- *       will use for booking confirmations.
- * Until then: grab the link from this service's logs to test the flow.
+ * TODO: replaced by a Brevo-backed sender in Chunk 2. Until then, grab the
+ * link from this service's logs to test verify / link-password / reset flows.
  */
 @Component
 public class ConsoleVerificationEmailSender implements VerificationEmailSender {
@@ -32,12 +28,27 @@ public class ConsoleVerificationEmailSender implements VerificationEmailSender {
 
     @Override
     public void sendVerificationEmail(User user, String rawToken) {
-        String link = frontendBaseUrl + "/auth/verify-email?token=" + rawToken;
+        logLink("VERIFY EMAIL", user, "/auth/verify-email?token=" + rawToken);
+    }
+
+    @Override
+    public void sendLinkPasswordEmail(User user, String rawToken) {
+        logLink("LINK PASSWORD", user, "/auth/link-password?token=" + rawToken);
+    }
+
+    @Override
+    public void sendPasswordResetEmail(User user, String rawToken) {
+        logLink("RESET PASSWORD", user, "/auth/reset-password?token=" + rawToken);
+    }
+
+    private void logLink(String kind, User user, String path) {
+        String link = frontendBaseUrl + path;
         log.info(
-                "\n==================== VERIFICATION EMAIL (stub - not actually sent) ====================\n"
+                "\n==================== {} EMAIL (stub - not actually sent) ====================\n"
                         + "To:   {}\n"
                         + "Link: {}\n"
                         + "==========================================================================================",
+                kind,
                 user.getEmail(),
                 link
         );

@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.grabmyticket.auth.entity.TokenPurpose;
 import com.grabmyticket.auth.entity.User;
 import com.grabmyticket.auth.entity.VerificationToken;
 import com.grabmyticket.auth.exception.InvalidOrExpiredTokenException;
@@ -40,38 +41,50 @@ public class VerificationTokenService {
         this.properties = properties;
     }
 
-    /** Generates a token, persists it, and hands it to the email sender. Called right after signup. */
+    /** Called right after local signup. */
     @Transactional
-    public void issueAndSend(User user) {
-        String rawToken = tokenGenerator.generate();
+    public void issueAndSendVerifyEmail(User user) {
+        issue(user, TokenPurpose.VERIFY_EMAIL);
+    }
 
-        VerificationToken token = VerificationToken.builder()
-                .user(user)
-                .token(rawToken)
-                .expiresAt(Instant.now().plus(properties.tokenTtl()))
-                .build();
+    /** Called when a password-signup collides with an existing Google-only account. */
+    @Transactional
+    public void issueAndSendLinkPassword(User user) {
+        issue(user, TokenPurpose.LINK_PASSWORD);
+    }
 
-        verificationTokenRepository.save(token);
-        emailSender.sendVerificationEmail(user, rawToken);
+    /** Called from the forgot-password flow. */
+    @Transactional
+    public void issueAndSendPasswordReset(User user) {
+        issue(user, TokenPurpose.RESET_PASSWORD);
     }
 
     @Transactional
-    public void verify(String rawToken) {
-        VerificationToken token = verificationTokenRepository.findByToken(rawToken)
-                .orElseThrow(InvalidOrExpiredTokenException::new);
-
-        if (token.isUsed() || token.isExpired()) {
-            throw new InvalidOrExpiredTokenException();
-        }
-
+    public void verifyEmail(String rawToken) {
+        VerificationToken token = consume(rawToken, TokenPurpose.VERIFY_EMAIL);
         User user = token.getUser();
         if (!user.isEmailVerified()) {
             user.setEmailVerified(true);
             userRepository.save(user);
         }
+    }
+
+    /**
+     * Validates a token for the expected purpose, marks it used, and returns it.
+     * Callers (AuthService) do their own purpose-specific follow-up (set password,
+     * mark verified, etc.) - this method only owns the token lifecycle.
+     */
+    @Transactional
+    public VerificationToken consume(String rawToken, TokenPurpose expectedPurpose) {
+        VerificationToken token = verificationTokenRepository.findByToken(rawToken)
+                .orElseThrow(InvalidOrExpiredTokenException::new);
+
+        if (token.isUsed() || token.isExpired() || token.getPurpose() != expectedPurpose) {
+            throw new InvalidOrExpiredTokenException();
+        }
 
         token.setUsedAt(Instant.now());
-        verificationTokenRepository.save(token);
+        return verificationTokenRepository.save(token);
     }
 
     /**
@@ -80,7 +93,7 @@ public class VerificationTokenService {
      * (and rate-limits) when a matching, unverified account is found.
      */
     @Transactional
-    public void resend(String email) {
+    public void resendVerifyEmail(String email) {
         Optional<User> maybeUser = userRepository.findByEmail(email.trim().toLowerCase());
         if (maybeUser.isEmpty()) {
             return;
@@ -91,16 +104,41 @@ public class VerificationTokenService {
             return;
         }
 
-        verificationTokenRepository.findTopByUserOrderByCreatedAtDesc(user)
+        issueAndSendVerifyEmail(user);
+    }
+
+    private void issue(User user, TokenPurpose purpose) {
+        enforceCooldown(user, purpose);
+
+        String rawToken = tokenGenerator.generate();
+        VerificationToken token = VerificationToken.builder()
+                .user(user)
+                .token(rawToken)
+                .purpose(purpose)
+                .expiresAt(Instant.now().plus(properties.tokenTtl()))
+                .build();
+
+        verificationTokenRepository.save(token);
+        dispatch(user, rawToken, purpose);
+    }
+
+    private void dispatch(User user, String rawToken, TokenPurpose purpose) {
+        switch (purpose) {
+            case VERIFY_EMAIL -> emailSender.sendVerificationEmail(user, rawToken);
+            case LINK_PASSWORD -> emailSender.sendLinkPasswordEmail(user, rawToken);
+            case RESET_PASSWORD -> emailSender.sendPasswordResetEmail(user, rawToken);
+        }
+    }
+
+    private void enforceCooldown(User user, TokenPurpose purpose) {
+        verificationTokenRepository.findTopByUserAndPurposeOrderByCreatedAtDesc(user, purpose)
                 .ifPresent(lastToken -> {
                     Instant cooldownEnds = lastToken.getCreatedAt().plus(properties.resendCooldown());
                     if (Instant.now().isBefore(cooldownEnds)) {
                         long secondsLeft = Instant.now().until(cooldownEnds, ChronoUnit.SECONDS) + 1;
                         throw new TooManyRequestsException(
-                                "Please wait " + secondsLeft + " seconds before requesting another verification email");
+                                "Please wait " + secondsLeft + " seconds before requesting another email");
                     }
                 });
-
-        issueAndSend(user);
     }
 }
