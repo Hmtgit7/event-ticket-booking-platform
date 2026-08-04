@@ -45,6 +45,10 @@ app:
   verification:
     token-ttl: ${VERIFICATION_TOKEN_TTL:24h}
     resend-cooldown: ${VERIFICATION_RESEND_COOLDOWN:60s}
+  brevo:
+    api-key: ${BREVO_API_KEY:}
+    sender-email: ${SMTP_FROM:}
+    sender-name: ${BREVO_SENDER_NAME:GrabMyTicket}
   frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
