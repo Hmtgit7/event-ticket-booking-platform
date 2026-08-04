@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
+import { AdminOverviewContainer } from "@/containers/admin-dashboard/overview/admin-overview-container";
 
 export const metadata: Metadata = { title: "Admin Dashboard | GrabMyTicket" };
 
 export default function AdminDashboardRoute() {
-  return <AdminDashboardPage />;
+  return <AdminOverviewContainer />;
 }

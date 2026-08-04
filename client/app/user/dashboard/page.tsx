@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import { UserDashboardPage } from "@/pages/UserDashboardPage";
+import { OverviewContainer } from "@/containers/user-dashboard/overview/overview-container";
 
-export const metadata: Metadata = { title: "Dashboard | GrabMyTicket" };
-
-export default function UserDashboardRoute() {
-  return <UserDashboardPage />;
+export default function UserDashboardPage() {
+  return <OverviewContainer />;
 }
