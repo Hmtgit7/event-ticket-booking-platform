@@ -42,14 +42,14 @@ start_services() {
   echo "    services launching in background, tailing logs at ./$LOG_DIR/<service>.log"
 }
 
-start_client() {
-  echo "==> Starting client (pnpm dev, http://localhost:3000)"
-  (
-    cd client
-    nohup pnpm dev > "../$LOG_DIR/client.log" 2>&1 &
-    echo $! > "../$PID_DIR/client.pid"
-  )
-}
+# start_client() {
+#   echo "==> Starting client (pnpm dev, http://localhost:3000)"
+#   (
+#     cd client
+#     nohup pnpm dev > "../$LOG_DIR/client.log" 2>&1 &
+#     echo $! > "../$PID_DIR/client.pid"
+#   )
+# }
 
 case "$MODE" in
   infra)    start_infra ;;
