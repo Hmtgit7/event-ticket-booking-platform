@@ -37,7 +37,7 @@ export function AdminDashboardSidebar() {
     >
       {/* ── Logo header — fixed height aligned with topbar ── */}
       {collapsed ? (
-        <div className="group/logo relative flex min-h-[57px] shrink-0 items-center justify-center">
+        <div className="group/logo relative flex shrink-0 items-center justify-center py-3.5">
           <GrabMyTicketLogoMark className="size-9 rounded-xl transition-opacity duration-200 group-hover/logo:opacity-0" />
           <button
             type="button"
@@ -49,7 +49,7 @@ export function AdminDashboardSidebar() {
           </button>
         </div>
       ) : (
-        <div className="flex min-h-[57px] shrink-0 items-center justify-between gap-2 px-1">
+        <div className="flex shrink-0 items-center justify-between gap-2 px-1 py-3.5">
           <div className="flex items-center gap-2.5">
             <GrabMyTicketLogoMark className="size-9 shrink-0 rounded-xl" />
             <div className="leading-tight">

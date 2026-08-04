@@ -38,11 +38,12 @@ export function AdminDashboardShell({ children }: AdminDashboardShellProps) {
   const { section, crumb } = useBreadcrumb();
 
   return (
-    <div className="flex min-h-screen gap-4 bg-background p-4">
+    <div className="flex h-screen gap-4 bg-background p-4 overflow-hidden">
       <AdminDashboardSidebar />
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      {/* right column: topbar fixed at top, main scrolls beneath it */}
+      <div className="main-scroll flex min-w-0 flex-1 flex-col overflow-y-auto">
         <DashboardTopbar section={section} crumb={crumb} />
-        <main className="flex-1 pb-4">{children}</main>
+        <main className="flex-1 mt-4 pb-4">{children}</main>
       </div>
     </div>
   );

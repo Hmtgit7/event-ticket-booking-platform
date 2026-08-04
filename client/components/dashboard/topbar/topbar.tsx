@@ -18,7 +18,7 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
   const { toggle } = useSidebar();
 
   return (
-    <header className="sticky top-4 z-30 flex items-center gap-4 rounded-[28px] bg-surface/95 px-4 py-3.5 shadow-sm backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-30 flex shrink-0 items-center gap-4 rounded-[28px] bg-surface/95 px-4 py-3.5 shadow-sm backdrop-blur sm:px-6">
       <button
         type="button"
         onClick={toggle}
