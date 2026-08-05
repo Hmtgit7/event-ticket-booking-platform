@@ -327,6 +327,12 @@ public class EventService {
                 .map(TicketType::getPrice)
                 .min(java.util.Comparator.naturalOrder())
                 .orElse(null);
+        int totalCapacity = event.getTicketTypes().stream()
+                .mapToInt(TicketType::getQuantityTotal)
+                .sum();
+        int totalSold = event.getTicketTypes().stream()
+                .mapToInt(tt -> tt.getQuantityTotal() - tt.getQuantityAvailable())
+                .sum();
         return new EventSummaryResponse(
                 event.getId(),
                 event.getTitle(),
@@ -338,7 +344,9 @@ public class EventService {
                 event.getEndAt(),
                 event.getBannerImageUrl(),
                 event.getStatus(),
-                fromPrice
+                fromPrice,
+                totalCapacity,
+                totalSold
         );
     }
 }

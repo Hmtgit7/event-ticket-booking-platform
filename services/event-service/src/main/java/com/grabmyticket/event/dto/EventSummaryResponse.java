@@ -19,6 +19,10 @@ public record EventSummaryResponse(
         String bannerImageUrl,
         EventStatus status,
         /** Lowest ticket tier price - null if the event has no ticket types yet (still-editing draft). */
-        BigDecimal fromPrice
+        BigDecimal fromPrice,
+        /** Sum of quantityTotal across all tiers. */
+        Integer totalCapacity,
+        /** Sum of (quantityTotal - quantityAvailable) across all tiers. */
+        Integer totalSold
 ) {
 }
