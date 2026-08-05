@@ -5,6 +5,7 @@ import { CalendarDays, MapPin } from "lucide-react";
 
 import { AuthBrandRow } from "@/components/auth/auth-brand-row";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const slides = [
   {
@@ -60,10 +61,12 @@ export function EventImageCarousel() {
 
           <article className="relative w-full max-w-[500px] overflow-hidden rounded-[24px] border border-white/10 bg-[#17140f] shadow-2xl">
             <div className="aspect-[1.12/1] overflow-hidden">
-              <img
+              <Image
                 src={activeSlide.image}
                 alt={`${activeSlide.title} event preview`}
-                className="h-full w-full object-cover transition duration-700"
+                fill
+                sizes="(max-width: 768px) 100vw, 500px"
+                className="object-cover transition duration-700"
               />
             </div>
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_34%,rgba(0,0,0,0.72)_100%)]" />
@@ -93,11 +96,15 @@ export function EventImageCarousel() {
               Book every event from one clean dashboard.
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-6 text-on-elevated/68">
-              Discover events, reserve seats, and keep customer bookings in sync.
+              Discover events, reserve seats, and keep customer bookings in
+              sync.
             </p>
           </div>
 
-          <div className="flex shrink-0 gap-2" aria-label="Event preview slides">
+          <div
+            className="flex shrink-0 gap-2"
+            aria-label="Event preview slides"
+          >
             {slides.map((slide, index) => (
               <button
                 key={slide.title}
@@ -119,4 +126,3 @@ export function EventImageCarousel() {
     </div>
   );
 }
-
