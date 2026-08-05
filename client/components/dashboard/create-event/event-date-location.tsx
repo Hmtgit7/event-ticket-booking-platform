@@ -12,7 +12,7 @@ interface EventDateLocationProps {
 export function EventDateLocation({ draft, onChange }: EventDateLocationProps) {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <FormField label="Event date" htmlFor="date" required>
           <input
             id="date"
@@ -32,16 +32,37 @@ export function EventDateLocation({ draft, onChange }: EventDateLocationProps) {
             className={inputCls}
           />
         </FormField>
+
+        <FormField label="End time" htmlFor="endTime" required hint="Next day if earlier than start.">
+          <input
+            id="endTime"
+            type="time"
+            value={draft.endTime}
+            onChange={(e) => onChange({ endTime: e.target.value })}
+            className={inputCls}
+          />
+        </FormField>
       </div>
 
+      <FormField label="Venue name" htmlFor="venue" required hint="Hall, stadium, or landmark.">
+        <input
+          id="venue"
+          type="text"
+          placeholder="e.g. Colombo City Hall"
+          value={draft.venue}
+          onChange={(e) => onChange({ venue: e.target.value })}
+          className={inputCls}
+        />
+      </FormField>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label="Venue name" htmlFor="venue" required hint="Hall, stadium, or address.">
+        <FormField label="Address" htmlFor="address" required hint="Street address for directions.">
           <input
-            id="venue"
+            id="address"
             type="text"
-            placeholder="e.g. Colombo City Hall"
-            value={draft.venue}
-            onChange={(e) => onChange({ venue: e.target.value })}
+            placeholder="e.g. 123 Galle Road"
+            value={draft.address}
+            onChange={(e) => onChange({ address: e.target.value })}
             className={inputCls}
           />
         </FormField>

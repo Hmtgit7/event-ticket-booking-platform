@@ -1,5 +1,17 @@
 import type { EventCategory } from "@/enums/event-category.enum";
 
+export interface TicketTierDraft {
+  /** Client-only key for React list rendering / editing - not sent to the backend. */
+  key: string;
+  name: string;
+  price: number;
+  quantityTotal: number | undefined;
+}
+
+export function emptyTier(): TicketTierDraft {
+  return { key: crypto.randomUUID(), name: "", price: 0, quantityTotal: undefined };
+}
+
 /**
  * Shape of the in-progress create-event form draft.
  * Each step patches a subset of this interface.
@@ -13,15 +25,15 @@ export interface CreateEventDraft {
   // Step 2 — Date & location
   date: string;
   time: string;
+  endTime: string;
   venue: string;
+  address: string;
   city: string;
   lat?: number;
   lng?: number;
 
   // Step 3 — Tickets & media
-  ticketType: "free" | "paid";
-  price?: number;
-  capacity?: number;
+  ticketTiers: TicketTierDraft[];
   bannerUrl?: string;
   bannerPublicId?: string;
 }
@@ -32,9 +44,11 @@ export const EMPTY_DRAFT: CreateEventDraft = {
   description: "",
   date: "",
   time: "",
+  endTime: "",
   venue: "",
+  address: "",
   city: "",
-  ticketType: "free",
+  ticketTiers: [emptyTier()],
 };
 
 export type CreateEventStep = 1 | 2 | 3;

@@ -9,6 +9,9 @@ import { EventDateLocation } from "@/components/dashboard/create-event/event-dat
 import { EventTicketsMedia } from "@/components/dashboard/create-event/event-tickets-media";
 import { EMPTY_DRAFT, type CreateEventDraft, type CreateEventStep } from "@/types/create-event.types";
 import { NavRoute } from "@/enums/nav-route.enum";
+import { eventService } from "@/services/event.service";
+import { ApiError } from "@/lib/api-client";
+import type { CreateEventPayload } from "@/interfaces/event-api.interface";
 
 function validate(step: CreateEventStep, draft: CreateEventDraft): string | null {
   if (step === 1) {
@@ -17,12 +20,65 @@ function validate(step: CreateEventStep, draft: CreateEventDraft): string | null
     if (!draft.description.trim()) return "Description is required.";
   }
   if (step === 2) {
-    if (!draft.date)         return "Please select a date.";
-    if (!draft.time)         return "Please set a start time.";
-    if (!draft.venue.trim()) return "Venue name is required.";
-    if (!draft.city.trim())  return "City is required.";
+    if (!draft.date)            return "Please select a date.";
+    if (!draft.time)            return "Please set a start time.";
+    if (!draft.endTime)         return "Please set an end time.";
+    if (!draft.venue.trim())    return "Venue name is required.";
+    if (!draft.address.trim())  return "Address is required.";
+    if (!draft.city.trim())     return "City is required.";
+  }
+  if (step === 3) {
+    if (draft.ticketTiers.length === 0) return "Add at least one ticket tier.";
+    for (const tier of draft.ticketTiers) {
+      if (!tier.name.trim())    return "Every ticket tier needs a name.";
+      if (tier.price < 0)       return "Ticket price cannot be negative.";
+      if (!tier.quantityTotal || tier.quantityTotal < 1)
+        return `Set a quantity for the "${tier.name || "unnamed"}" tier.`;
+    }
   }
   return null;
+}
+
+/** Combines a date + time input into an ISO instant. If `endTime` is earlier than `startTime`, rolls over to the next day. */
+function toStartEndIso(date: string, startTime: string, endTime: string) {
+  const startAt = new Date(`${date}T${startTime}`);
+  let endAt = new Date(`${date}T${endTime}`);
+  if (endAt <= startAt) {
+    endAt = new Date(endAt.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return { startAt: startAt.toISOString(), endAt: endAt.toISOString() };
+}
+
+function buildPayload(draft: CreateEventDraft, publishImmediately: boolean): CreateEventPayload {
+  const { startAt, endAt } = toStartEndIso(draft.date, draft.time, draft.endTime);
+  return {
+    title: draft.title.trim(),
+    category: draft.category,
+    description: draft.description.trim(),
+    venueName: draft.venue.trim(),
+    address: draft.address.trim(),
+    city: draft.city.trim(),
+    latitude: draft.lat ?? null,
+    longitude: draft.lng ?? null,
+    startAt,
+    endAt,
+    bannerImageUrl: draft.bannerUrl ?? null,
+    bannerPublicId: draft.bannerPublicId ?? null,
+    ticketTypes: draft.ticketTiers.map((t) => ({
+      name: t.name.trim(),
+      price: t.price,
+      quantityTotal: t.quantityTotal ?? 0,
+    })),
+    publishImmediately,
+  };
+}
+
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const body = err.body as { message?: string } | undefined;
+    return body?.message || "Something went wrong. Please try again.";
+  }
+  return "Something went wrong. Please check your connection and try again.";
 }
 
 /**
@@ -34,7 +90,8 @@ export function CreateEventContainer() {
   const [step,  setStep]  = useState<CreateEventStep>(1);
   const [draft, setDraft] = useState<CreateEventDraft>(EMPTY_DRAFT);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<"draft" | "publish" | null>(null);
 
   function patch(p: Partial<CreateEventDraft>) {
     setDraft((prev) => ({ ...prev, ...p }));
@@ -52,20 +109,31 @@ export function CreateEventContainer() {
     setStep((s) => Math.max(s - 1, 1) as CreateEventStep);
   }
 
-  function handleSubmit(status: "draft" | "publish") {
-    const err = validate(step, draft);
+  async function handleSubmit(mode: "draft" | "publish") {
+    const err = validate(3, draft);
     if (err) { setError(err); return; }
-    // TODO: wire to POST /api/events with { ...draft, status }
-    console.info("Create event payload:", { ...draft, status });
-    setSaved(true);
-    setTimeout(() => router.push(NavRoute.Events), 1500);
+
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = buildPayload(draft, mode === "publish");
+      await eventService.createEvent(payload);
+      setSaved(mode);
+      setTimeout(() => router.push(NavRoute.Events), 1500);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (saved) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 rounded-2xl border border-line bg-surface p-10 text-center">
         <p className="text-4xl">🎉</p>
-        <h2 className="font-heading text-2xl font-extrabold text-ink">Event saved!</h2>
+        <h2 className="font-heading text-2xl font-extrabold text-ink">
+          {saved === "publish" ? "Event published!" : "Draft saved!"}
+        </h2>
         <p className="text-sm text-ink-muted">Redirecting you to My Events…</p>
       </div>
     );
@@ -97,7 +165,7 @@ export function CreateEventContainer() {
 
       {/* ── Nav buttons ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" onClick={handleBack} disabled={step === 1}>
+        <Button variant="outline" onClick={handleBack} disabled={step === 1 || saving}>
           ← Back
         </Button>
         <div className="flex gap-2">
@@ -105,8 +173,12 @@ export function CreateEventContainer() {
             <Button onClick={handleNext}>Continue →</Button>
           ) : (
             <>
-              <Button variant="outline" onClick={() => handleSubmit("draft")}>Save as draft</Button>
-              <Button onClick={() => handleSubmit("publish")}>Publish event</Button>
+              <Button variant="outline" onClick={() => handleSubmit("draft")} disabled={saving}>
+                {saving ? "Saving…" : "Save as draft"}
+              </Button>
+              <Button onClick={() => handleSubmit("publish")} disabled={saving}>
+                {saving ? "Publishing…" : "Publish event"}
+              </Button>
             </>
           )}
         </div>
