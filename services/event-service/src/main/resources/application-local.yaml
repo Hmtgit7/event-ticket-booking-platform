@@ -9,6 +9,14 @@ spring:
       port: ${REDIS_PORT:6379}
   cache:
     type: redis
+  flyway:
+    # Each service owns its own schema history table to avoid version collisions
+    # when multiple services share the same database.
+    table: flyway_schema_history_event
+    # The public schema already has tables from other services. Tell Flyway to
+    # baseline (mark as pre-existing) before running its own migrations.
+    baseline-on-migrate: true
+    baseline-version: 0
   jpa:
     hibernate:
       ddl-auto: update

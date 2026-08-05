@@ -18,6 +18,11 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # Each service owns its own schema history table to avoid version collisions
+    # when multiple services share the same database.
+    table: flyway_schema_history_auth
+    baseline-on-migrate: true
+    baseline-version: 0
 
 server:
   port: ${PORT:${SERVER_PORT:8081}}
