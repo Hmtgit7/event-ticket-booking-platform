@@ -10,6 +10,7 @@ import { InfoTooltip } from "@/components/auth/info-tooltip";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useGoogleAuth } from "@/modules/auth/hooks/use-google-auth";
 import { useBecomeOrganizer } from "@/modules/auth/hooks/use-become-organizer";
+import { useDismissRolePrompt } from "@/modules/auth/hooks/use-dismiss-role-prompt";
 import { resolvePostLoginRedirect } from "@/modules/auth/utils/post-login-redirect";
 import { useAuthStore } from "@/store/auth-store";
 import { Role } from "@/enums/role.enum";
@@ -18,15 +19,17 @@ import { AuthLayout } from "@/layouts/AuthLayout";
 /**
  * NextAuth lands here after Google's handshake completes. We exchange the
  * Google ID token for our own AuthResponse, then - if this account isn't an
- * organizer yet - offer the same "also host events" switch the signup form
- * has, since the Google flow has no other point where that intent can be
- * captured.
+ * organizer/admin yet AND hasn't been asked before (rolePromptSeen) - offer
+ * the same "also host events" switch the signup form has, since the Google
+ * flow has no other point where that intent can be captured. Once answered
+ * either way, rolePromptSeen is persisted so it never asks again.
  */
 export function OAuthBridgePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { exchangeGoogleToken, isPending, isError, errorMessage } = useGoogleAuth();
   const { becomeOrganizer, isPending: isUpgrading } = useBecomeOrganizer();
+  const { dismiss: dismissRolePrompt } = useDismissRolePrompt();
   const user = useAuthStore((state) => state.user);
   const hasStarted = useRef(false);
   const [wantsToOrganize, setWantsToOrganize] = useState(false);
@@ -37,7 +40,8 @@ export function OAuthBridgePage() {
       hasStarted.current = true;
       exchangeGoogleToken(session.googleIdToken, {
         onSuccess: (auth) => {
-          if (auth.roles.includes(Role.Organizer) || auth.roles.includes(Role.Admin)) {
+          const alreadyElevated = auth.roles.includes(Role.Organizer) || auth.roles.includes(Role.Admin);
+          if (alreadyElevated || auth.rolePromptSeen) {
             router.push(resolvePostLoginRedirect(auth.roles));
           } else {
             setShowOrganizerPrompt(true);
@@ -50,8 +54,10 @@ export function OAuthBridgePage() {
 
   function continueFromPrompt() {
     if (wantsToOrganize) {
+      // becomeOrganizer marks rolePromptSeen server-side too - answering "yes" is itself an answer.
       becomeOrganizer();
     } else {
+      dismissRolePrompt();
       router.push("/user/dashboard");
     }
   }

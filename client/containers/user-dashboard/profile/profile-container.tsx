@@ -1,8 +1,9 @@
 "use client";
 
-import { Settings, ShieldCheck } from "lucide-react";
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
+import { ChangePasswordCard } from "@/components/auth/change-password-card";
 
 const PROFILE_FIELDS = [
   { label: "Full name",    value: "Hemant Gehlod" },
@@ -48,17 +49,10 @@ export function ProfileContainer() {
 
       {/* ── Security ── */}
       <div className="rounded-2xl border border-line bg-surface p-5">
-        <SectionTitle eyebrow="Security" title="Protected checkout" />
-        <div className="mt-4 flex items-center gap-3 rounded-xl border border-line bg-background p-4">
-          <ShieldCheck className="size-8 shrink-0 text-positive" />
-          <p className="text-sm text-ink-muted">
-            Email verified, password active, and checkout alerts enabled.
-          </p>
+        <SectionTitle eyebrow="Security" title="Account security" />
+        <div className="mt-4">
+          <ChangePasswordCard />
         </div>
-        <Button variant="outline" className="mt-5" size="sm">
-          <ShieldCheck className="size-4" />
-          Manage security
-        </Button>
       </div>
     </div>
   );

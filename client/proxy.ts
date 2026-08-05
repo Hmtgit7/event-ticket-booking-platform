@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/auth-cookie-names";
 import { decodeJwt, isTokenExpired } from "@/lib/jwt";
+import { resolvePostLoginRedirect } from "@/modules/auth/utils/post-login-redirect";
 import { Role } from "@/enums/role.enum";
 
 /**
@@ -13,8 +14,19 @@ import { Role } from "@/enums/role.enum";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if (pathname === "/admin/login") {
+    // Already-logged-in admin landing on their own login page (e.g. a second
+    // tab, or "Start free" from the marketing site while a session is live) -
+    // send them straight to the dashboard instead of showing login again.
+    return redirectIfAuthenticated(request);
+  }
+
+  if (pathname.startsWith("/admin")) {
     return guard(request, [Role.Admin], "/admin/login");
+  }
+
+  if (pathname === "/auth/login" || pathname === "/auth/signup") {
+    return redirectIfAuthenticated(request);
   }
 
   if (pathname.startsWith("/dashboard")) {
@@ -52,6 +64,35 @@ function guard(request: NextRequest, allowedRoles: Role[], loginPath: string) {
   return NextResponse.next();
 }
 
+/**
+ * Used on /auth/login, /auth/signup, /admin/login - pages that only make sense
+ * for someone who ISN'T logged in yet. Covers both the "second browser tab"
+ * and "Start free from the marketing site while already logged in" cases.
+ */
+function redirectIfAuthenticated(request: NextRequest) {
+  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const hasRefreshToken = Boolean(request.cookies.get(REFRESH_TOKEN_COOKIE)?.value);
+  const claims = accessToken ? decodeJwt(accessToken) : null;
+
+  if (claims) {
+    // decodeJwt doesn't check expiry - even a stale-but-decodable access token
+    // tells us who they are. The API client refreshes transparently on the
+    // next authenticated request, so redirecting now (rather than waiting for
+    // that refresh) is safe and avoids a pointless bounce back through login.
+    return NextResponse.redirect(new URL(resolvePostLoginRedirect(claims.roles), request.url));
+  }
+
+  if (hasRefreshToken) {
+    // No access token cookie at all, but a refresh token exists - we can't
+    // read roles from nothing, so don't guess a destination. Let the login/
+    // signup page render; client-side hydrate() will pick up the session on
+    // its own right after.
+    return NextResponse.next();
+  }
+
+  return NextResponse.next();
+}
+
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/user/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/user/:path*", "/auth/login", "/auth/signup"],
 };

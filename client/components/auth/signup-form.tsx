@@ -7,6 +7,7 @@ import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthInput } from "@/components/auth/auth-input";
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
+import { AuthSuccessBanner } from "@/components/auth/auth-success-banner";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { InfoTooltip } from "@/components/auth/info-tooltip";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -15,7 +16,7 @@ import { validateSignup, type SignupErrors } from "@/modules/auth/utils/validate
 import { cn } from "@/lib/utils";
 
 export function SignupForm() {
-  const { signup, isPending, errorMessage } = useSignup();
+  const { signup, isPending, errorMessage, linkPendingMessage } = useSignup();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,6 +59,7 @@ export function SignupForm() {
       <AuthDivider label="or create account with email" />
 
       <AuthErrorBanner message={errorMessage} />
+      <AuthSuccessBanner message={linkPendingMessage} />
 
       <div className="space-y-3">
         <AuthInput

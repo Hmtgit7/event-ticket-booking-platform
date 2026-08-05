@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 
+import { ChangePasswordCard } from "@/components/auth/change-password-card";
+
 export const metadata: Metadata = { title: "Settings | GrabMyTicket" };
 
 export default function SettingsPage() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center py-4">
-      <div className="rounded-3xl bg-surface p-10 text-center shadow-sm">
+    <div className="mx-auto flex max-w-xl flex-col gap-6 py-4">
+      <div>
         <h1 className="text-lg font-bold text-ink">Settings</h1>
-        <p className="mt-2 max-w-xs text-sm text-ink-muted">
-          Account and workspace settings aren&apos;t part of this dummy build yet.
-        </p>
+        <p className="mt-1 text-sm text-ink-muted">Manage your account security.</p>
       </div>
+
+      <ChangePasswordCard />
     </div>
   );
 }

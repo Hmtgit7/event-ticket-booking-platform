@@ -12,6 +12,7 @@ interface AuthUser {
   fullName: string;
   roles: Role[];
   emailVerified: boolean;
+  rolePromptSeen: boolean;
 }
 
 interface AuthState {
@@ -21,6 +22,8 @@ interface AuthState {
   setSession: (auth: AuthResponse) => void;
   clearSession: () => void;
   hydrate: () => Promise<void>;
+  /** Optimistic local update after dismissing the "also host events?" prompt - avoids a round trip before navigating. */
+  markRolePromptSeen: () => void;
 }
 
 function toAuthUser(auth: AuthResponse | UserProfileResponse): AuthUser {
@@ -30,6 +33,7 @@ function toAuthUser(auth: AuthResponse | UserProfileResponse): AuthUser {
     fullName: auth.fullName,
     roles: auth.roles,
     emailVerified: auth.emailVerified,
+    rolePromptSeen: auth.rolePromptSeen,
   };
 }
 
@@ -45,6 +49,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearSession() {
     tokenStorage.clear();
     set({ user: null, isHydrated: true });
+  },
+
+  markRolePromptSeen() {
+    set((state) => (state.user ? { user: { ...state.user, rolePromptSeen: true } } : state));
   },
 
   async hydrate() {
@@ -68,6 +76,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       fullName: "",
       roles: claims.roles,
       emailVerified: claims.emailVerified,
+      // Not in the JWT claims (kept minimal) - refined below once /auth/me resolves.
+      rolePromptSeen: true,
     };
 
     set({ user: claimUser, isHydrated: true });

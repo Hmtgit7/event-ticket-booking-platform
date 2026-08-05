@@ -1,5 +1,6 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { AuthLayout } from "@/layouts/AuthLayout";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export function ForgotPasswordPage() {
   return (
@@ -12,22 +13,10 @@ export function ForgotPasswordPage() {
           Reset your password.
         </h1>
         <p className="mt-3 text-sm leading-6 text-ink-muted">
-          Enter your email and we will send a secure reset link when email delivery is connected.
+          Enter your email and we&apos;ll send you a secure reset link.
         </p>
 
-        <form className="mt-7 space-y-4">
-          <label className="block">
-            <span className="text-sm font-semibold text-ink">Email address</span>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="mt-2 h-12 w-full rounded-xl border border-line bg-background px-4 text-sm text-ink outline-none focus:border-brand"
-            />
-          </label>
-          <button type="button" className="h-12 w-full rounded-xl bg-brand text-sm font-bold text-brand-foreground shadow-sm">
-            Send reset link
-          </button>
-        </form>
+        <ForgotPasswordForm />
 
         <p className="mt-5 text-center text-xs font-medium text-ink-muted">
           Remembered it? <Link href="/auth/login" className="font-semibold text-brand hover:underline">Back to login</Link>
