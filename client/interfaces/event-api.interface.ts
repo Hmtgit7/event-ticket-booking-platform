@@ -79,6 +79,8 @@ export interface EventSummaryResponse {
   bannerImageUrl: string | null;
   status: EventLifecycleStatus;
   fromPrice: number | null;
+  totalCapacity: number;
+  totalSold: number;
 }
 
 export interface PageResponse<T> {
