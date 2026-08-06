@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Ticket, ArrowLeft } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { MarketingLayout } from "@/layouts/MarketingLayout";
 import { MockMap } from "@/components/common/mock-map";
@@ -11,6 +11,8 @@ import type { EventResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
 import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
+import { useAuthStore } from "@/store/auth-store";
+import { BookNowAction } from "@/components/public-events/book-now-action";
 
 interface PublicEventDetailProps {
   slug: string;
@@ -20,6 +22,8 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
   const [event, setEvent] = useState<EventResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
+  const currentUser = useAuthStore((state) => state.user);
+  const isSignedIn = currentUser !== null;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,9 +71,22 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
     lat: event.latitude ?? 0,
     lng: event.longitude ?? 0,
   };
+  // Route to the viewer's own event-management page if they're the organizer of *this*
+  // event; everyone else (including organizers viewing someone else's event) goes through
+  // BookNowAction, which itself decides whether a persona-switch confirm is needed.
+  const isOwner = isSignedIn && currentUser?.id === event.organizerId;
+  const eventPath = `/user/dashboard/explore/${event.slug}`;
+  const ctaLabel = isOwner ? "Manage event" : "Get ticket";
 
   return (
     <MarketingLayout>
+      <section className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <Link href="/events" className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-ink-muted transition hover:text-ink">
+          <ArrowLeft className="size-4" />
+          Back to all events
+        </Link>
+      </section>
+
       <section className="bg-canvas px-3 py-3 sm:px-5 sm:py-5 dark:bg-[#0d0a07]">
         <div
           className="relative h-72 overflow-hidden rounded-[30px] bg-cover bg-center sm:h-96"
@@ -114,30 +131,46 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
             <div className="flex flex-col divide-y divide-line">
               {event.ticketTypes.map((tier) => {
                 const seatsLeft = tier.quantityAvailable;
-                const soldOut = seatsLeft <= 0;
+                const soldOut = seatsLeft <= 0 && !isOwner;
                 return (
                   <div key={tier.id} className="flex items-center justify-between gap-3 py-3">
                     <div>
                       <p className="text-sm font-semibold text-ink">{tier.name}</p>
-                      <p className="text-xs text-ink-muted">{soldOut ? "Sold out" : `${seatsLeft} seats left`}</p>
+                      <p className="text-xs text-ink-muted">{seatsLeft <= 0 ? "Sold out" : `${seatsLeft} seats left`}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-bold text-ink">{formatPrice(tier.price)}</span>
-                      <Link
-                        href="/auth/login"
-                        aria-disabled={soldOut}
-                        className={`rounded-xl px-4 py-2 text-sm font-bold text-brand-foreground ${
-                          soldOut ? "pointer-events-none bg-ink-muted/40" : "bg-brand"
-                        }`}
-                      >
-                        {soldOut ? "Sold out" : "Get ticket"}
-                      </Link>
+                      {soldOut ? (
+                        <span className="pointer-events-none rounded-xl bg-ink-muted/40 px-4 py-2 text-sm font-bold text-brand-foreground">
+                          Sold out
+                        </span>
+                      ) : isOwner ? (
+                        <Link
+                          href={`/dashboard/events/${event.id}`}
+                          className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground"
+                        >
+                          {ctaLabel}
+                        </Link>
+                      ) : (
+                        <BookNowAction
+                          eventPath={eventPath}
+                          className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground"
+                        >
+                          {ctaLabel}
+                        </BookNowAction>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
-            <p className="mt-4 text-xs text-ink-muted">Sign in to book — checkout is coming soon.</p>
+            <p className="mt-4 text-xs text-ink-muted">
+              {isOwner
+                ? "This is your event — manage tickets and details from your dashboard."
+                : isSignedIn
+                  ? "You're signed in — checkout is coming soon."
+                  : "Sign in to book — checkout is coming soon."}
+            </p>
           </div>
         </div>
       </section>

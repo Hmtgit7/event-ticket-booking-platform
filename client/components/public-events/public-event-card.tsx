@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Ticket, Heart } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
+import { useSavedEventsStore } from "@/store/saved-events-store";
+import { cn } from "@/lib/utils";
+import { BookNowAction } from "@/components/public-events/book-now-action";
 
 interface PublicEventCardProps {
   event: EventSummaryResponse;
@@ -11,6 +16,9 @@ interface PublicEventCardProps {
 export function PublicEventCard({ event }: PublicEventCardProps) {
   const visual = CATEGORY_VISUAL[event.category as EventCategory];
   const seatsLeft = Math.max(event.totalCapacity - event.totalSold, 0);
+  const saved = useSavedEventsStore((state) => state.isSaved(event.id));
+  const toggleSaved = useSavedEventsStore((state) => state.toggleSaved);
+  const eventPath = `/user/dashboard/explore/${event.slug}`;
 
   return (
     <article className="overflow-hidden rounded-[24px] border border-line bg-canvas shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl dark:bg-[#211b14] dark:shadow-black/25">
@@ -26,6 +34,15 @@ export function PublicEventCard({ event }: PublicEventCardProps) {
         <div className="absolute left-4 top-4 rounded-xl bg-black/55 px-3 py-1.5 text-xs font-bold text-on-elevated backdrop-blur">
           {event.category}
         </div>
+        <button
+          type="button"
+          onClick={() => toggleSaved(event)}
+          aria-pressed={saved}
+          aria-label={saved ? `Unsave ${event.title}` : `Save ${event.title}`}
+          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full bg-black/55 text-on-elevated backdrop-blur transition hover:bg-black/70"
+        >
+          <Heart className={cn("size-4", saved && "fill-brand text-brand")} />
+        </button>
         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-on-elevated">
           <h3 className="text-2xl font-bold leading-tight">{event.title}</h3>
           <p className="rounded-xl bg-brand px-3 py-2 text-sm font-bold text-brand-foreground">
@@ -45,12 +62,20 @@ export function PublicEventCard({ event }: PublicEventCardProps) {
             <Ticket className="size-4 text-brand" />
             {seatsLeft} seats left
           </p>
-          <Link
-            href={`/events/${event.slug}`}
-            className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground"
-          >
-            View details
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/events/${event.slug}`}
+              className="rounded-xl border border-line px-4 py-2 text-sm font-bold text-ink transition hover:border-brand hover:text-brand"
+            >
+              View details
+            </Link>
+            <BookNowAction
+              eventPath={eventPath}
+              className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground"
+            >
+              Book now
+            </BookNowAction>
+          </div>
         </div>
       </div>
     </article>

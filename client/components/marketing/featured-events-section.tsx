@@ -1,10 +1,37 @@
-﻿import Link from "next/link";
-import { ArrowRight, Calendar, MapPin } from "lucide-react";
-import { PUBLIC_EVENTS } from "@/constants/public-events";
+"use client";
 
-const FEATURED = PUBLIC_EVENTS.slice(0, 3);
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Calendar, MapPin } from "lucide-react";
+import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
+import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
+import { eventService } from "@/services/event.service";
+import { formatEventDate, formatEventTime } from "@/lib/events";
 
 export function FeaturedEventsSection() {
+  const [events, setEvents] = useState<EventSummaryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    eventService
+      .publicEvents({ page: 0, size: 3 })
+      .then((result) => {
+        if (!cancelled) setEvents(result.items);
+      })
+      .catch(() => {
+        // Homepage teaser - fail quietly, the full /events page is the real experience.
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!loading && events.length === 0) return null;
+
   return (
     <section className="border-b border-line bg-canvas py-16 sm:py-20 dark:bg-[#0f0c08]">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -20,20 +47,43 @@ export function FeaturedEventsSection() {
         </div>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
-          {FEATURED.map((event) => (
-            <article key={event.id} className="overflow-hidden rounded-[24px] border border-line bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl dark:bg-[#1c1711] dark:shadow-black/25">
-              <div className="h-56 bg-cover bg-center" style={{ backgroundImage: `url(${event.image})` }} />
-              <div className="p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{event.category}</p>
-                <h3 className="mt-2 text-xl font-bold text-ink">{event.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-ink-muted">{event.tagline}</p>
-                <div className="mt-4 space-y-2 text-sm font-medium text-ink-muted">
-                  <p className="flex items-center gap-2"><Calendar className="size-4" />{event.date} · {event.time}</p>
-                  <p className="flex items-center gap-2"><MapPin className="size-4" />{event.location.venue}, {event.location.city}</p>
-                </div>
-              </div>
-            </article>
-          ))}
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-[22rem] animate-pulse rounded-[24px] bg-surface dark:bg-[#1c1711]" />
+              ))
+            : events.map((event) => {
+                const visual = CATEGORY_VISUAL[event.category as EventCategory];
+                return (
+                  <Link
+                    key={event.id}
+                    href={`/events/${event.slug}`}
+                    className="overflow-hidden rounded-[24px] border border-line bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl dark:bg-[#1c1711] dark:shadow-black/25"
+                  >
+                    <div
+                      className="h-56 bg-cover bg-center"
+                      style={{
+                        background: event.bannerImageUrl
+                          ? `url(${event.bannerImageUrl}) center/cover`
+                          : `linear-gradient(160deg, ${visual?.from ?? "#242424"}, ${visual?.to ?? "#0a0a0a"})`,
+                      }}
+                    />
+                    <div className="p-5">
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{event.category}</p>
+                      <h3 className="mt-2 text-xl font-bold text-ink">{event.title}</h3>
+                      <div className="mt-4 space-y-2 text-sm font-medium text-ink-muted">
+                        <p className="flex items-center gap-2">
+                          <Calendar className="size-4" />
+                          {formatEventDate(event.startAt)} · {formatEventTime(event.startAt)}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <MapPin className="size-4" />
+                          {event.venueName}, {event.city}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
         </div>
       </div>
     </section>
