@@ -1,9 +1,10 @@
 "use client";
 
-import { Bell, Mail, Menu, Search } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { ProfileMenu } from "./profile-menu";
+import { IconButton } from "@/components/common/IconButton";
 
 interface DashboardTopbarProps {
   section: string;
@@ -44,22 +45,10 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
 
       <div className="flex shrink-0 items-center gap-2">
         <ThemeToggle />
-        <IconButton icon={Mail} label="Messages" />
+        {/* <IconButton icon={Mail} label="Messages" /> */}
         <IconButton icon={Bell} label="Notifications" />
         <ProfileMenu />
       </div>
     </header>
-  );
-}
-
-function IconButton({ icon: Icon, label }: { icon: typeof Bell; label: string }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex size-10 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-brand"
-    >
-      <Icon className="size-[18px]" />
-    </button>
   );
 }

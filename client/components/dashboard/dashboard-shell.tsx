@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar/sidebar";
 import { DashboardTopbar } from "@/components/dashboard/topbar/topbar";
+import { PersonaSwitchGate } from "@/components/dashboard/persona-switch-gate";
+import { PersonaSync } from "@/components/dashboard/persona-sync";
 import { MOCK_EVENTS } from "@/constants/mock-events";
 import { NavRoute } from "@/enums/nav-route.enum";
 
@@ -57,6 +59,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   return (
     <div className="flex h-screen gap-4 bg-background p-4 overflow-hidden">
+      <PersonaSync persona="organizer" />
+      <PersonaSwitchGate />
       <DashboardSidebar />
       {/* right column: topbar fixed at top, main scrolls beneath it */}
       <div className="main-scroll flex min-w-0 flex-1 flex-col overflow-y-auto">

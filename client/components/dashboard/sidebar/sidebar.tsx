@@ -11,6 +11,7 @@ import { useLogout } from "@/modules/auth/hooks/use-logout";
 import { cn } from "@/lib/utils";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { SidebarDownloadCard } from "./sidebar-download-card";
+import { PersonaSwitchButton } from "./persona-switch-button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 
@@ -34,9 +35,9 @@ export function DashboardSidebar() {
         collapsed ? "w-[72px]" : "w-[260px]",
       )}
     >
-      {/* ── Logo header — fixed height aligned with topbar ── */}
+      {/* ── Logo header ── */}
       {collapsed ? (
-        <div className="group/logo relative flex shrink-0 items-center justify-center py-3.5">
+        <div className="group/logo relative flex shrink-0 items-center justify-center">
           <GrabMyTicketLogoMark className="size-9 rounded-xl transition-opacity duration-200 group-hover/logo:opacity-0" />
           <button
             type="button"
@@ -48,7 +49,7 @@ export function DashboardSidebar() {
           </button>
         </div>
       ) : (
-        <div className="flex shrink-0 items-center justify-between gap-2 px-1 py-3.5">
+        <div className="flex shrink-0 items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2.5">
             <GrabMyTicketLogoMark className="size-9 shrink-0 rounded-xl" />
             <span className="text-[16px] font-bold italic leading-none tracking-wide font-[family-name:var(--font-playfair)] whitespace-nowrap">
@@ -65,6 +66,10 @@ export function DashboardSidebar() {
           </button>
         </div>
       )}
+
+      <div className="mt-6 shrink-0 border-t border-sidebar-foreground/10 pt-3">
+        <PersonaSwitchButton collapsed={collapsed} />
+      </div>
 
       {/* ── Nav sections — scrollable middle zone ── */}
       <nav className="sidebar-scroll mt-4 flex flex-1 flex-col gap-5 overflow-y-auto py-1">
