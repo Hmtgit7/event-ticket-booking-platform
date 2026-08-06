@@ -32,7 +32,7 @@ export function PublicEventsBrowser() {
   // Re-fetch page 0 whenever a server-side filter changes.
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
     setError(null);
     eventService
       .publicEvents({
