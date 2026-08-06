@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import { Suspense } from "react";
 import { AuthForm } from "@/components/auth/auth-form";
 import { AuthLayout } from "@/layouts/AuthLayout";
 
@@ -19,7 +20,9 @@ export function AuthPage() {
         </div>
 
         <div className="mt-7">
-          <AuthForm />
+          <Suspense fallback={null}>
+            <AuthForm />
+          </Suspense>
         </div>
 
         <div className="mt-5 space-y-3 text-center text-xs font-medium leading-5 text-ink-muted">

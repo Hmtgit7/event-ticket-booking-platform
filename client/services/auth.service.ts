@@ -45,6 +45,10 @@ export const authService = {
 
   becomeOrganizer: () => authApiClient.post<AuthResponse>("/auth/roles/organizer"),
 
+  /** Explicit Organizer <-> Customer switch, persisted server-side for this account. */
+  updatePersona: (persona: "organizer" | "user") =>
+    authApiClient.patch<UserProfileResponse>("/auth/me/persona", { persona }),
+
   dismissRolePrompt: () => authApiClient.post<MessageResponse>("/auth/role-prompt/dismiss"),
 
   /** Google-only account confirming password link, from the email sent during a colliding signup. */

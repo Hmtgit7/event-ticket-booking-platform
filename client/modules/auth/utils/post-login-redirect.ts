@@ -14,3 +14,21 @@ export function resolvePostLoginRedirect(roles: Role[]): string {
   }
   return "/user/dashboard";
 }
+
+/**
+ * Validates a `?redirect=` query param before trusting it as a post-login
+ * destination - must be an internal, single-segment-rooted path (starts
+ * with exactly one "/", never "//" or an absolute URL) to avoid an open
+ * redirect. Returns null if the param is missing or looks unsafe.
+ */
+export function sanitizeRedirectParam(value: string | null | undefined): string | null {
+  if (!value) return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  try {
+    // Rejects anything that parses as an absolute URL (e.g. "/\evil.com" edge cases some browsers normalize).
+    new URL(value, "http://localhost");
+    return value;
+  } catch {
+    return null;
+  }
+}

@@ -11,6 +11,8 @@ export interface AuthResponse {
   fullName: string;
   emailVerified: boolean;
   rolePromptSeen: boolean;
+  /** "organizer" | "user" | null - which mode a dual-role account is currently using. Server-side, see auth-service's User.activePersona. */
+  activePersona: "organizer" | "user" | null;
   roles: Role[];
 }
 
@@ -33,6 +35,7 @@ export interface UserProfileResponse {
   emailVerified: boolean;
   rolePromptSeen: boolean;
   hasPassword: boolean;
+  activePersona: "organizer" | "user" | null;
   roles: Role[];
 }
 

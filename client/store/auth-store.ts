@@ -13,6 +13,7 @@ interface AuthUser {
   roles: Role[];
   emailVerified: boolean;
   rolePromptSeen: boolean;
+  activePersona: "organizer" | "user" | null;
 }
 
 interface AuthState {
@@ -24,6 +25,8 @@ interface AuthState {
   hydrate: () => Promise<void>;
   /** Optimistic local update after dismissing the "also host events?" prompt - avoids a round trip before navigating. */
   markRolePromptSeen: () => void;
+  /** Optimistic local update after a successful persona switch (own tab or relayed from another) - avoids waiting on a re-fetch. */
+  setActivePersona: (persona: "organizer" | "user") => void;
 }
 
 function toAuthUser(auth: AuthResponse | UserProfileResponse): AuthUser {
@@ -34,6 +37,7 @@ function toAuthUser(auth: AuthResponse | UserProfileResponse): AuthUser {
     roles: auth.roles,
     emailVerified: auth.emailVerified,
     rolePromptSeen: auth.rolePromptSeen,
+    activePersona: auth.activePersona,
   };
 }
 
@@ -53,6 +57,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   markRolePromptSeen() {
     set((state) => (state.user ? { user: { ...state.user, rolePromptSeen: true } } : state));
+  },
+
+  setActivePersona(persona) {
+    set((state) => (state.user ? { user: { ...state.user, activePersona: persona } } : state));
   },
 
   async hydrate() {
@@ -78,6 +86,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       emailVerified: claims.emailVerified,
       // Not in the JWT claims (kept minimal) - refined below once /auth/me resolves.
       rolePromptSeen: true,
+      activePersona: null,
     };
 
     set({ user: claimUser, isHydrated: true });
