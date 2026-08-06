@@ -24,6 +24,7 @@ import com.grabmyticket.auth.entity.VerificationToken;
 import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
 import com.grabmyticket.auth.exception.EmailNotVerifiedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
+import com.grabmyticket.auth.exception.InvalidRoleOperationException;
 import com.grabmyticket.auth.exception.TooManyRequestsException;
 import com.grabmyticket.auth.exception.UserNotFoundException;
 import com.grabmyticket.auth.repository.RoleRepository;
@@ -193,6 +194,8 @@ public class AuthService {
         // Opting in via this endpoint is itself an answer to the "host events?"
         // prompt - dismiss it either way so it never resurfaces.
         user.setRolePromptSeen(true);
+        // Becoming an organizer is a strong signal they want to land there next time too.
+        user.setActivePersona("organizer");
         user = userRepository.save(user);
 
         return issueTokenPair(user);
@@ -261,6 +264,28 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    /**
+     * Explicit switch between Organizer and Customer view for a dual-role account -
+     * server-side so it's the single source of truth across every device/tab/future
+     * mobile app, not a browser-local preference. "user" is always allowed (everyone
+     * has ROLE_USER); "organizer" requires actually holding that role.
+     */
+    @Transactional
+    public UserProfileResponse updateActivePersona(String currentUserId, String persona) {
+        if (!"organizer".equals(persona) && !"user".equals(persona)) {
+            throw new InvalidRoleOperationException("persona must be 'organizer' or 'user'");
+        }
+
+        User user = requireUser(currentUserId);
+        if ("organizer".equals(persona) && !user.hasRole(RoleName.ROLE_ORGANIZER)) {
+            throw new InvalidRoleOperationException("This account is not an organizer");
+        }
+
+        user.setActivePersona(persona);
+        user = userRepository.save(user);
+        return UserProfileResponse.from(user);
     }
 
     private User requireUser(String currentUserId) {

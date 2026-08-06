@@ -13,6 +13,7 @@ public record UserProfileResponse(
         boolean emailVerified,
         boolean rolePromptSeen,
         boolean hasPassword,
+        String activePersona,
         Set<String> roles
 ) {
     public static UserProfileResponse from(User user) {
@@ -27,6 +28,7 @@ public record UserProfileResponse(
                 user.isEmailVerified(),
                 user.isRolePromptSeen(),
                 user.getPasswordHash() != null,
+                user.getActivePersona(),
                 roleNames
         );
     }

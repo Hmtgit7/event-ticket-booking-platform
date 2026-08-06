@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import com.grabmyticket.auth.dto.ResendVerificationRequest;
 import com.grabmyticket.auth.dto.ResetPasswordRequest;
 import com.grabmyticket.auth.dto.SignupRequest;
 import com.grabmyticket.auth.dto.SignupResponse;
+import com.grabmyticket.auth.dto.UpdatePersonaRequest;
 import com.grabmyticket.auth.dto.UserProfileResponse;
 import com.grabmyticket.auth.dto.VerifyEmailRequest;
 import com.grabmyticket.auth.service.AuthService;
@@ -71,6 +73,14 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
         return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
+    }
+
+    /** Explicit Organizer <-> Customer switch for a dual-role account - see AuthService.updateActivePersona. */
+    @PatchMapping("/me/persona")
+    public ResponseEntity<UserProfileResponse> updatePersona(
+            Authentication authentication, @Valid @RequestBody UpdatePersonaRequest request
+    ) {
+        return ResponseEntity.ok(authService.updateActivePersona(authentication.getName(), request.persona()));
     }
 
     /** Requires a valid access token - anyRequest().authenticated() covers this, not in the permitAll list. */

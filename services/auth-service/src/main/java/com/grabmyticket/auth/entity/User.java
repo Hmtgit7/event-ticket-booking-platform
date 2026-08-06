@@ -73,6 +73,10 @@ public class User {
     @Builder.Default
     private boolean rolePromptSeen = false;
 
+    /** "organizer" | "user" | null (never explicitly chosen). See UpdatePersonaRequest / AuthService.updateActivePersona. */
+    @Column(name = "active_persona", length = 20)
+    private String activePersona;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",

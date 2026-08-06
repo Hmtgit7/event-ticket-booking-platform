@@ -16,6 +16,7 @@ public record AuthResponse(
         String fullName,
         boolean emailVerified,
         boolean rolePromptSeen,
+        String activePersona,
         Set<String> roles
 ) {
     public static AuthResponse bearer(String accessToken, String refreshToken, long expiresIn, User user) {
@@ -33,6 +34,7 @@ public record AuthResponse(
                 user.getFullName(),
                 user.isEmailVerified(),
                 user.isRolePromptSeen(),
+                user.getActivePersona(),
                 roleNames
         );
     }
