@@ -1,29 +1,52 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { EventBrowseCard } from "@/components/user-dashboard/explore/event-browse-card";
-import { PUBLIC_EVENTS } from "@/constants/public-events";
+import { eventService } from "@/services/event.service";
+import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 
 /**
- * Explore Events page — searchable, filterable grid of all available
- * events. Uses the same PUBLIC_EVENTS constant as the marketing page.
+ * Explore Events page — searchable grid of all publicly published events,
+ * for a signed-in user browsing inside the dashboard (same data as the
+ * public marketing /events page, just inside the authenticated shell so
+ * "Book now" can go straight to checkout without leaving the app).
  */
 export function ExploreContainer() {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [events, setEvents] = useState<EventSummaryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return PUBLIC_EVENTS;
-    return PUBLIC_EVENTS.filter((event) =>
-      [event.title, event.category, event.location.city, event.host]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 350);
+    return () => clearTimeout(t);
   }, [query]);
+
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true);
+    eventService
+      .publicEvents({ search: debouncedQuery || undefined, size: 24 })
+      .then((result) => {
+        if (!cancelled) setEvents(result.items);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Couldn't load events. Please try again.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
+
+  const filtered = useMemo(() => events, [events]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,11 +65,23 @@ export function ExploreContainer() {
       </div>
 
       {/* ── Results ── */}
-      {filtered.length === 0 ? (
+      {loading && (
+        <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
+          Loading events…
+        </p>
+      )}
+
+      {error && !loading && (
+        <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-brand">{error}</p>
+      )}
+
+      {!loading && !error && filtered.length === 0 && (
         <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
           No events match &quot;{query}&quot;.
         </p>
-      ) : (
+      )}
+
+      {!loading && !error && filtered.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((event) => (
             <EventBrowseCard key={event.id} event={event} />

@@ -2,12 +2,16 @@
 
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { SavedEventCard } from "@/components/user-dashboard/saved/saved-event-card";
-import { DUMMY_SAVED_EVENTS } from "@/constants/user-dashboard-data";
+import { useSavedEventsStore } from "@/store/saved-events-store";
 
 /**
- * Saved Events (Wishlist) page container.
+ * Saved Events (Wishlist) page container. Reads from the client-side
+ * saved-events store (see store/saved-events-store.ts) - the heart icon
+ * on any event card writes here.
  */
 export function SavedContainer() {
+  const savedEvents = useSavedEventsStore((state) => state.savedEvents);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-2xl border border-line bg-surface p-5">
@@ -17,13 +21,13 @@ export function SavedContainer() {
         </p>
       </div>
 
-      {DUMMY_SAVED_EVENTS.length === 0 ? (
+      {savedEvents.length === 0 ? (
         <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          You haven&apos;t saved any events yet.
+          You haven&apos;t saved any events yet. Tap the heart icon on any event to save it here.
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {DUMMY_SAVED_EVENTS.map((event) => (
+          {savedEvents.map((event) => (
             <SavedEventCard key={event.id} event={event} />
           ))}
         </div>

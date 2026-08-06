@@ -1,42 +1,47 @@
+"use client";
+
 import Link from "next/link";
+import { X } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { SavedEvent } from "@/constants/user-dashboard-data";
+import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
+import { formatEventDate, formatPrice } from "@/lib/events";
+import { useSavedEventsStore } from "@/store/saved-events-store";
 
 interface SavedEventCardProps {
-  event: SavedEvent;
+  event: EventSummaryResponse;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Fashion: "text-brand",
-  Music:   "text-positive",
-  Outdoor: "text-ink-muted",
-};
-
 /**
- * Card for a single saved / wishlisted event. Keeps it minimal —
- * category tag, title, date, city, and a CTA to view the event.
+ * Card for a single saved / wishlisted event. Category tag, title, date,
+ * city, a remove (X) button, and a CTA into the in-dashboard event page.
  */
 export function SavedEventCard({ event }: SavedEventCardProps) {
-  const colorClass = CATEGORY_COLORS[event.category] ?? "text-brand";
+  const removeSaved = useSavedEventsStore((state) => state.removeSaved);
 
   return (
     <article className="flex flex-col justify-between gap-4 rounded-2xl border border-line bg-surface p-5 transition hover:shadow-md">
       <div>
-        <p className={cn("text-xs font-semibold uppercase tracking-wide", colorClass)}>
-          {event.category}
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand">{event.category}</p>
+          <button
+            type="button"
+            onClick={() => removeSaved(event.id)}
+            aria-label={`Remove ${event.title} from saved`}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full text-ink-muted transition hover:bg-surface-hover hover:text-ink"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
         <h3 className="mt-2 text-xl font-black text-ink">{event.title}</h3>
         <p className="mt-1.5 text-sm text-ink-muted">
-          {event.date} · {event.city}
+          {formatEventDate(event.startAt)} · {event.city}
         </p>
-        <p className="mt-1 text-sm font-semibold text-ink">
-          {event.price === "free" ? "Free" : `$${event.price}`}
-        </p>
+        <p className="mt-1 text-sm font-semibold text-ink">{formatPrice(event.fromPrice)}</p>
       </div>
 
       <Link
-        href={`/events/${event.id}`}
+        href={`/user/dashboard/explore/${event.slug}`}
         className={cn(buttonVariants({ size: "lg" }), "w-full justify-center")}
       >
         View event
