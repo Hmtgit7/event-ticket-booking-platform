@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DonutChart } from "@/components/charts/donut-chart";
@@ -47,6 +47,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
   }, [eventId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -115,6 +116,14 @@ export function EventDetail({ eventId }: EventDetailProps) {
 
   return (
     <div className="flex flex-col gap-5">
+      <Link
+        href={NavRoute.Events}
+        className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-ink-muted transition hover:text-ink"
+      >
+        <ArrowLeft className="size-4" />
+        Back to My Events
+      </Link>
+
       {actionError && (
         <p className="rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm text-brand" role="alert">
           {actionError}

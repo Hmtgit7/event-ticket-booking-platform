@@ -1,6 +1,6 @@
 "use client";
 
-import { useUIStore } from "@/stores/ui-store";
+import { useUIStore } from "@/store/ui-store";
 
 /**
  * Thin, purpose-named wrapper around the shared UI store. Components that

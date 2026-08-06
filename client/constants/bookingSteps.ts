@@ -1,4 +1,4 @@
-import { BookingStep } from "@/stores/booking-flow-store";
+import { BookingStep } from "@/store/booking-flow-store";
 
 export const bookingSteps: Array<{
   id: BookingStep;

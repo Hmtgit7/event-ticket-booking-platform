@@ -39,9 +39,28 @@ export function DonutChart({
   const toLength = (percent: number) => (percent / 100) * circumference;
 
   return (
-    <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="-rotate-90" width={size} height={size}>
-        <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--color-line)" strokeWidth={strokeWidth} strokeOpacity={0.4} />
+    <div
+      className={cn(
+        "relative inline-flex items-center justify-center",
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+        width={size}
+        height={size}
+      >
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="var(--color-line)"
+          strokeWidth={strokeWidth}
+          strokeOpacity={0.4}
+        />
         {arcs.map((arc) => (
           <circle
             key={arc.segment.label}
@@ -60,8 +79,12 @@ export function DonutChart({
 
       {(centerLabel || centerValue) && (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          {centerValue && <span className="text-3xl font-bold text-ink">{centerValue}</span>}
-          {centerLabel && <span className="mt-1 text-xs text-ink-muted">{centerLabel}</span>}
+          {centerValue && (
+            <span className="text-3xl font-bold text-ink">{centerValue}</span>
+          )}
+          {centerLabel && (
+            <span className="mt-1 text-xs text-ink-muted">{centerLabel}</span>
+          )}
         </div>
       )}
 
@@ -84,7 +107,10 @@ function PercentCallout({ arc, size }: { arc: DonutArc; size: number }) {
   const y = size / 2 + r * Math.sin(angle);
 
   return (
-    <span className="absolute -translate-x-1/2 -translate-y-1/2 text-xs font-medium text-ink" style={{ left: x, top: y }}>
+    <span
+      className="absolute -translate-x-1/2 -translate-y-1/2 text-xs font-medium text-ink"
+      style={{ left: x, top: y }}
+    >
       {Math.round(arc.percent)}%
     </span>
   );
