@@ -13,6 +13,7 @@ import { useLogout } from "@/modules/auth/hooks/use-logout";
 import { cn } from "@/lib/utils";
 import { SidebarNavItem } from "@/components/dashboard/sidebar/sidebar-nav-item";
 import { SidebarDownloadCard } from "@/components/dashboard/sidebar/sidebar-download-card";
+import { PersonaSwitchButton } from "@/components/dashboard/sidebar/persona-switch-button";
 
 /**
  * User-facing sidebar. Reuses the same nav item and download card
@@ -67,6 +68,10 @@ export function UserDashboardSidebar() {
             </button>
           </div>
         )}
+
+        <div className="border-t border-sidebar-foreground/10 pt-3">
+          <PersonaSwitchButton collapsed={collapsed} />
+        </div>
 
         {/* ── Nav sections ── */}
         <nav className="flex flex-col gap-5">
