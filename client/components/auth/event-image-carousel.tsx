@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CalendarDays, MapPin } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDays, MapPin, Play } from "lucide-react";
 
 import { AuthBrandRow } from "@/components/auth/auth-brand-row";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-const slides = [
+type Slide =
+  | { kind: "image"; title: string; meta: string; location: string; image: string }
+  | { kind: "video"; title: string; meta: string; location: string; video: string; poster: string };
+
+const slides: Slide[] = [
   {
+    kind: "image",
     title: "Arena Nights",
     meta: "Sat, 8:00 PM",
     location: "Downtown Stadium",
@@ -16,6 +21,7 @@ const slides = [
       "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=85",
   },
   {
+    kind: "image",
     title: "Festival Pass",
     meta: "3 day access",
     location: "City Park Grounds",
@@ -23,25 +29,71 @@ const slides = [
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=85",
   },
   {
+    kind: "video",
+    title: "Concert Crowd Live",
+    meta: "General admission",
+    location: "Riverside Arena",
+    video:
+      "https://assets.mixkit.co/videos/preview/mixkit-concert-crowd-jumping-and-cheering-14108-large.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    kind: "image",
+    title: "Open Air Concert",
+    meta: "General admission",
+    location: "Riverside Grounds",
+    image:
+      "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    kind: "image",
+    title: "Music Festival",
+    meta: "Weekend lineup",
+    location: "Main Square Arena",
+    image:
+      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    kind: "image",
     title: "Comedy Showcase",
     meta: "Limited seats",
     location: "Grand Theatre",
     image:
-      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1200&q=85",
+      "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1200&q=85",
+  },
+  {
+    kind: "video",
+    title: "Standup Night",
+    meta: "Special performance",
+    location: "The Laugh Club",
+    video:
+      "https://assets.mixkit.co/videos/preview/mixkit-microphone-on-stage-20833-large.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85",
   },
 ];
 
 export function EventImageCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeSlide = slides[activeIndex];
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % slides.length);
-    }, 4200);
+    }, 4800);
 
     return () => window.clearInterval(timer);
   }, []);
+
+  // Restart video when its slide becomes active
+  useEffect(() => {
+    if (activeSlide.kind === "video" && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [activeIndex, activeSlide.kind]);
 
   return (
     <div className="relative h-full min-h-[420px] overflow-hidden rounded-[28px] border border-line bg-surface-elevated p-5 text-on-elevated shadow-[0_28px_80px_rgba(21,19,15,0.26)]">
@@ -61,14 +113,38 @@ export function EventImageCarousel() {
 
           <article className="relative w-full max-w-[500px] overflow-hidden rounded-[24px] border border-white/10 bg-[#17140f] shadow-2xl">
             <div className="aspect-[1.12/1] overflow-hidden">
-              <Image
-                src={activeSlide.image}
-                alt={`${activeSlide.title} event preview`}
-                fill
-                sizes="(max-width: 768px) 100vw, 500px"
-                className="object-cover transition duration-700"
-              />
+              {activeSlide.kind === "video" ? (
+                <video
+                  ref={videoRef}
+                  key={activeSlide.video}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  poster={activeSlide.poster}
+                  className="h-full w-full object-cover"
+                >
+                  <source src={activeSlide.video} type="video/mp4" />
+                </video>
+              ) : (
+                <Image
+                  src={activeSlide.image}
+                  alt={`${activeSlide.title} event preview`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 500px"
+                  className="object-cover transition duration-700"
+                />
+              )}
             </div>
+
+            {/* Video badge */}
+            {activeSlide.kind === "video" && (
+              <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                <Play className="size-3 fill-white" />
+                Live Preview
+              </div>
+            )}
+
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_34%,rgba(0,0,0,0.72)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 p-5">
               <div className="rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-md">
@@ -112,6 +188,7 @@ export function EventImageCarousel() {
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Show ${slide.title}`}
                 aria-current={activeIndex === index}
+                suppressHydrationWarning
                 className={cn(
                   "h-2.5 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/70",
                   activeIndex === index

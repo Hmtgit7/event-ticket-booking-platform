@@ -22,6 +22,13 @@ export const HERO_MEDIA = [
     src: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=85",
   },
   {
+    title: "Concert Crowd Live",
+    eyebrow: "Feel the energy",
+    meta: "General admission · Riverside Arena",
+    kind: "video",
+    src: "https://assets.mixkit.co/videos/preview/mixkit-concert-crowd-jumping-and-cheering-14108-large.mp4",
+  },
+  {
     title: "Arena Nights",
     eyebrow: "Tonight at 8 PM",
     meta: "Reserved seating · Downtown Stadium",
@@ -29,11 +36,32 @@ export const HERO_MEDIA = [
     src: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1400&q=85",
   },
   {
-    title: "Creator Summit",
-    eyebrow: "Featured video",
-    meta: "Workshops · Talks · Networking",
+    title: "Open Air Concert",
+    eyebrow: "Selling fast",
+    meta: "General admission · Riverside Grounds",
+    kind: "image",
+    src: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1400&q=85",
+  },
+  {
+    title: "Music Festival",
+    eyebrow: "Weekend lineup",
+    meta: "Multi-stage · Main Square Arena",
+    kind: "image",
+    src: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1400&q=85",
+  },
+  {
+    title: "Standup Showcase",
+    eyebrow: "Limited seats",
+    meta: "Comedy Night · Grand Theatre",
+    kind: "image",
+    src: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1400&q=85",
+  },
+  {
+    title: "Comedy Night Out",
+    eyebrow: "Special event",
+    meta: "Live performance · The Laugh Club",
     kind: "video",
-    src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    src: "https://assets.mixkit.co/videos/preview/mixkit-microphone-on-stage-20833-large.mp4",
   },
 ] as const;
 
