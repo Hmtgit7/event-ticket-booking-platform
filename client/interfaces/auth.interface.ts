@@ -45,6 +45,9 @@ export interface ApiErrorResponse {
   status: number;
   error: string;
   message: string;
+  /** Stable machine-readable identifier for cases the frontend branches on
+   *  (e.g. "EMAIL_NOT_VERIFIED") - absent/undefined for everything else. */
+  code?: string;
 }
 
 export interface MessageResponse {
