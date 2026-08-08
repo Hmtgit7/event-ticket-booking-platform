@@ -6,6 +6,8 @@ spring:
   data:
     redis:
       url: ${REDIS_URL}
+      ssl:
+        enabled: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     properties:
