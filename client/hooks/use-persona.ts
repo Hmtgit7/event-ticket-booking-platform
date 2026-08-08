@@ -11,11 +11,22 @@ import type { Persona } from "@/lib/persona";
  * so this is already live-synced with the server truth, no extra
  * subscription needed for same-tab reactivity.
  */
-export function usePersona(): { isDualRole: boolean; activePersona: Persona | null } {
+export function usePersona(): {
+  isDualRole: boolean;
+  activePersona: Persona | null;
+  /** Signed in, holds ROLE_USER, does not hold ROLE_ORGANIZER. Drives the "want to publish events?" sidebar CTA. */
+  isUserOnly: boolean;
+  /** Signed in, holds ROLE_ORGANIZER, does not hold ROLE_USER. Drives the booking gate's "set up customer account" step. */
+  isOrganizerOnly: boolean;
+} {
   const user = useAuthStore((state) => state.user);
-  const isDualRole = !!user && user.roles.includes(Role.Organizer) && user.roles.includes(Role.User);
+  const hasOrganizer = !!user && user.roles.includes(Role.Organizer);
+  const hasUser = !!user && user.roles.includes(Role.User);
+  const isDualRole = hasOrganizer && hasUser;
   return {
     isDualRole,
     activePersona: isDualRole ? (user?.activePersona ?? null) : null,
+    isUserOnly: !!user && hasUser && !hasOrganizer,
+    isOrganizerOnly: !!user && hasOrganizer && !hasUser,
   };
 }
