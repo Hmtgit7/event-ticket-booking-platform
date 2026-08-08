@@ -30,6 +30,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(InsufficientSeatsException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientSeats(InsufficientSeatsException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(InvalidEventStateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidEventState(InvalidEventStateException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
