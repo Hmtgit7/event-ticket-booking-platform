@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import { decodeJwt, isTokenExpired } from "@/lib/jwt";
+import { refreshAccessToken } from "@/lib/refresh-token";
 import { tokenStorage } from "@/lib/token-storage";
 import { authService } from "@/services/auth.service";
 import type { AuthResponse, UserProfileResponse } from "@/interfaces/auth.interface";
@@ -65,25 +66,31 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   async hydrate() {
     const accessToken = tokenStorage.getAccessToken();
-    if (!accessToken) {
-      set({ user: null, isHydrated: true });
-      return;
+    const claims = accessToken ? decodeJwt(accessToken) : null;
+
+    // Access token missing/expired - before giving up, try a silent refresh
+    // using the refresh token cookie (7d TTL). Without this, every user gets
+    // bounced to a logged-out state as soon as the 15-minute access token
+    // expires, even though their session is still valid.
+    let liveAccessToken: string | null = accessToken;
+    let liveClaims = claims;
+    if (!claims || isTokenExpired(claims)) {
+      liveAccessToken = await refreshAccessToken();
+      liveClaims = liveAccessToken ? decodeJwt(liveAccessToken) : null;
     }
 
-    const claims = decodeJwt(accessToken);
-    if (!claims || isTokenExpired(claims)) {
-      // Access token dead, but a refresh token might still be alive - the API
-      // client will silently refresh on the next authenticated request.
+    if (!liveAccessToken || !liveClaims) {
+      tokenStorage.clear();
       set({ user: null, isHydrated: true });
       return;
     }
 
     const claimUser: AuthUser = {
-      id: claims.sub,
-      email: claims.email,
+      id: liveClaims.sub,
+      email: liveClaims.email,
       fullName: "",
-      roles: claims.roles,
-      emailVerified: claims.emailVerified,
+      roles: liveClaims.roles,
+      emailVerified: liveClaims.emailVerified,
       // Not in the JWT claims (kept minimal) - refined below once /auth/me resolves.
       rolePromptSeen: true,
       activePersona: null,
