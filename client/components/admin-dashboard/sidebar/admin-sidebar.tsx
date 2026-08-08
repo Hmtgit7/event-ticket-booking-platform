@@ -72,6 +72,8 @@ export function AdminDashboardSidebar() {
         </div>
       )}
 
+      <div className="mt-6 shrink-0 border-t border-sidebar-foreground/10 pt-3" />
+
       {/* ── Nav sections — scrollable middle zone ── */}
       <nav className="sidebar-scroll mt-4 flex flex-1 flex-col gap-5 overflow-y-auto py-1">
         {ADMIN_NAV_SECTIONS.map((section) => (

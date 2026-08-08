@@ -28,7 +28,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form className="space-y-3.5" noValidate onSubmit={submit}>
+    <form className="space-y-3.5" noValidate onSubmit={submit} suppressHydrationWarning>
       <AuthErrorBanner message={errorMessage} />
 
       <AuthInput
@@ -64,6 +64,7 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={isPending || !hasValues}
+        suppressHydrationWarning
         className={cn(
           "flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold outline-none transition focus-visible:ring-3 disabled:cursor-not-allowed",
           hasValues

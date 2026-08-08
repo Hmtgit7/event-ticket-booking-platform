@@ -17,9 +17,9 @@ export function ResetPasswordForm() {
       <div className="flex flex-col items-center gap-3 text-center">
         <MailWarning className="size-8 text-destructive" aria-hidden="true" />
         <h1 className="text-xl font-semibold text-ink">Invalid reset link</h1>
-        <p className="text-sm text-ink-muted">This link is missing its token. Request a new one below.</p>
-        <Link href="/auth/forgot-password" className="mt-1 text-sm font-semibold text-brand underline-offset-4 hover:underline">
-          Request a new link
+        <p className="text-sm text-ink-muted">This link is missing its token. Go back to login and request a new one.</p>
+        <Link href="/auth/login" className="mt-1 text-sm font-semibold text-brand underline-offset-4 hover:underline">
+          Back to login
         </Link>
       </div>
     );

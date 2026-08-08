@@ -30,6 +30,7 @@ export function ThemeToggle() {
       <button
         type="button"
         aria-label="Toggle theme"
+        suppressHydrationWarning
         className="h-10 w-10 rounded-full border border-line bg-surface"
       />
     );
@@ -44,6 +45,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(nextTheme)}
       aria-label={`Switch to ${nextTheme} theme`}
       title={`Theme: ${theme} (click for ${nextTheme})`}
+      suppressHydrationWarning
       className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:border-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
     >
       {theme === "dark" ? (

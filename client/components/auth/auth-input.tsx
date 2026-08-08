@@ -30,6 +30,11 @@ export function AuthInput({
           id={id}
           aria-invalid={Boolean(error)}
           aria-describedby={errorId}
+          suppressHydrationWarning
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-form-type="other"
           className={cn(
             "h-11 w-full rounded-xl border border-line bg-background px-3.5 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted hover:border-brand/40 focus:border-brand focus:ring-3 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-ink-muted",
             action ? "pr-12" : "",
