@@ -21,6 +21,13 @@ interface BookNowActionProps {
  *  - Signed in, dual-role, in Organizer -> routed through the Organizer dashboard first
  *    persona (or never chosen one yet)     (?switchTo=user&next=<eventPath>); PersonaSwitchGate
  *                                           opens the confirm dialog there, not on this page
+ *  - Signed in, organizer-only          -> same ?switchTo=user&next=<eventPath> route as
+ *    (no Customer role at all)             above. PersonaSwitchGate detects there's no
+ *                                           Customer role yet and provisions one (becomeCustomer)
+ *                                           instead of just flipping personas. Without this
+ *                                           branch these accounts would fall through to the
+ *                                           plain `eventPath` below and hit checkout without
+ *                                           ever holding ROLE_USER.
  *
  * activePersona is server-truth (see auth-service's User.activePersona), synced into
  * the auth store on login/hydrate/switch and kept live across tabs by PersonaSync - so
@@ -28,8 +35,8 @@ interface BookNowActionProps {
  */
 export function BookNowAction({ eventPath, className, disabled, children }: BookNowActionProps) {
   const isSignedIn = useAuthStore((state) => state.user !== null);
-  const { isDualRole, activePersona } = usePersona();
-  const needsSwitchConfirm = isDualRole && activePersona !== "user";
+  const { isDualRole, activePersona, isOrganizerOnly } = usePersona();
+  const needsSwitchConfirm = (isDualRole && activePersona !== "user") || isOrganizerOnly;
 
   const href = !isSignedIn
     ? `/auth/login?redirect=${encodeURIComponent(eventPath)}`

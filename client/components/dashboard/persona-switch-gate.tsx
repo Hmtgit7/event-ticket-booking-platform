@@ -3,25 +3,34 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PersonaTransitionOverlay } from "@/components/ui/persona-transition-overlay";
 import { useAuthStore } from "@/store/auth-store";
 import { authService } from "@/services/auth.service";
 import { personaBroadcast } from "@/lib/persona";
+import { usePersona } from "@/hooks/use-persona";
 
 /**
  * Lives inside the Organizer dashboard shell. When "Book now" is clicked
- * on the public site by a dual-role account currently in Organizer
- * persona, BookNowAction sends them here first (?switchTo=user&next=<event
- * path>) instead of opening a dialog on the public page - the confirm
- * happens in the organizer's own context, and only after confirming (and
- * persisting the switch server-side) do they land on the event.
- * Cancelling just clears the query params and leaves them on their
- * dashboard, nothing navigates.
+ * on the public site, BookNowAction sends the account here first
+ * (?switchTo=user&next=<event path>) instead of opening a dialog on the
+ * public page - the confirm happens in the organizer's own context, and
+ * only after confirming do they land on the event. Cancelling just clears
+ * the query params and leaves them on their dashboard, nothing navigates.
+ *
+ * Two accounts land here, and they need different handling:
+ *  - Dual-role, currently in Organizer persona: just needs a persona
+ *    switch (updatePersona) - the Customer role already exists.
+ *  - Organizer-only, no Customer role yet: needs that role provisioned
+ *    first (becomeCustomer), which is heavier than a plain persona flip -
+ *    hence the copy difference and the blocking overlay while it runs.
  */
 function PersonaSwitchGateInner() {
   const router = useRouter();
   const pathname = usePathname() ?? "/dashboard";
   const searchParams = useSearchParams();
+  const setSession = useAuthStore((state) => state.setSession);
   const setActivePersona = useAuthStore((state) => state.setActivePersona);
+  const { isOrganizerOnly } = usePersona();
   const [open, setOpen] = useState(false);
   const [nextPath, setNextPath] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
@@ -40,12 +49,20 @@ function PersonaSwitchGateInner() {
 
   async function handleConfirm() {
     if (!nextPath) return;
+    setOpen(false);
     setSwitching(true);
     try {
-      await authService.updatePersona("user");
-      setActivePersona("user");
-      personaBroadcast.announce("user");
-      setOpen(false);
+      if (isOrganizerOnly) {
+        // No Customer role yet - provision it, then land already-active as "user".
+        const auth = await authService.becomeCustomer();
+        setSession(auth);
+        personaBroadcast.announce("user");
+      } else {
+        // Dual-role already - just flip which persona is active.
+        await authService.updatePersona("user");
+        setActivePersona("user");
+        personaBroadcast.announce("user");
+      }
       router.push(nextPath);
     } catch {
       setSwitching(false);
@@ -58,14 +75,24 @@ function PersonaSwitchGateInner() {
   }
 
   return (
-    <ConfirmDialog
-      open={open}
-      title="Switch to Customer view?"
-      description="You're signed in as an organizer. Booking this ticket takes you to your Customer dashboard. You can switch back to Organizer anytime from the topbar."
-      confirmLabel={switching ? "Switching\u2026" : "Sure, switch & continue"}
-      onConfirm={handleConfirm}
-      onCancel={handleCancel}
-    />
+    <>
+      <ConfirmDialog
+        open={open}
+        title={isOrganizerOnly ? "Set up your Customer account?" : "Switch to Customer view?"}
+        description={
+          isOrganizerOnly
+            ? "You're signed in as an organizer only. Booking a ticket needs a Customer account too - we'll set one up alongside your Organizer account, then take you straight to checkout."
+            : "You're signed in as an organizer. Booking this ticket takes you to your Customer dashboard. You can switch back to Organizer anytime from the topbar."
+        }
+        confirmLabel={isOrganizerOnly ? "Set up & continue" : "Sure, switch & continue"}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+      <PersonaTransitionOverlay
+        open={switching}
+        message={isOrganizerOnly ? "Setting up your Customer account\u2026" : "Switching to Customer\u2026"}
+      />
+    </>
   );
 }
 
