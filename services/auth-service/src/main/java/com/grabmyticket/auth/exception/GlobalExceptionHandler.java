@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailNotVerifiedException.class)
     public ResponseEntity<ErrorResponse> handleEmailNotVerified(EmailNotVerifiedException ex) {
-        return build(HttpStatus.FORBIDDEN, ex.getMessage());
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), "EMAIL_NOT_VERIFIED");
     }
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -107,7 +107,11 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message) {
-        ErrorResponse body = new ErrorResponse(Instant.now(), status.value(), status.getReasonPhrase(), message);
+        return build(status, message, null);
+    }
+
+    private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, String code) {
+        ErrorResponse body = new ErrorResponse(Instant.now(), status.value(), status.getReasonPhrase(), message, code);
         return ResponseEntity.status(status).body(body);
     }
 }
