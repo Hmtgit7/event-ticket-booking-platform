@@ -4,7 +4,7 @@ import { Role } from "@/enums/role.enum";
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth anyOfRoles={[Role.Admin]}>
+    <RequireAuth anyOfRoles={[Role.Admin]} requireVerifiedEmail={false}>
       <AdminDashboardShell>{children}</AdminDashboardShell>
     </RequireAuth>
   );

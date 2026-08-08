@@ -15,6 +15,13 @@ interface RequireAuthProps {
    * not authorized for this section).
    */
   anyOfRoles?: Role[];
+  /**
+   * Set false for sections that don't gate on email verification (e.g. the
+   * admin dashboard - admin accounts are created via bootstrap/invite, not
+   * the public signup+verify-email flow). Mirrors proxy.ts's own
+   * `requireVerifiedEmail` exemption for /admin. Defaults to true.
+   */
+  requireVerifiedEmail?: boolean;
 }
 
 /**
@@ -22,13 +29,18 @@ interface RequireAuthProps {
  * to hydrate (checks the access-token cookie) before deciding - redirecting
  * before hydration would bounce a genuinely logged-in user on every refresh.
  */
-export function RequireAuth({ children, anyOfRoles }: RequireAuthProps) {
+export function RequireAuth({ children, anyOfRoles, requireVerifiedEmail = true }: RequireAuthProps) {
   const router = useRouter();
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const hasRequiredRole = !anyOfRoles || (user ? anyOfRoles.some((role) => user.roles.includes(role)) : false);
+  // A signed-up-but-unverified account still gets a real session (see
+  // AuthService.signup issuing tokens immediately) - middleware already
+  // blocks a fresh page load, but this covers client-side/SPA navigations
+  // within an already-hydrated tab so the dashboard never renders for them.
+  const isEmailVerified = !requireVerifiedEmail || (user ? user.emailVerified : false);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -37,12 +49,21 @@ export function RequireAuth({ children, anyOfRoles }: RequireAuthProps) {
       router.replace(`/auth/login?redirect=${encodeURIComponent(pathname ?? "/")}`);
       return;
     }
+    if (!isEmailVerified) {
+      // Not /auth/verify-email - that route is token-only now (see
+      // proxy.ts's guardVerifyEmailPage). "Check your inbox" only ever shows
+      // as an in-page state right after signup; anywhere else, an unverified
+      // session goes back to login, where AuthForm's dedicated "please verify
+      // your account" screen (with its own resend button) takes over.
+      router.replace("/auth/login");
+      return;
+    }
     if (!hasRequiredRole) {
       router.replace(resolvePostLoginRedirect(user.roles));
     }
-  }, [isHydrated, user, hasRequiredRole, pathname, router]);
+  }, [isHydrated, user, isEmailVerified, hasRequiredRole, pathname, router]);
 
-  if (!isHydrated || !user || !hasRequiredRole) {
+  if (!isHydrated || !user || !isEmailVerified || !hasRequiredRole) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-sm text-ink-muted">
         Checking your session…
