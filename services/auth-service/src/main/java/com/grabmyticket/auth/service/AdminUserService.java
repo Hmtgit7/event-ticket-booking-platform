@@ -30,7 +30,8 @@ public class AdminUserService {
     public void updateUserRole(UUID actingAdminId, UUID targetUserId, RoleName role, RoleAction action) {
         if (role == RoleName.ROLE_USER) {
             throw new InvalidRoleOperationException(
-                    "ROLE_USER cannot be granted or revoked manually - it's assigned automatically at signup");
+                    "ROLE_USER cannot be granted or revoked by an admin - the account holder adds or "
+                            + "removes it themselves via the self-service persona flow (POST /auth/roles/user)");
         }
         if (action == RoleAction.REVOKE && role == RoleName.ROLE_ADMIN && targetUserId.equals(actingAdminId)) {
             throw new InvalidRoleOperationException("You cannot revoke your own admin access");
