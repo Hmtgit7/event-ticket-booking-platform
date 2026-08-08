@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth-store";
@@ -7,7 +6,6 @@ import { getApiErrorMessage } from "@/modules/auth/utils/get-api-error-message";
 import type { SignupPayload } from "@/interfaces/auth.interface";
 
 export function useSignup() {
-  const router = useRouter();
   const setSession = useAuthStore((state) => state.setSession);
 
   const mutation = useMutation({
@@ -15,10 +13,13 @@ export function useSignup() {
     onSuccess: (result) => {
       if (result.accountCreated && result.auth) {
         setSession(result.auth);
-        // Always send new signups to verify-email, regardless of role - even
-        // organizers can't do anything useful until they verify (see auth-service
-        // Phase 3/6: organizer role is inert pre-verification).
-        router.push("/auth/verify-email");
+        // Deliberately NOT navigating anywhere - "check your inbox" is an
+        // in-page state on the signup form itself (see SignupForm), not a
+        // separate /auth/verify-email route. A route backed by a lingering
+        // authenticated-but-unverified session would keep resurrecting itself
+        // on every later visit/refresh/browser reopen; an in-memory view
+        // naturally disappears the moment the tab is closed or refreshed,
+        // which is exactly the desired behavior.
       }
       // else: a Google-only account already existed for this email - no new
       // account was created, a link-password email was sent instead. Stay on
@@ -32,5 +33,8 @@ export function useSignup() {
     isPending: mutation.isPending,
     errorMessage: mutation.error ? getApiErrorMessage(mutation.error) : null,
     linkPendingMessage: mutation.data && !mutation.data.accountCreated ? mutation.data.message : null,
+    // True right after a brand-new account is created - drives SignupForm's
+    // in-page "check your inbox" state.
+    isAwaitingVerification: Boolean(mutation.data?.accountCreated),
   };
 }

@@ -34,7 +34,7 @@ export const authService = {
   me: () => authApiClient.get<UserProfileResponse>("/auth/me"),
 
   verifyEmail: (token: string) =>
-    authApiClient.post<MessageResponse>("/auth/verify-email", { token }, { skipAuth: true }),
+    authApiClient.post<AuthResponse>("/auth/verify-email", { token }, { skipAuth: true }),
 
   resendVerification: (email: string) =>
     authApiClient.post<MessageResponse>(
@@ -44,6 +44,11 @@ export const authService = {
     ),
 
   becomeOrganizer: () => authApiClient.post<AuthResponse>("/auth/roles/organizer"),
+
+  /** Symmetric self-service ORGANIZER -> +CUSTOMER upgrade. Backend must add ROLE_USER,
+   *  leave ROLE_ORGANIZER intact, and return a fresh AuthResponse with roles + a
+   *  refreshed token pair (same contract as /auth/roles/organizer). */
+  becomeCustomer: () => authApiClient.post<AuthResponse>("/auth/roles/user"),
 
   /** Explicit Organizer <-> Customer switch, persisted server-side for this account. */
   updatePersona: (persona: "organizer" | "user") =>

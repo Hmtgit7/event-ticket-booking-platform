@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth-store";
 import { resolvePostLoginRedirect, sanitizeRedirectParam } from "@/modules/auth/utils/post-login-redirect";
-import { getApiErrorMessage } from "@/modules/auth/utils/get-api-error-message";
+import { getApiErrorMessage, isEmailNotVerifiedError } from "@/modules/auth/utils/get-api-error-message";
 import type { LoginPayload } from "@/interfaces/auth.interface";
 
 export function useLogin() {
@@ -35,9 +35,20 @@ export function useLogin() {
     },
   });
 
+  // Correct password, correct email, account just isn't verified yet - the login
+  // form renders a dedicated "please verify your account" screen for this case
+  // instead of a generic error banner (see login-form.tsx).
+  const isUnverified = isEmailNotVerifiedError(mutation.error);
+
   return {
     login: mutation.mutate,
     isPending: mutation.isPending,
-    errorMessage: mutation.error ? getApiErrorMessage(mutation.error) : null,
+    isUnverified,
+    // Clears the mutation's error state - lets the unverified-account screen's
+    // "Back to login" button return to a clean form instead of a full reload.
+    reset: mutation.reset,
+    // Don't surface the raw error message when it's the unverified case - the
+    // dedicated screen has its own copy, no need for a redundant banner too.
+    errorMessage: mutation.error && !isUnverified ? getApiErrorMessage(mutation.error) : null,
   };
 }
