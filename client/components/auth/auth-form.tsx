@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
@@ -8,16 +7,22 @@ import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthInput } from "@/components/auth/auth-input";
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { UnverifiedAccountNotice } from "@/components/auth/unverified-account-notice";
 import { useLogin } from "@/modules/auth/hooks/use-login";
 import { validateCredentials, type CredentialErrors } from "@/modules/auth/utils/validate-auth";
 import { cn } from "@/lib/utils";
 
 export function AuthForm() {
-  const { login, isPending, errorMessage } = useLogin();
+  const { login, isPending, isUnverified, reset, errorMessage } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<CredentialErrors>({});
+  // "forgot" is a view-toggle, never a route - there is no /auth/forgot-password
+  // page to paste a URL into (matches Workday: it only exists as a state inside
+  // the login screen).
+  const [mode, setMode] = useState<"login" | "forgot">("login");
 
   const hasValues = useMemo(
     () => email.trim().length > 0 && password.length > 0,
@@ -34,6 +39,18 @@ export function AuthForm() {
     }
 
     login({ email: email.trim().toLowerCase(), password });
+  }
+
+  if (mode === "forgot") {
+    return <ForgotPasswordForm onBack={() => setMode("login")} />;
+  }
+
+  // Correct credentials, just not verified yet - dedicated screen with an
+  // explicit resend button, not a generic error banner on the login form.
+  if (isUnverified) {
+    return (
+      <UnverifiedAccountNotice email={email.trim().toLowerCase()} onBack={reset} />
+    );
   }
 
   return (
@@ -92,12 +109,13 @@ export function AuthForm() {
       </div>
 
       <div className="flex justify-end text-sm font-medium text-ink-muted">
-        <Link
-          href="/auth/forgot-password"
+        <button
+          type="button"
+          onClick={() => setMode("forgot")}
           className="text-brand underline-offset-4 outline-none transition hover:underline focus-visible:rounded focus-visible:ring-3 focus-visible:ring-brand/20"
         >
           Forgot Password?
-        </Link>
+        </button>
       </div>
 
       <button

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { LoaderCircle, MailCheck } from "lucide-react";
 
@@ -9,7 +8,13 @@ import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { useForgotPassword } from "@/modules/auth/hooks/use-forgot-password";
 import { cn } from "@/lib/utils";
 
-export function ForgotPasswordForm() {
+/**
+ * Rendered as a view-toggle inside AuthForm, not a standalone route - there is no
+ * /auth/forgot-password page. This intentionally mirrors how consumer auth flows
+ * like Workday's handle "forgot password": it only exists as a state within the
+ * login screen, reachable by clicking through, never by pasting a URL directly.
+ */
+export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   const { submit, isPending, isSuccess, errorMessage } = useForgotPassword();
   const [email, setEmail] = useState("");
 
@@ -22,9 +27,13 @@ export function ForgotPasswordForm() {
           If an account exists for <span className="font-medium text-ink">{email}</span>, we&apos;ve sent a link to
           reset your password.
         </p>
-        <Link href="/auth/login" className="mt-1 text-sm font-semibold text-brand underline-offset-4 hover:underline">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-1 text-sm font-semibold text-brand underline-offset-4 hover:underline"
+        >
           Back to login
-        </Link>
+        </button>
       </div>
     );
   }
@@ -62,6 +71,13 @@ export function ForgotPasswordForm() {
       >
         {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
         Send reset link
+      </button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="block w-full text-center text-sm font-medium text-ink-muted underline-offset-4 outline-none transition hover:text-ink hover:underline"
+      >
+        Back to login
       </button>
     </form>
   );
