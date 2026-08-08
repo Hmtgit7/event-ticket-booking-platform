@@ -89,6 +89,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.becomeOrganizer(authentication.getName()));
     }
 
+    /** Symmetric to becomeOrganizer above - self-service ORGANIZER -> +CUSTOMER upgrade, no gate. */
+    @PostMapping("/roles/user")
+    public ResponseEntity<AuthResponse> becomeCustomer(Authentication authentication) {
+        return ResponseEntity.ok(authService.becomeCustomer(authentication.getName()));
+    }
+
     /** Declining the "also host events?" prompt - stops it resurfacing on future Google logins. */
     @PostMapping("/role-prompt/dismiss")
     public ResponseEntity<MessageResponse> dismissRolePrompt(Authentication authentication) {
@@ -97,9 +103,8 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<MessageResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        verificationTokenService.verifyEmail(request.token());
-        return ResponseEntity.ok(new MessageResponse("Email verified successfully"));
+    public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return ResponseEntity.ok(authService.verifyEmail(request.token()));
     }
 
     @PostMapping("/resend-verification")

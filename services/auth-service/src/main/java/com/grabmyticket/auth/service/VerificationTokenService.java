@@ -59,14 +59,45 @@ public class VerificationTokenService {
         issue(user, TokenPurpose.RESET_PASSWORD);
     }
 
+    /**
+     * Validates and consumes a VERIFY_EMAIL token, marking the account verified if
+     * it isn't already, and returns the user so the caller (AuthService) can issue
+     * a fresh token pair - clicking the link auto-authenticates, no separate login
+     * step required, even on a device that never had a session (see AuthService.verifyEmail).
+     */
     @Transactional
-    public void verifyEmail(String rawToken) {
-        VerificationToken token = consume(rawToken, TokenPurpose.VERIFY_EMAIL);
+    public User verifyEmail(String rawToken) {
+        VerificationToken token = verificationTokenRepository.findByToken(rawToken)
+                .orElseThrow(InvalidOrExpiredTokenException::new);
+
+        if (token.getPurpose() != TokenPurpose.VERIFY_EMAIL || token.isExpired()) {
+            throw new InvalidOrExpiredTokenException();
+        }
+
         User user = token.getUser();
+
+        if (token.isUsed()) {
+            // Already consumed. If the account is already verified, this is a
+            // replayed click - email clients pre-scanning links, a double-click,
+            // or re-opening the same email - not a real security concern, so
+            // treat it as an idempotent success rather than an error. A used
+            // token whose user still isn't verified was consumed by something
+            // else entirely and stays a genuine error.
+            if (user.isEmailVerified()) {
+                return user;
+            }
+            throw new InvalidOrExpiredTokenException();
+        }
+
+        token.setUsedAt(Instant.now());
+        verificationTokenRepository.save(token);
+
         if (!user.isEmailVerified()) {
             user.setEmailVerified(true);
-            userRepository.save(user);
+            user = userRepository.save(user);
         }
+
+        return user;
     }
 
     /**

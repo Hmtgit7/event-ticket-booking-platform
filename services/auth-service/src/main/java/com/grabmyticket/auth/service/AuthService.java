@@ -25,7 +25,6 @@ import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
 import com.grabmyticket.auth.exception.EmailNotVerifiedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
 import com.grabmyticket.auth.exception.InvalidRoleOperationException;
-import com.grabmyticket.auth.exception.TooManyRequestsException;
 import com.grabmyticket.auth.exception.UserNotFoundException;
 import com.grabmyticket.auth.repository.RoleRepository;
 import com.grabmyticket.auth.repository.UserRepository;
@@ -90,12 +89,12 @@ public class AuthService {
         }
 
         Set<Role> roles = new HashSet<>();
-        roles.add(requireRole(RoleName.ROLE_USER));
-        if (Boolean.TRUE.equals(request.wantsToOrganize())) {
-            // Granted now per our "instant approve" decision, but functionally inert
-            // until email_verified = true - enforced in Phase 3/6, not here.
-            roles.add(requireRole(RoleName.ROLE_ORGANIZER));
-        }
+        boolean wantsToOrganize = Boolean.TRUE.equals(request.wantsToOrganize());
+        // Exclusive at signup, not additive - an organizer signup does NOT also get
+        // ROLE_USER for free. Every account starts with exactly one role; the other
+        // is only ever added later, deliberately, via the self-service becomeOrganizer
+        // / becomeCustomer confirm-modal flow (see AuthController /auth/roles/*).
+        roles.add(requireRole(wantsToOrganize ? RoleName.ROLE_ORGANIZER : RoleName.ROLE_USER));
 
         User user = User.builder()
                 .email(normalizedEmail)
@@ -107,6 +106,7 @@ public class AuthService {
                 // show the post-Google-login prompt for this account.
                 .rolePromptSeen(true)
                 .roles(roles)
+                .activePersona(wantsToOrganize ? "organizer" : "user")
                 .build();
 
         user = userRepository.save(user);
@@ -130,16 +130,10 @@ public class AuthService {
         }
 
         if (!user.isEmailVerified()) {
-            // Don't let them in, but don't leave them stuck either - re-send a fresh
-            // link on every attempt. If they're inside the resend cooldown window we
-            // just swallow that - the earlier email is still valid, and the person
-            // logging in should only ever see "please verify your email", never a
-            // rate-limit error for something they didn't explicitly request.
-            try {
-                verificationTokenService.issueAndSendVerifyEmail(user);
-            } catch (TooManyRequestsException ignored) {
-                // A link was already sent very recently - nothing more to do here.
-            }
+            // Don't auto-resend here - the frontend shows a dedicated "please verify
+            // your account" screen with an explicit resend button instead. Firing an
+            // email on every failed login attempt is a spam/rate-limit risk for
+            // something the user didn't explicitly ask for.
             throw new EmailNotVerifiedException();
         }
 
@@ -201,6 +195,27 @@ public class AuthService {
         return issueTokenPair(user);
     }
 
+    /**
+     * Self-service ORGANIZER -> ORGANIZER+USER upgrade - symmetric to becomeOrganizer above.
+     * No email-verified gate here: buying a ticket doesn't carry the same trust bar as
+     * hosting events, and this is typically confirmed mid-checkout (see PersonaSwitchGate
+     * on the client) where blocking on verification would just dead-end the purchase.
+     */
+    @Transactional
+    public AuthResponse becomeCustomer(String currentUserId) {
+        User user = requireUser(currentUserId);
+
+        if (!user.hasRole(RoleName.ROLE_USER)) {
+            user.getRoles().add(requireRole(RoleName.ROLE_USER));
+        }
+        // Confirming this modal is itself a strong signal they want to land as a
+        // customer next time too - same convention as becomeOrganizer above.
+        user.setActivePersona("user");
+        user = userRepository.save(user);
+
+        return issueTokenPair(user);
+    }
+
     /** Called when the user declines the "also host events?" prompt after Google sign-in - never ask again. */
     @Transactional
     public void dismissRolePrompt(String currentUserId) {
@@ -231,16 +246,27 @@ public class AuthService {
                 .ifPresent(verificationTokenService::issueAndSendPasswordReset);
     }
 
+    /**
+     * Clicking the emailed link both verifies AND authenticates - no separate login
+     * step afterwards, on whatever device the link was clicked from (see the
+     * Google-OAuth parity discussion: an inbox click is an equally strong ownership
+     * proof as Google's own verification).
+     */
+    @Transactional
+    public AuthResponse verifyEmail(String rawToken) {
+        User user = verificationTokenService.verifyEmail(rawToken);
+        return issueTokenPair(user);
+    }
+
     @Transactional
     public AuthResponse resetPassword(String rawToken, String newPassword) {
         VerificationToken token = verificationTokenService.consume(rawToken, TokenPurpose.RESET_PASSWORD);
         User user = token.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-        if (!user.isEmailVerified()) {
-            // Clicking an emailed link proves ownership just as well as the
-            // normal verify-email flow does.
-            user.setEmailVerified(true);
-        }
+        // Deliberately does NOT touch emailVerified - resetting a password is a
+        // separate proof from verifying an account, kept as two independent gates.
+        // An unverified account that resets its password successfully still hits
+        // the "please verify your account" screen on its next login.
         user = userRepository.save(user);
         return issueTokenPair(user);
     }
@@ -269,8 +295,9 @@ public class AuthService {
     /**
      * Explicit switch between Organizer and Customer view for a dual-role account -
      * server-side so it's the single source of truth across every device/tab/future
-     * mobile app, not a browser-local preference. "user" is always allowed (everyone
-     * has ROLE_USER); "organizer" requires actually holding that role.
+     * mobile app, not a browser-local preference. Both personas now require actually
+     * holding the matching role - ROLE_USER is no longer guaranteed on every account
+     * (see AuthService.signup), so "user" needs the same guard "organizer" already had.
      */
     @Transactional
     public UserProfileResponse updateActivePersona(String currentUserId, String persona) {
@@ -281,6 +308,9 @@ public class AuthService {
         User user = requireUser(currentUserId);
         if ("organizer".equals(persona) && !user.hasRole(RoleName.ROLE_ORGANIZER)) {
             throw new InvalidRoleOperationException("This account is not an organizer");
+        }
+        if ("user".equals(persona) && !user.hasRole(RoleName.ROLE_USER)) {
+            throw new InvalidRoleOperationException("This account is not a customer");
         }
 
         user.setActivePersona(persona);
