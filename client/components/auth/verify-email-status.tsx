@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, LoaderCircle, MailWarning } from "lucide-react";
 
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
@@ -9,13 +9,26 @@ import { useVerifyEmail } from "@/modules/auth/hooks/use-verify-email";
 import { useResendVerification } from "@/modules/auth/hooks/use-resend-verification";
 
 export function VerifyEmailStatus() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams?.get("token");
 
-  if (token) {
-    return <TokenVerification token={token} />;
+  useEffect(() => {
+    // Belt-and-suspenders only - proxy.ts's guardVerifyEmailPage already
+    // redirects any token-less visit to /auth/login before this component
+    // ever mounts. "Check your inbox" lives on the signup form itself now
+    // (see SignupForm/AwaitingVerification), not here, so a token-less render
+    // of this page should never legitimately happen.
+    if (!token) {
+      router.replace("/auth/login");
+    }
+  }, [token, router]);
+
+  if (!token) {
+    return null;
   }
-  return <AwaitingVerification />;
+
+  return <TokenVerification token={token} />;
 }
 
 function TokenVerification({ token }: { token: string }) {
@@ -35,9 +48,7 @@ function TokenVerification({ token }: { token: string }) {
       <StatusCard
         icon={<CheckCircle2 className="size-8 text-emerald-500" />}
         title="Email verified"
-        description="You can now log in and use all of your account's features."
-        ctaHref="/auth/login"
-        ctaLabel="Go to login"
+        description="Taking you to your dashboard…"
       />
     );
   }
@@ -55,9 +66,9 @@ function TokenVerification({ token }: { token: string }) {
   return null;
 }
 
-function AwaitingVerification({ compact = false }: { compact?: boolean }) {
+export function AwaitingVerification({ compact = false, defaultEmail = "" }: { compact?: boolean; defaultEmail?: string }) {
   const { resend, isPending, isSuccess, errorMessage } = useResendVerification();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail);
 
   return (
     <div className={compact ? "mt-4" : ""}>

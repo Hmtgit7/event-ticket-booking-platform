@@ -8,6 +8,7 @@ import { AuthDivider } from "@/components/auth/auth-divider";
 import { AuthInput } from "@/components/auth/auth-input";
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { AuthSuccessBanner } from "@/components/auth/auth-success-banner";
+import { AwaitingVerification } from "@/components/auth/verify-email-status";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { InfoTooltip } from "@/components/auth/info-tooltip";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -16,7 +17,7 @@ import { validateSignup, type SignupErrors } from "@/modules/auth/utils/validate
 import { cn } from "@/lib/utils";
 
 export function SignupForm() {
-  const { signup, isPending, errorMessage, linkPendingMessage } = useSignup();
+  const { signup, isPending, errorMessage, linkPendingMessage, isAwaitingVerification } = useSignup();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,6 +51,10 @@ export function SignupForm() {
       password,
       wantsToOrganize,
     });
+  }
+
+  if (isAwaitingVerification) {
+    return <AwaitingVerification defaultEmail={email.trim().toLowerCase()} />;
   }
 
   return (
@@ -138,7 +143,7 @@ export function SignupForm() {
           <span className="text-sm font-medium leading-5 text-ink-muted">
             <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
               Also host events as an organizer
-              <InfoTooltip description="Publish events and manage bookings from your dashboard, once your email is verified. You can still browse and attend events as usual - this doesn't replace that." />
+              <InfoTooltip description="Publish events and manage bookings from your dashboard, once your email is verified. You can add a Customer account later too, whenever you want to book a ticket yourself." />
             </span>
           </span>
           <ToggleSwitch
