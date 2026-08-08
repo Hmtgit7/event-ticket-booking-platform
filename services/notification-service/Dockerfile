@@ -1,5 +1,8 @@
-# Build context: repo root
-# docker build -f services/notification-service/Dockerfile -t notification-service .
+# ─────────────────────────────────────────────────────────────────────────────
+# Build context: REPO ROOT  (set "Docker Context Directory" to "." on Render)
+# Render > Service Settings > Build & Deploy > Docker Context Directory = .
+# Dockerfile Path = services/notification-service/Dockerfile
+# ─────────────────────────────────────────────────────────────────────────────
 
 # ── Base ──────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS base
@@ -9,9 +12,13 @@ WORKDIR /app
 # ── Build ─────────────────────────────────────────────────────────────────────
 FROM base AS build
 
-COPY . .
+# Copy repo root files first (lockfile lives here)
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-# Patch root prepare script — husky needs .git which doesn't exist in Docker
+# Copy only the service source (keeps context transfer small)
+COPY services/notification-service ./services/notification-service
+
+# Patch root prepare script — husky fails without .git in Docker
 RUN node -e "\
   const f='package.json', p=JSON.parse(require('fs').readFileSync(f));\
   p.scripts.prepare='echo skip';\
@@ -26,18 +33,16 @@ RUN pnpm --filter notification-service exec prisma generate
 # Build NestJS
 RUN pnpm --filter notification-service run build
 
-# pnpm deploy: creates isolated /prod/app with production deps + flat node_modules
+# pnpm deploy: isolated /prod/app with production deps only
 RUN pnpm deploy --filter notification-service --prod --legacy /prod/app
 
-# Copy compiled dist and prisma schema into the deploy folder
+# Copy compiled dist + prisma into the deploy folder
 RUN cp -r services/notification-service/dist /prod/app/dist
 RUN cp -r services/notification-service/prisma /prod/app/prisma
 RUN cp    services/notification-service/prisma.config.ts /prod/app/prisma.config.ts
 
-# Run prisma generate INSIDE /prod/app using the prisma CLI from the build stage
-# This generates .prisma/client next to @prisma/client in the deploy's node_modules
-# We temporarily rename prisma.config.ts so prisma doesn't try to load it
-# (prisma/config module is not in prod deps)
+# Re-run prisma generate inside /prod/app so .prisma/client is populated
+# Temporarily hide prisma.config.ts (it imports prisma/config which is a devDep)
 RUN cd /prod/app && \
     mv prisma.config.ts prisma.config.ts.bak && \
     node /app/node_modules/.pnpm/prisma@*/node_modules/prisma/build/index.js generate \
