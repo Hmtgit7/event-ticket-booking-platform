@@ -30,6 +30,26 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(TicketTypeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTicketTypeNotFound(TicketTypeNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(SeatsUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleSeatsUnavailable(SeatsUnavailableException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(EventNotBookableException.class)
+    public ResponseEntity<ErrorResponse> handleEventNotBookable(EventNotBookableException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(EventServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleEventServiceUnavailable(EventServiceUnavailableException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()

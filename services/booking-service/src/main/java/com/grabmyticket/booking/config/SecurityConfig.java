@@ -46,7 +46,6 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/bookings/public/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
