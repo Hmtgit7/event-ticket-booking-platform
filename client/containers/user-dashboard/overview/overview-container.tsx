@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { StatCard } from "@/components/user-dashboard/widgets/stat-card";
 import { NextTicketCard } from "@/components/user-dashboard/widgets/next-ticket-card";
 import { NotificationList } from "@/components/user-dashboard/widgets/notification-list";
-import { DUMMY_ORDERS } from "@/constants/user-dashboard-data";
+import { bookingService } from "@/services/booking.service";
+import type { BookingResponse } from "@/interfaces/booking-api.interface";
 
 const STATS = [
   { label: "Upcoming tickets", value: "3",   meta: "Next check-in in 12 days",    metaVariant: "positive" as const },
@@ -14,10 +16,28 @@ const STATS = [
 
 /**
  * Overview page container — summary stats, the next upcoming ticket hero,
- * and the attention-needed notifications panel.
+ * and the attention-needed notifications panel. The stats row above is
+ * still placeholder data (no aggregate endpoints exist yet); the hero card
+ * is real, backed by booking-service.
  */
 export function OverviewContainer() {
-  const nextOrder = DUMMY_ORDERS[0];
+  const [latestBooking, setLatestBooking] = useState<BookingResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    bookingService
+      .myBookings(0, 1)
+      .then((result) => {
+        if (!cancelled) setLatestBooking(result.items[0] ?? null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +56,18 @@ export function OverviewContainer() {
 
       {/* ── Hero + notifications ── */}
       <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
-        <NextTicketCard order={nextOrder} />
+        {loading ? (
+          <div className="flex h-72 items-center justify-center rounded-2xl border border-line bg-surface text-sm text-ink-muted">
+            Loading your tickets…
+          </div>
+        ) : latestBooking ? (
+          <NextTicketCard order={latestBooking} />
+        ) : (
+          <div className="flex h-72 flex-col items-center justify-center gap-1 rounded-2xl border border-line bg-surface text-center">
+            <p className="text-sm font-semibold text-ink">No bookings yet</p>
+            <p className="text-sm text-ink-muted">Explore events to get your first ticket.</p>
+          </div>
+        )}
         <NotificationList />
       </div>
 
