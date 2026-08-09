@@ -14,7 +14,7 @@ COPY src ./src
 RUN CI=true pnpm install --frozen-lockfile=false
 RUN pnpm exec prisma generate
 RUN pnpm run build
-RUN pnpm prune --prod
+RUN pnpm prune --prod --ignore-scripts
 
 FROM node:22-alpine AS production
 
