@@ -58,6 +58,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                // email isn't part of the auth decision, just carried through for
+                // downstream use (e.g. the booking.confirmed Kafka payload) - details
+                // is the right slot for "extra context about who", not "who" itself.
+                authentication.setDetails(claims.get("email", String.class));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (JwtException | IllegalArgumentException ex) {
                 SecurityContextHolder.clearContext();

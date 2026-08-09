@@ -6,10 +6,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 import com.grabmyticket.booking.client.EventServiceProperties;
 import com.grabmyticket.booking.client.InternalApiKeyProperties;
+import com.grabmyticket.booking.config.BookingProperties;
 import com.grabmyticket.booking.security.JwtProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({JwtProperties.class, InternalApiKeyProperties.class, EventServiceProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, InternalApiKeyProperties.class, EventServiceProperties.class, BookingProperties.class})
 public class BookingServiceApplication {
 
 	public static void main(String[] args) {

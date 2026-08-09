@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ import com.grabmyticket.booking.entity.Booking;
 import com.grabmyticket.booking.entity.BookingStatus;
 import com.grabmyticket.booking.entity.TransactionReason;
 import com.grabmyticket.booking.entity.Wallet;
+import com.grabmyticket.booking.event.BookingConfirmedEvent;
 import com.grabmyticket.booking.exception.BookingNotFoundException;
 import com.grabmyticket.booking.exception.EventNotBookableException;
 import com.grabmyticket.booking.exception.InsufficientBalanceException;
@@ -44,14 +46,21 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final EventCatalogClient eventCatalogClient;
     private final WalletService walletService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public BookingService(BookingRepository bookingRepository, EventCatalogClient eventCatalogClient, WalletService walletService) {
+    public BookingService(
+            BookingRepository bookingRepository,
+            EventCatalogClient eventCatalogClient,
+            WalletService walletService,
+            ApplicationEventPublisher applicationEventPublisher
+    ) {
         this.bookingRepository = bookingRepository;
         this.eventCatalogClient = eventCatalogClient;
         this.walletService = walletService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    public BookingResponse createBooking(UUID userId, CreateBookingRequest request) {
+    public BookingResponse createBooking(UUID userId, String userEmail, CreateBookingRequest request) {
         TicketTypeSnapshot snapshot = eventCatalogClient.getSnapshot(request.ticketTypeId());
         validateBookable(snapshot, request);
 
@@ -87,7 +96,9 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CONFIRMED);
-        return toResponse(bookingRepository.save(booking));
+        Booking confirmed = bookingRepository.save(booking);
+        applicationEventPublisher.publishEvent(toConfirmedEvent(confirmed, userEmail));
+        return toResponse(confirmed);
     }
 
     @Transactional(readOnly = true)
@@ -139,6 +150,24 @@ public class BookingService {
             sb.append(CODE_CHARS.charAt(RANDOM.nextInt(CODE_CHARS.length())));
         }
         return sb.toString();
+    }
+
+    private BookingConfirmedEvent toConfirmedEvent(Booking booking, String userEmail) {
+        return new BookingConfirmedEvent(
+                BookingConfirmedEvent.TYPE,
+                booking.getId(),
+                booking.getBookingCode(),
+                booking.getUserId(),
+                userEmail,
+                booking.getEventId(),
+                booking.getEventTitle(),
+                booking.getEventStartAt(),
+                booking.getEventBannerUrl(),
+                booking.getTicketTypeName(),
+                booking.getQuantity(),
+                booking.getTotalAmount(),
+                Instant.now()
+        );
     }
 
     private BookingResponse toResponse(Booking booking) {
