@@ -56,3 +56,9 @@ src/generated/
 .claude/
 .windsurf/
 skills-lock.json
+
+# Local-only artifact from running pnpm inside this folder directly (this
+# folder's pnpm-workspace.yaml exists only so Docker's isolated build
+# context can `pnpm install` standalone - the real lockfile of record is
+# the monorepo root's). Docker never reads this file (--frozen-lockfile=false).
+pnpm-lock.yaml
