@@ -58,7 +58,7 @@ updates:
     commit-message:
       prefix: "chore(booking-service)"
 
-  - package-ecosystem: "maven"
+  - package-ecosystem: "npm"
     directory: "/services/notification-service"
     schedule:
       interval: "weekly"

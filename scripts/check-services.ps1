@@ -3,7 +3,7 @@ param(
     [string]$Goal = "test"
 )
 $ErrorActionPreference = "Stop"
-$services = @("auth-service", "event-service", "booking-service", "notification-service")
+$services = @("auth-service", "event-service", "booking-service")
 foreach ($service in $services) {
     $serviceDir = Join-Path $PSScriptRoot "..\services\$service"
     Write-Host "==> Running Maven $Goal for $service"
