@@ -10,7 +10,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 WIPE_VOLUMES=false
 STOP_ONLY=false
 DEEP_CLEAN=false
-SERVICES=(auth-service event-service booking-service notification-service)
+SERVICES=(auth-service event-service booking-service)
 
 for arg in "$@"; do
   case "$arg" in
@@ -43,6 +43,9 @@ for svc in "${SERVICES[@]}"; do
   fi
 done
 
+echo "==> Cleaning notification-service build output"
+rm -rf services/notification-service/dist
+
 echo "==> Cleaning root aggregator build output"
 [ -d target ] && rm -rf target
 
@@ -59,9 +62,10 @@ rm -rf logs
 rm -rf .pids
 
 if $DEEP_CLEAN; then
-  echo "==> Deep clean: removing node_modules (client + root)"
+  echo "==> Deep clean: removing node_modules (client + notification-service + root)"
   rm -rf node_modules
   rm -rf client/node_modules
+  rm -rf services/notification-service/node_modules
   echo "    run 'pnpm install' before starting again"
 fi
 

@@ -12,7 +12,7 @@ LOG_DIR="logs"
 PID_DIR=".pids"
 mkdir -p "$LOG_DIR" "$PID_DIR"
 
-SERVICES=(auth-service event-service booking-service notification-service)
+MAVEN_SERVICES=(auth-service event-service booking-service)
 
 start_infra() {
   echo "==> Starting infra (postgres, redis, redpanda)"
@@ -31,7 +31,7 @@ start_infra() {
 }
 
 start_services() {
-  for svc in "${SERVICES[@]}"; do
+  for svc in "${MAVEN_SERVICES[@]}"; do
     echo "==> Starting $svc (port varies, see services/$svc/src/main/resources/application.yaml)"
     (
       cd "services/$svc"
@@ -39,17 +39,25 @@ start_services() {
       echo $! > "../../$PID_DIR/$svc.pid"
     )
   done
+
+  echo "==> Starting notification-service (NestJS, http://localhost:3003)"
+  (
+    cd "services/notification-service"
+    nohup pnpm start:dev > "../../$LOG_DIR/notification-service.log" 2>&1 &
+    echo $! > "../../$PID_DIR/notification-service.pid"
+  )
+
   echo "    services launching in background, tailing logs at ./$LOG_DIR/<service>.log"
 }
 
-# start_client() {
-#   echo "==> Starting client (pnpm dev, http://localhost:3000)"
-#   (
-#     cd client
-#     nohup pnpm dev > "../$LOG_DIR/client.log" 2>&1 &
-#     echo $! > "../$PID_DIR/client.pid"
-#   )
-# }
+start_client() {
+  echo "==> Starting client (pnpm dev, http://localhost:3000)"
+  (
+    cd client
+    nohup pnpm dev > "../$LOG_DIR/client.log" 2>&1 &
+    echo $! > "../$PID_DIR/client.pid"
+  )
+}
 
 case "$MODE" in
   infra)    start_infra ;;
@@ -74,7 +82,7 @@ Done. Useful URLs once everything is up:
   auth-service:          http://localhost:8081
   event-service:         http://localhost:8082
   booking-service:       http://localhost:8083
-  notification-service:  http://localhost:8084 (no HTTP routes, Kafka consumer)
+  notification-service:  http://localhost:3003 (REST for notifications/mine + Kafka consumer)
 
 Logs:  ./$LOG_DIR/<service>.log
 PIDs:  ./$PID_DIR/<service>.pid   (used by clean.sh to stop things)
