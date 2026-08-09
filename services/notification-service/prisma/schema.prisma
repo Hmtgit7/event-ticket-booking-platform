@@ -10,14 +10,18 @@ datasource db {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String
-  title     String
-  message   String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  message     String
+  /// Id of the thing this notification is about (e.g. a bookingId) - lets the
+  /// client deep-link "View ticket" straight from the notification.
+  referenceId String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  @@index([userId, createdAt])
   @@map("notifications")
 }
