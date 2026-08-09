@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Consumer, Kafka } from 'kafkajs';
+import { Consumer, Kafka, KafkaConfig } from 'kafkajs';
 import { BookingConfirmedEvent } from './booking-confirmed-event.interface';
 import { BookingConfirmedHandler } from './booking-confirmed.handler';
 
@@ -26,19 +26,40 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     const username = this.configService.get<string>('KAFKA_USERNAME');
     const password = this.configService.get<string>('KAFKA_PASSWORD');
     const useSasl = this.configService.get<string>('KAFKA_SASL') === 'true';
+    const caCert = this.configService.get<string>('KAFKA_CA_CERT')?.replace(/\\n/g, '\n');
+    const rejectUnauthorized = this.configService.get<string>('KAFKA_SSL_REJECT_UNAUTHORIZED') !== 'false';
+    const ssl: KafkaConfig['ssl'] = useSasl
+      ? caCert
+        ? { ca: [caCert], rejectUnauthorized }
+        : { rejectUnauthorized }
+      : undefined;
 
     const kafka = new Kafka({
       clientId: 'notification-service',
       brokers,
-      ssl: useSasl,
+      ssl,
       sasl: useSasl && username && password ? { mechanism: 'scram-sha-256', username, password } : undefined,
     });
+
+    const topic = this.configService.get<string>('BOOKING_EVENTS_TOPIC') ?? 'booking-events';
+    const admin = kafka.admin();
+    await admin.connect();
+    try {
+      const topics = await admin.listTopics();
+      if (!topics.includes(topic)) {
+        await admin.createTopics({
+          waitForLeaders: true,
+          topics: [{ topic, numPartitions: 1, replicationFactor: 1 }],
+        });
+      }
+    } finally {
+      await admin.disconnect();
+    }
 
     this.consumer = kafka.consumer({
       groupId: this.configService.get<string>('KAFKA_CONSUMER_GROUP_ID') ?? 'notification-service',
     });
 
-    const topic = this.configService.get<string>('BOOKING_EVENTS_TOPIC') ?? 'booking-events';
     await this.consumer.connect();
     await this.consumer.subscribe({ topic, fromBeginning: false });
 
