@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, Ticket, ArrowLeft } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { MockMap } from "@/components/common/mock-map";
-import type { EventResponse } from "@/interfaces/event-api.interface";
+import type { EventResponse, TicketTypeResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
+import { bookingService } from "@/services/booking.service";
 import { ApiError } from "@/lib/api-client";
 import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
 
@@ -18,15 +19,16 @@ interface ExploreEventDetailProps {
 /**
  * In-dashboard event detail + booking entry point for a signed-in user -
  * this is where "Book now" (from the public site or the Explore grid)
- * lands. Real ticket-tier data from event-service; the actual purchase
- * action is a placeholder until booking-service exists (see BOOKING_ENABLED).
+ * lands. Real ticket-tier data from event-service, real booking creation
+ * against booking-service (wallet-funded, dummy payment for now).
  */
-const BOOKING_ENABLED = false;
-
 export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
+  const router = useRouter();
   const [event, setEvent] = useState<EventResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
+  const [bookingTierId, setBookingTierId] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +50,27 @@ export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
   }, [slug]);
 
   if (notFoundFlag) notFound();
+
+  async function handleBook(tier: TicketTypeResponse) {
+    if (!event) return;
+    setBookingTierId(tier.id);
+    setBookingError(null);
+    try {
+      const booking = await bookingService.createBooking({ eventId: event.id, ticketTypeId: tier.id, quantity: 1 });
+      router.push(`/user/dashboard/orders/${booking.id}`);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 402) {
+        setBookingError("Your wallet balance is too low for this booking. Add funds and try again.");
+      } else if (err instanceof ApiError && err.status === 409) {
+        setBookingError("That ticket just sold out. Try a different tier.");
+        eventService.publicEventBySlug(slug).then(setEvent);
+      } else {
+        setBookingError("Couldn't complete this booking. Please try again.");
+      }
+    } finally {
+      setBookingTierId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -133,6 +156,7 @@ export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
             {event.ticketTypes.map((tier) => {
               const seatsLeft = tier.quantityAvailable;
               const soldOut = seatsLeft <= 0;
+              const isBooking = bookingTierId === tier.id;
               return (
                 <div key={tier.id} className="flex items-center justify-between gap-3 py-3">
                   <div>
@@ -143,19 +167,29 @@ export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
                     <span className="text-sm font-bold text-ink">{formatPrice(tier.price)}</span>
                     <button
                       type="button"
-                      disabled={soldOut || !BOOKING_ENABLED}
-                      title={BOOKING_ENABLED ? undefined : "Checkout is coming soon"}
+                      disabled={soldOut || bookingTierId !== null}
+                      onClick={() => handleBook(tier)}
                       className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground disabled:cursor-not-allowed disabled:bg-ink-muted/40"
                     >
-                      {soldOut ? "Sold out" : "Get ticket"}
+                      {soldOut ? "Sold out" : isBooking ? "Booking…" : "Get ticket"}
                     </button>
                   </div>
                 </div>
               );
             })}
           </div>
-          {!BOOKING_ENABLED && (
-            <p className="mt-4 text-xs text-ink-muted">Checkout is coming soon — you&apos;re all set to be first in line.</p>
+          {bookingError && (
+            <p className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive">
+              {bookingError}
+              {bookingError.includes("wallet") && (
+                <>
+                  {" "}
+                  <Link href="/user/dashboard/wallet" className="underline">
+                    Go to wallet
+                  </Link>
+                </>
+              )}
+            </p>
           )}
         </div>
       </div>

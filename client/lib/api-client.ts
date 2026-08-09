@@ -93,3 +93,4 @@ function createApiClient(baseUrl: string) {
 export const authApiClient = createApiClient(env.authApiUrl);
 export const eventApiClient = createApiClient(env.eventApiUrl);
 export const bookingApiClient = createApiClient(env.bookingApiUrl);
+export const notificationApiClient = createApiClient(env.notificationApiUrl);

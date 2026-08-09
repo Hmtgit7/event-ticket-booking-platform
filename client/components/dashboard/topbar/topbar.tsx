@@ -1,10 +1,10 @@
 "use client";
 
-import { Bell, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { ProfileMenu } from "./profile-menu";
-import { IconButton } from "@/components/common/IconButton";
+import { NotificationBell } from "./notification-bell";
 
 interface DashboardTopbarProps {
   section: string;
@@ -46,7 +46,7 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
       <div className="flex shrink-0 items-center gap-2">
         <ThemeToggle />
         {/* <IconButton icon={Mail} label="Messages" /> */}
-        <IconButton icon={Bell} label="Notifications" />
+        <NotificationBell />
         <ProfileMenu />
       </div>
     </header>

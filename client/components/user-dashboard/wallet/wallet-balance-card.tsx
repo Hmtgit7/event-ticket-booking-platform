@@ -3,14 +3,14 @@ import { Plus } from "lucide-react";
 
 interface WalletBalanceCardProps {
   balance: string;
-  cardLast4: string;
+  onAddFunds: () => void;
 }
 
 /**
- * Hero card for the Wallet page — shows available balance and default
- * payment method. The "Add funds" CTA is decorative in this dummy build.
+ * Hero card for the Wallet page — shows available balance. "Add funds"
+ * opens RechargeWalletModal (real payment integration coming later).
  */
-export function WalletBalanceCard({ balance, cardLast4 }: WalletBalanceCardProps) {
+export function WalletBalanceCard({ balance, onAddFunds }: WalletBalanceCardProps) {
   return (
     <article className="flex flex-col justify-between gap-6 rounded-2xl bg-ink p-6 text-background">
       <div>
@@ -18,13 +18,10 @@ export function WalletBalanceCard({ balance, cardLast4 }: WalletBalanceCardProps
         <p className="mt-2 text-5xl font-black">{balance}</p>
       </div>
 
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs text-background/50 uppercase tracking-wide">Default card</p>
-          <p className="mt-1 text-sm font-semibold">•••• •••• •••• {cardLast4}</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button
           size="sm"
+          onClick={onAddFunds}
           className="bg-background/15 text-background hover:bg-background/25 border border-background/20"
         >
           <Plus className="size-4" />
