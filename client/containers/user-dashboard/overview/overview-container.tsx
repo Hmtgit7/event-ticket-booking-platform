@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { StatCard } from "@/components/user-dashboard/widgets/stat-card";
 import { NextTicketCard } from "@/components/user-dashboard/widgets/next-ticket-card";
 import { NotificationList } from "@/components/user-dashboard/widgets/notification-list";
+import { Skeleton } from "@/components/ui/skeleton";
 import { bookingService } from "@/services/booking.service";
 import type { BookingResponse } from "@/interfaces/booking-api.interface";
 
@@ -57,8 +58,13 @@ export function OverviewContainer() {
       {/* ── Hero + notifications ── */}
       <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
         {loading ? (
-          <div className="flex h-72 items-center justify-center rounded-2xl border border-line bg-surface text-sm text-ink-muted">
-            Loading your tickets…
+          <div className="flex h-72 flex-col justify-between rounded-2xl border border-line bg-surface p-5">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+            <Skeleton className="h-24 w-full rounded-xl" />
           </div>
         ) : latestBooking ? (
           <NextTicketCard order={latestBooking} />

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PublicEventCard } from "@/components/public-events/public-event-card";
 import { PublicEventFilters } from "@/components/public-events/public-event-filters";
+import { EventListSkeleton } from "@/components/skeleton";
 import { eventService } from "@/services/event.service";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { cn } from "@/lib/utils";
@@ -111,7 +112,7 @@ export function PublicEventsBrowser() {
 
           <div className="mt-4 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-ink-muted">
-              {loading && events.length === 0 ? "Loading..." : `${visibleEvents.length} public events found`}
+              {loading && events.length === 0 ? "Finding events…" : `${visibleEvents.length} public events found`}
             </p>
             <button type="button" onClick={resetFilters} className="text-sm font-bold text-brand">
               Reset filters
@@ -126,11 +127,15 @@ export function PublicEventsBrowser() {
             </div>
           )}
 
-          <div className={cn("grid gap-5", view === "grid" ? "lg:grid-cols-3" : "grid-cols-1")}>
-            {visibleEvents.map((event) => (
-              <PublicEventCard key={event.id} event={event} variant={view} />
-            ))}
-          </div>
+          {loading && events.length === 0 ? (
+            <EventListSkeleton count={6} variant={view} />
+          ) : (
+            <div className={cn("grid gap-5", view === "grid" ? "lg:grid-cols-3" : "grid-cols-1")}>
+              {visibleEvents.map((event) => (
+                <PublicEventCard key={event.id} event={event} variant={view} />
+              ))}
+            </div>
+          )}
 
           {!loading && !error && visibleEvents.length === 0 && (
             <div className="mt-6 rounded-2xl border border-line bg-canvas p-10 text-center shadow-sm">

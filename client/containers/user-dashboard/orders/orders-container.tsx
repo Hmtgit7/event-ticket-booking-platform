@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { OrderRow } from "@/components/user-dashboard/orders/order-row";
+import { OrderListSkeleton } from "@/components/skeleton";
 import { bookingService } from "@/services/booking.service";
 import { cn } from "@/lib/utils";
 import type { BookingResponse, BookingStatus } from "@/interfaces/booking-api.interface";
@@ -70,9 +71,7 @@ export function OrdersContainer() {
 
       <div className="flex flex-col gap-3">
         {loading ? (
-          <p className="rounded-2xl border border-line bg-surface px-5 py-10 text-center text-sm text-ink-muted">
-            Loading orders…
-          </p>
+          <OrderListSkeleton count={4} />
         ) : visible.length === 0 ? (
           <p className="rounded-2xl border border-line bg-surface px-5 py-10 text-center text-sm text-ink-muted">
             No orders match this filter.

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { EventTabs } from "@/components/events/event-tabs";
 import { EventFilters } from "@/components/events/event-filters";
 import { EventCard } from "@/components/events/event-card";
+import { EventCardSkeleton } from "@/components/skeleton";
 import type { EventTab, EventTabKey, EventViewMode } from "@/types/dashboard.types";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
@@ -67,9 +68,16 @@ export function EventsList() {
       </div>
 
       {loading && (
-        <p className="rounded-3xl bg-surface p-10 text-center text-sm text-ink-muted shadow-sm">
-          Loading your events…
-        </p>
+        <div
+          className={cn(
+            "grid gap-5",
+            viewMode === "grid" ? "sm:grid-cols-2 xl:grid-cols-4" : "grid-cols-1",
+          )}
+        >
+          {Array.from({ length: viewMode === "grid" ? 8 : 4 }, (_, index) => (
+            <EventCardSkeleton key={index} variant={viewMode} />
+          ))}
+        </div>
       )}
 
       {error && !loading && (

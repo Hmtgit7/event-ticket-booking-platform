@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { EventSearchFilters } from "@/components/events/event-search-filters";
 import { EventBrowseCard } from "@/components/user-dashboard/explore/event-browse-card";
+import { EventCardSkeleton } from "@/components/skeleton";
 import { EVENT_CATEGORIES, PRICE_FILTERS, SORT_OPTIONS } from "@/constants/public-events";
 import { eventService } from "@/services/event.service";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
@@ -82,9 +83,11 @@ export function ExploreContainer() {
       />
 
       {loading && (
-        <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          Loading events...
-        </p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }, (_, index) => (
+            <EventCardSkeleton key={index} />
+          ))}
+        </div>
       )}
 
       {error && !loading && (
