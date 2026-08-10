@@ -84,7 +84,7 @@ export function EventsList() {
           )}
         >
           {visibleEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard key={event.id} event={event} variant={viewMode} />
           ))}
         </div>
       )}

@@ -5,9 +5,11 @@ import { NavRoute } from "@/enums/nav-route.enum";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { ProgressBar } from "@/components/common/progress-bar";
 import { STATUS_BADGE, formatEventDate, formatEventTime, formatPrice, ticketsSoldPct } from "@/lib/events";
+import { cn } from "@/lib/utils";
 
 interface EventCardProps {
   event: EventSummaryResponse;
+  variant?: "grid" | "list";
 }
 
 /** Category tiles are keyed to a fixed set - fall back gracefully if an organizer's free-text category doesn't match one (shouldn't happen via the wizard's <select>, but defends against stale data). */
@@ -15,19 +17,23 @@ const DEFAULT_VISUAL = { icon: CATEGORY_VISUAL.Music.icon, from: "#242424", to: 
 
 /** Grid tile for the Events listing page — category-tinted art, status
  * pill, meta row and a tickets-sold progress bar. */
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, variant = "grid" }: EventCardProps) {
   const visual = CATEGORY_VISUAL[event.category as EventCategory] ?? DEFAULT_VISUAL;
   const Icon = visual.icon;
   const badge = STATUS_BADGE[event.status];
   const sold = ticketsSoldPct(event.totalSold, event.totalCapacity);
+  const isList = variant === "list";
 
   return (
     <Link
       href={`${NavRoute.Events}/${event.id}`}
-      className="group flex flex-col overflow-hidden rounded-3xl bg-surface shadow-sm transition-shadow hover:shadow-md"
+      className={cn(
+        "group overflow-hidden rounded-3xl border border-line bg-surface shadow-sm transition-shadow hover:shadow-md",
+        isList ? "grid md:grid-cols-[18rem_1fr]" : "flex flex-col",
+      )}
     >
       <div
-        className="relative flex h-36 items-center justify-center bg-cover bg-center"
+        className={cn("relative flex h-36 items-center justify-center bg-cover bg-center", isList && "md:h-full md:min-h-44")}
         style={{
           background: event.bannerImageUrl
             ? `url(${event.bannerImageUrl}) center/cover`
@@ -44,7 +50,7 @@ export function EventCard({ event }: EventCardProps) {
         </span>
       </div>
 
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col justify-between gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate text-base font-bold text-ink">{event.title}</p>
           <span className="shrink-0 text-base font-bold text-ink">{formatPrice(event.fromPrice)}</span>

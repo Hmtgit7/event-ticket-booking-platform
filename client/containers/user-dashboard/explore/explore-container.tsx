@@ -1,39 +1,44 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
 
-import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
+import { EventSearchFilters } from "@/components/events/event-search-filters";
 import { EventBrowseCard } from "@/components/user-dashboard/explore/event-browse-card";
+import { EVENT_CATEGORIES, PRICE_FILTERS, SORT_OPTIONS } from "@/constants/public-events";
 import { eventService } from "@/services/event.service";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 
-/**
- * Explore Events page — searchable grid of all publicly published events,
- * for a signed-in user browsing inside the dashboard (same data as the
- * public marketing /events page, just inside the authenticated shell so
- * "Book now" can go straight to checkout without leaving the app).
- */
 export function ExploreContainer() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const [city, setCity] = useState("All cities");
+  const [price, setPrice] = useState("Any price");
+  const [sort, setSort] = useState("Soonest");
   const [events, setEvents] = useState<EventSummaryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [knownCities, setKnownCities] = useState<string[]>([]);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(query.trim()), 350);
-    return () => clearTimeout(t);
+    const timeout = setTimeout(() => setDebouncedQuery(query.trim()), 350);
+    return () => clearTimeout(timeout);
   }, [query]);
 
   useEffect(() => {
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
     eventService
-      .publicEvents({ search: debouncedQuery || undefined, size: 24 })
+      .publicEvents({
+        category: category === "All" ? undefined : category,
+        city: city === "All cities" ? undefined : city,
+        search: debouncedQuery || undefined,
+        size: 24,
+      })
       .then((result) => {
-        if (!cancelled) setEvents(result.items);
+        if (cancelled) return;
+        setEvents(result.items);
+        setError(null);
+        setKnownCities((prev) => Array.from(new Set([...prev, ...result.items.map((event) => event.city)])).sort());
       })
       .catch(() => {
         if (!cancelled) setError("Couldn't load events. Please try again.");
@@ -44,30 +49,41 @@ export function ExploreContainer() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery]);
+  }, [category, city, debouncedQuery]);
 
-  const filtered = useMemo(() => events, [events]);
+  const filtered = useMemo(() => {
+    return events
+      .filter((event) => priceMatches(event.fromPrice, price))
+      .sort((a, b) => {
+        if (sort === "Lowest price") return (a.fromPrice ?? 0) - (b.fromPrice ?? 0);
+        if (sort === "Most popular") return b.totalSold - a.totalSold;
+        return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+      });
+  }, [events, price, sort]);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ── Header + search ── */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 md:flex-row md:items-end md:justify-between">
-        <SectionTitle eyebrow="Discover" title="Find your next event" />
-        <label className="relative block w-full md:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search events, city, category…"
-            className="h-11 w-full rounded-xl border border-line bg-background pl-10 pr-4 text-sm text-ink placeholder:text-ink-muted outline-none transition focus:border-brand"
-          />
-        </label>
-      </div>
+      <EventSearchFilters
+        category={category}
+        categoryOptions={EVENT_CATEGORIES}
+        city={city}
+        cityOptions={["All cities", ...knownCities]}
+        price={price}
+        priceOptions={PRICE_FILTERS}
+        query={query}
+        sort={sort}
+        sortOptions={SORT_OPTIONS}
+        showHeader={false}
+        onCategoryChange={setCategory}
+        onCityChange={setCity}
+        onPriceChange={setPrice}
+        onQueryChange={setQuery}
+        onSortChange={setSort}
+      />
 
-      {/* ── Results ── */}
       {loading && (
         <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          Loading events…
+          Loading events...
         </p>
       )}
 
@@ -77,7 +93,7 @@ export function ExploreContainer() {
 
       {!loading && !error && filtered.length === 0 && (
         <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          No events match &quot;{query}&quot;.
+          No events match those filters.
         </p>
       )}
 
@@ -90,4 +106,13 @@ export function ExploreContainer() {
       )}
     </div>
   );
+}
+
+function priceMatches(fromPrice: number | null, filter: string) {
+  const value = fromPrice ?? 0;
+  if (filter === "Free") return value === 0;
+  if (filter === "Under $25") return value < 25;
+  if (filter === "$25 to $75") return value >= 25 && value <= 75;
+  if (filter === "$75+") return value >= 75;
+  return true;
 }
