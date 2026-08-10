@@ -13,3 +13,4 @@ target/
 .pnpm-store/
 logs/
 .pids/
+.tmp/
