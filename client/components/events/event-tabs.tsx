@@ -13,7 +13,7 @@ interface EventTabsProps {
  * reference dashboard's Events page header. */
 export function EventTabs({ tabs, active, onChange }: EventTabsProps) {
   return (
-    <div role="tablist" className="flex w-fit gap-2 rounded-full bg-surface p-1.5 shadow-sm">
+    <div role="tablist" className="flex w-fit gap-2 rounded-full border border-line bg-surface p-1.5 shadow-sm">
       {tabs.map((tab) => {
         const isActive = tab.key === active;
         return (
@@ -24,8 +24,8 @@ export function EventTabs({ tabs, active, onChange }: EventTabsProps) {
             aria-selected={isActive}
             onClick={() => onChange(tab.key)}
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              isActive ? "bg-ink text-on-elevated" : "text-ink-muted hover:text-ink",
+              "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+              isActive ? "bg-brand text-brand-foreground shadow-sm" : "text-ink-muted hover:bg-surface-hover hover:text-ink",
             )}
           >
             {tab.label} ({tab.count})

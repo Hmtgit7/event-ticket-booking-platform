@@ -52,14 +52,13 @@
   --chart-5: var(--color-line);
   --radius: 1rem;
 
-  /* Sidebar stays dark in both themes, so these are fixed, not aliased */
-  --sidebar: var(--color-surface-elevated);
-  --sidebar-foreground: var(--color-on-elevated);
+  --sidebar: var(--color-surface);
+  --sidebar-foreground: var(--color-ink);
   --sidebar-primary: var(--color-brand);
-  --sidebar-primary-foreground: var(--color-on-elevated);
-  --sidebar-accent: #221e17;
-  --sidebar-accent-foreground: var(--color-on-elevated);
-  --sidebar-border: #2a2519;
+  --sidebar-primary-foreground: var(--color-brand-foreground);
+  --sidebar-accent: var(--color-surface-hover);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-brand);
 }
 
@@ -74,6 +73,11 @@
   --color-brand: #ff7a5c;
   --color-brand-foreground: #17140f;
   --color-positive: #55c26c;
+  --sidebar: #211d15;
+  --sidebar-foreground: var(--color-on-elevated);
+  --sidebar-accent: #2a251d;
+  --sidebar-accent-foreground: var(--color-on-elevated);
+  --sidebar-border: #332c1f;
 }
 
 @theme inline {
@@ -140,6 +144,30 @@ body {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 34%, transparent);
+  color: var(--color-ink);
+}
+
+input,
+select,
+textarea {
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  color-scheme: light;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
+
 /* ── Thin sidebar scrollbar — flush against the right wall ── */
 .sidebar-scroll {
   /* push scrollbar to the absolute right edge of the sidebar */
@@ -183,6 +211,25 @@ body {
 }
 .main-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #e2543c;
+}
+
+.thin-dropdown-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.thin-dropdown-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.thin-dropdown-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-dropdown-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-line);
+  border-radius: 0;
+}
+.thin-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand);
 }
 
 @layer base {

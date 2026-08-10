@@ -42,7 +42,7 @@ export function AdminUsersContainer() {
             {(["All", "Active", "Suspended", "Pending"] as StatusFilter[]).map((s) => (
               <button key={s} type="button" onClick={() => setStatusFilter(s)}
                 className={cn("rounded-full border px-3 py-1 text-xs font-semibold transition",
-                  statusFilter === s ? "border-ink bg-ink text-background" : "border-line bg-background text-ink hover:border-ink"
+                  statusFilter === s ? "border-brand bg-brand text-brand-foreground" : "border-line bg-background text-ink hover:border-brand"
                 )}>
                 {s}
               </button>

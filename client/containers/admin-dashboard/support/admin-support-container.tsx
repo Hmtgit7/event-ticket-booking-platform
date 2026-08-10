@@ -59,7 +59,7 @@ export function AdminSupportContainer() {
             {(["All", "High", "Medium", "Low"] as PriorityFilter[]).map((p) => (
               <button key={p} type="button" onClick={() => setPriorityFilter(p)}
                 className={cn("rounded-full border px-3 py-1 text-xs font-semibold transition",
-                  priorityFilter === p ? "border-ink bg-ink text-background" : "border-line bg-background text-ink hover:border-ink"
+                  priorityFilter === p ? "border-brand bg-brand text-brand-foreground" : "border-line bg-background text-ink hover:border-brand"
                 )}>
                 {p === "All" ? "Any priority" : p}
               </button>

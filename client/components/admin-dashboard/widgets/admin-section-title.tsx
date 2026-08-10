@@ -12,7 +12,7 @@ export function AdminSectionTitle({ eyebrow, title }: AdminSectionTitleProps) {
       <p className="text-xs font-semibold uppercase tracking-wider text-brand">
         {eyebrow}
       </p>
-      <h2 className="mt-1 font-heading text-2xl font-extrabold text-ink">
+      <h2 className="mt-1 text-xl font-bold text-ink">
         {title}
       </h2>
     </div>
