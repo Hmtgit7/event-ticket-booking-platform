@@ -61,7 +61,6 @@ export function NotificationsContainer() {
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand">Inbox</p>
-          <h1 className="mt-1 font-heading text-2xl font-extrabold text-ink">Notifications</h1>
           {unreadCount > 0 && (
             <p className="mt-1 text-sm text-ink-muted">{unreadCount} unread</p>
           )}

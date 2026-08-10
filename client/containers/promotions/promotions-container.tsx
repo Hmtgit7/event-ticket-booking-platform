@@ -22,7 +22,6 @@ export function PromotionsContainer() {
       <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand">Discounts</p>
-          <h1 className="mt-1 font-heading text-2xl font-extrabold text-ink">Promotions</h1>
           <p className="mt-1 text-sm text-ink-muted">Create and manage promo codes for your events.</p>
         </div>
         <Button size="lg">

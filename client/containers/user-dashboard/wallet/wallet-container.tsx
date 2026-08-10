@@ -30,7 +30,6 @@ export function WalletContainer() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     loadWallet().finally(() => {
       if (!cancelled) setLoading(false);
     });
@@ -52,9 +51,23 @@ export function WalletContainer() {
     );
   }
 
+  const completed = transactions.filter((txn) => txn.status === "COMPLETED");
+  const expenseTotal = completed
+    .filter((txn) => txn.type === "DEBIT")
+    .reduce((sum, txn) => sum + txn.amount, 0);
+  const addedTotal = completed
+    .filter((txn) => txn.type === "CREDIT")
+    .reduce((sum, txn) => sum + txn.amount, 0);
+  const latestBalance = completed[0]?.balanceAfter ?? wallet?.balance ?? 0;
+
   return (
     <div className="flex flex-col gap-6">
-      <WalletBalanceCard balance={`$${(wallet?.balance ?? 0).toFixed(2)}`} onAddFunds={() => setModalOpen(true)} />
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_repeat(3,1fr)]">
+        <WalletBalanceCard balance={`$${(wallet?.balance ?? 0).toFixed(2)}`} onAddFunds={() => setModalOpen(true)} />
+        <WalletMetric label="Wallet amount" value={`$${latestBalance.toFixed(2)}`} />
+        <WalletMetric label="Expenses" value={`$${expenseTotal.toFixed(2)}`} tone="expense" />
+        <WalletMetric label="Added funds" value={`$${addedTotal.toFixed(2)}`} tone="positive" />
+      </div>
 
       <div className="rounded-2xl border border-line bg-surface p-5">
         <SectionTitle eyebrow="Payments" title="Recent wallet activity" />
@@ -71,5 +84,24 @@ export function WalletContainer() {
 
       <RechargeWalletModal open={modalOpen} onClose={() => setModalOpen(false)} onRecharged={handleRecharged} />
     </div>
+  );
+}
+
+function WalletMetric({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "expense" | "positive";
+}) {
+  const toneClass = tone === "expense" ? "text-brand" : tone === "positive" ? "text-positive" : "text-ink";
+
+  return (
+    <article className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+      <p className="text-sm font-medium text-ink-muted">{label}</p>
+      <p className={`mt-3 text-2xl font-bold ${toneClass}`}>{value}</p>
+    </article>
   );
 }

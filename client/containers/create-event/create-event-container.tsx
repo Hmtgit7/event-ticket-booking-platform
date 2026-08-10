@@ -145,7 +145,6 @@ export function CreateEventContainer() {
       <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-brand">New Event</p>
-          <h1 className="mt-1 font-heading text-2xl font-extrabold text-ink">Create an event</h1>
         </div>
         <StepIndicator current={step} />
       </div>

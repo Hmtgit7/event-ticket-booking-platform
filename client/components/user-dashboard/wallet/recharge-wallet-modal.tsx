@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,19 +26,23 @@ export function RechargeWalletModal({ open, onClose, onRecharged }: RechargeWall
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleClose = useCallback(() => {
+    setAmount("");
+    setError(null);
+    onClose();
+  }, [onClose]);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
-    setAmount("");
-    setError(null);
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  }, [handleClose, open]);
 
   if (!open || !mounted) return null;
 
@@ -55,7 +59,7 @@ export function RechargeWalletModal({ open, onClose, onRecharged }: RechargeWall
     try {
       const wallet = await walletService.recharge({ amount: parsed });
       onRecharged(wallet);
-      onClose();
+      handleClose();
     } catch (err) {
       setError(err instanceof ApiError ? "Couldn't add funds. Please try again." : "Something went wrong.");
     } finally {
@@ -65,7 +69,7 @@ export function RechargeWalletModal({ open, onClose, onRecharged }: RechargeWall
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-labelledby="recharge-modal-title" className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <button type="button" aria-label="Close" onClick={handleClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <form onSubmit={handleSubmit} className="relative w-full max-w-sm rounded-2xl border border-line bg-surface p-6 shadow-xl">
         <h2 id="recharge-modal-title" className="text-lg font-bold text-ink">Add funds to wallet</h2>
         <p className="mt-1 text-sm text-ink-muted">Enter the amount you&apos;d like to add.</p>
@@ -91,7 +95,7 @@ export function RechargeWalletModal({ open, onClose, onRecharged }: RechargeWall
         </p>
 
         <div className="mt-6 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
           <Button type="submit" disabled={submitting}>
