@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { AdminSectionTitle } from "@/components/admin-dashboard/widgets/admin-section-title";
 import { BookingTableRow } from "@/components/admin-dashboard/bookings/booking-table-row";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoResultsIllustration } from "@/icons/empty-state-icons";
 import { ADMIN_BOOKINGS } from "@/constants/admin-dashboard-data";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +69,7 @@ export function AdminBookingsContainer() {
 
       <div className="flex flex-col gap-2">
         {visible.length === 0
-          ? <p className="rounded-2xl border border-line bg-surface py-12 text-center text-sm text-ink-muted">No bookings match your filters.</p>
+          ? <EmptyState icon={<NoResultsIllustration className="size-24" />} title="No bookings match your filters" description="Try a different search term or status filter." />
           : visible.map((b) => <BookingTableRow key={b.id} booking={b} />)
         }
       </div>

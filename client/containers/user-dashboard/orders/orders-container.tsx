@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { OrderRow } from "@/components/user-dashboard/orders/order-row";
 import { OrderListSkeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoOrdersIllustration } from "@/icons/empty-state-icons";
 import { bookingService } from "@/services/booking.service";
 import { cn } from "@/lib/utils";
 import type { BookingResponse, BookingStatus } from "@/interfaces/booking-api.interface";
@@ -73,9 +75,16 @@ export function OrdersContainer() {
         {loading ? (
           <OrderListSkeleton count={4} />
         ) : visible.length === 0 ? (
-          <p className="rounded-2xl border border-line bg-surface px-5 py-10 text-center text-sm text-ink-muted">
-            No orders match this filter.
-          </p>
+          <EmptyState
+            icon={<NoOrdersIllustration className="size-28" />}
+            title={filter === "All" ? "No orders yet" : "No orders match this filter"}
+            description={
+              filter === "All"
+                ? "Book your first ticket and it'll show up here."
+                : "Try a different status filter, or check back later."
+            }
+            action={filter === "All" ? { label: "Explore events", href: "/user/dashboard/explore" } : undefined}
+          />
         ) : (
           visible.map((order) => <OrderRow key={order.id} order={order} />)
         )}

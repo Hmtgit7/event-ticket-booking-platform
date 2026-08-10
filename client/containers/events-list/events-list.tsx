@@ -5,6 +5,8 @@ import { EventTabs } from "@/components/events/event-tabs";
 import { EventFilters } from "@/components/events/event-filters";
 import { EventCard } from "@/components/events/event-card";
 import { EventCardSkeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoEventsIllustration } from "@/icons/empty-state-icons";
 import type { EventTab, EventTabKey, EventViewMode } from "@/types/dashboard.types";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
@@ -98,9 +100,18 @@ export function EventsList() {
       )}
 
       {!loading && !error && visibleEvents.length === 0 && (
-        <p className="rounded-3xl bg-surface p-10 text-center text-sm text-ink-muted shadow-sm">
-          No events in this tab yet.
-        </p>
+        <EmptyState
+          icon={<NoEventsIllustration className="size-28" />}
+          title={activeTab === "draft" ? "No drafts yet" : `No ${activeTab} events`}
+          description={
+            activeTab === "draft"
+              ? "Events you save without publishing will show up here."
+              : activeTab === "active"
+                ? "Create an event to start selling tickets."
+                : "Past events will appear here once they wrap up."
+          }
+          action={activeTab !== "past" ? { label: "Create event", href: "/dashboard/events/create" } : undefined}
+        />
       )}
     </div>
   );

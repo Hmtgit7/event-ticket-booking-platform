@@ -2,6 +2,8 @@
 
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { SavedEventCard } from "@/components/user-dashboard/saved/saved-event-card";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoSavedIllustration } from "@/icons/empty-state-icons";
 import { useSavedEventsStore } from "@/store/saved-events-store";
 
 /**
@@ -22,9 +24,12 @@ export function SavedContainer() {
       </div>
 
       {savedEvents.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          You haven&apos;t saved any events yet. Tap the heart icon on any event to save it here.
-        </p>
+        <EmptyState
+          icon={<NoSavedIllustration className="size-28" />}
+          title="No saved events yet"
+          description="Tap the heart icon on any event to bookmark it here."
+          action={{ label: "Explore events", href: "/user/dashboard/explore" }}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {savedEvents.map((event) => (

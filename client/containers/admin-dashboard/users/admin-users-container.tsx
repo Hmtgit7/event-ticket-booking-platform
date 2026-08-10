@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { AdminSectionTitle } from "@/components/admin-dashboard/widgets/admin-section-title";
 import { UserTableRow } from "@/components/admin-dashboard/users/user-table-row";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoResultsIllustration } from "@/icons/empty-state-icons";
 import { ADMIN_USERS } from "@/constants/admin-dashboard-data";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +65,7 @@ export function AdminUsersContainer() {
       {/* ── Table ── */}
       <div className="flex flex-col gap-2">
         {visible.length === 0
-          ? <p className="rounded-2xl border border-line bg-surface py-12 text-center text-sm text-ink-muted">No users match your filters.</p>
+          ? <EmptyState icon={<NoResultsIllustration className="size-24" />} title="No users match your filters" description="Try a different search term or filter combination." />
           : visible.map((user) => <UserTableRow key={user.id} user={user} />)
         }
       </div>

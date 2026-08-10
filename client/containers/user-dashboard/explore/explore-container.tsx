@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { EventSearchFilters } from "@/components/events/event-search-filters";
 import { EventBrowseCard } from "@/components/user-dashboard/explore/event-browse-card";
 import { EventCardSkeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoResultsIllustration } from "@/icons/empty-state-icons";
 import { EVENT_CATEGORIES, PRICE_FILTERS, SORT_OPTIONS } from "@/constants/public-events";
 import { eventService } from "@/services/event.service";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
@@ -95,9 +97,11 @@ export function ExploreContainer() {
       )}
 
       {!loading && !error && filtered.length === 0 && (
-        <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-          No events match those filters.
-        </p>
+        <EmptyState
+          icon={<NoResultsIllustration className="size-28" />}
+          title="No events match those filters"
+          description="Try adjusting your search, category, or price range."
+        />
       )}
 
       {!loading && !error && filtered.length > 0 && (

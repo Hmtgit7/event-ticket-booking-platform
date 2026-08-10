@@ -6,6 +6,8 @@ import { WalletBalanceCard } from "@/components/user-dashboard/wallet/wallet-bal
 import { TransactionRow } from "@/components/user-dashboard/wallet/transaction-row";
 import { RechargeWalletModal } from "@/components/user-dashboard/wallet/recharge-wallet-modal";
 import { WalletBalanceCardSkeleton, TransactionListSkeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoWalletActivityIllustration } from "@/icons/empty-state-icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { walletService } from "@/services/wallet.service";
 import type { WalletResponse, WalletTransactionResponse } from "@/interfaces/wallet-api.interface";
@@ -89,9 +91,12 @@ export function WalletContainer() {
         <SectionTitle eyebrow="Payments" title="Recent wallet activity" />
         <div className="mt-4 flex flex-col gap-3">
           {transactions.length === 0 ? (
-            <p className="rounded-xl border border-line bg-background px-4 py-8 text-center text-sm text-ink-muted">
-              No transactions yet — add funds to get started.
-            </p>
+            <EmptyState
+              icon={<NoWalletActivityIllustration className="size-28" />}
+              title="No transactions yet"
+              description="Add funds to get started."
+              action={{ label: "Add funds", onClick: () => setModalOpen(true) }}
+            />
           ) : (
             transactions.map((txn) => <TransactionRow key={txn.id} transaction={txn} />)
           )}

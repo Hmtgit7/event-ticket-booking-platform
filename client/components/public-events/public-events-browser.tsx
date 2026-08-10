@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { PublicEventCard } from "@/components/public-events/public-event-card";
 import { PublicEventFilters } from "@/components/public-events/public-event-filters";
 import { EventListSkeleton } from "@/components/skeleton";
+import { EmptyState } from "@/components/common/empty-state";
+import { NoResultsIllustration } from "@/icons/empty-state-icons";
 import { eventService } from "@/services/event.service";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { cn } from "@/lib/utils";
@@ -138,10 +140,13 @@ export function PublicEventsBrowser() {
           )}
 
           {!loading && !error && visibleEvents.length === 0 && (
-            <div className="mt-6 rounded-2xl border border-line bg-canvas p-10 text-center shadow-sm">
-              <h2 className="text-xl font-bold text-ink">No events match those filters.</h2>
-              <p className="mt-2 text-sm text-ink-muted">Try a broader category, city, or price range.</p>
-            </div>
+            <EmptyState
+              className="mt-6"
+              icon={<NoResultsIllustration className="size-28" />}
+              title="No events match those filters"
+              description="Try a broader category, city, or price range."
+              action={{ label: "Reset filters", onClick: resetFilters }}
+            />
           )}
 
           {page + 1 < totalPages && (
