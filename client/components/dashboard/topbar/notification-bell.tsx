@@ -2,10 +2,12 @@
 
 import { Bell } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { notificationService } from "@/services/notification.service";
 import type { NotificationResponse } from "@/interfaces/notification-api.interface";
 import { cn } from "@/lib/utils";
+import { onNotificationRefresh } from "@/lib/notification-events";
+import { playNotificationChime } from "@/lib/notification-sound";
 
 function formatRelativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -28,20 +30,48 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previousUnreadCount = useRef(0);
+  const hasLoadedOnce = useRef(false);
+
+  const refreshUnreadCount = useCallback(() => {
+    notificationService
+      .unreadCount()
+      .then((result) => {
+        // Only chime once we've established a baseline - otherwise the very
+        // first load (going from "unknown" to e.g. 3) would chime for
+        // notifications the user never actually saw arrive.
+        if (hasLoadedOnce.current && result.count > previousUnreadCount.current) {
+          playNotificationChime();
+        }
+        hasLoadedOnce.current = true;
+        previousUnreadCount.current = result.count;
+        setUnreadCount(result.count);
+      })
+      .catch(() => {
+        // Not signal-worthy to the user - the badge just stays at its last known count.
+      });
+  }, []);
 
   useEffect(() => {
-    function refreshUnreadCount() {
-      notificationService
-        .unreadCount()
-        .then((result) => setUnreadCount(result.count))
-        .catch(() => {
-          // Not signal-worthy to the user - the badge just stays at its last known count.
-        });
-    }
     refreshUnreadCount();
     const interval = setInterval(refreshUnreadCount, 30_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshUnreadCount]);
+
+  useEffect(() => {
+    // The notification itself lands asynchronously via Kafka after an action
+    // like a booking, so one immediate check plus a couple of short-delay
+    // retries catches it well before the next scheduled poll would.
+    return onNotificationRefresh(() => {
+      refreshUnreadCount();
+      const retry1 = setTimeout(refreshUnreadCount, 3_000);
+      const retry2 = setTimeout(refreshUnreadCount, 8_000);
+      return () => {
+        clearTimeout(retry1);
+        clearTimeout(retry2);
+      };
+    });
+  }, [refreshUnreadCount]);
 
   useEffect(() => {
     if (!isOpen) return;
