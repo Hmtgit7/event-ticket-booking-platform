@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PublicEventsPage } from "@/pages/PublicEventsPage";
 
 export const metadata: Metadata = {
-  title: "Browse Events | GrabMyTicket",
+  title: "Browse Events",
   description: "Explore public events, shows, workshops, and experiences.",
 };
 

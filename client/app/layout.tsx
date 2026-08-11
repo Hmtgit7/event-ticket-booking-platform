@@ -31,9 +31,21 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "GrabMyTicket",
-  description: "Event ticket booking platform",
-  icons: '/logo.svg'
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://grabmyticket.vercel.app"),
+  title: {
+    default: "GrabMyTicket — Book tickets for stand-up comedy & live shows",
+    template: "%s | GrabMyTicket",
+  },
+  description:
+    "Discover and book tickets for stand-up comedy shows and live events near you. Browse by city, category, and price on GrabMyTicket.",
+  icons: "/logo.svg",
+  openGraph: {
+    siteName: "GrabMyTicket",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

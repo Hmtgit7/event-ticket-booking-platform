@@ -6,11 +6,13 @@ import Link from "next/link";
 import { Calendar, Clock, MapPin, Ticket, ArrowLeft } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { MockMap } from "@/components/common/mock-map";
+import { ExploreEventDetailSkeleton } from "@/components/skeleton";
 import type { EventResponse, TicketTypeResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { bookingService } from "@/services/booking.service";
 import { ApiError } from "@/lib/api-client";
 import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
+import { triggerNotificationRefresh } from "@/lib/notification-events";
 
 interface ExploreEventDetailProps {
   slug: string;
@@ -57,6 +59,9 @@ export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
     setBookingError(null);
     try {
       const booking = await bookingService.createBooking({ eventId: event.id, ticketTypeId: tier.id, quantity: 1 });
+      // Fire-and-forget: the notification itself lands asynchronously via Kafka,
+      // so this just makes the bell check sooner than its regular 30s poll.
+      triggerNotificationRefresh();
       router.push(`/user/dashboard/orders/${booking.id}`);
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
@@ -73,11 +78,7 @@ export function ExploreEventDetail({ slug }: ExploreEventDetailProps) {
   }
 
   if (loading) {
-    return (
-      <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-        Loading event…
-      </p>
-    );
+    return <ExploreEventDetailSkeleton />;
   }
 
   if (!event) {

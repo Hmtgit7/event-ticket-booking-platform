@@ -4,7 +4,7 @@ import { Bell, Palette, Shield, UserRound } from "lucide-react";
 import { ChangePasswordCard } from "@/components/auth/change-password-card";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export const metadata: Metadata = { title: "Settings | GrabMyTicket" };
+export const metadata: Metadata = { title: "Settings" };
 
 const settingsNav = [
   { label: "Profile", icon: UserRound, active: true },

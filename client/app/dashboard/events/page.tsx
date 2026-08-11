@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EventsList } from "@/containers/events-list/events-list";
 
-export const metadata: Metadata = { title: "Events | GrabMyTicket" };
+export const metadata: Metadata = { title: "Events" };
 
 export default function EventsPage() {
   return (

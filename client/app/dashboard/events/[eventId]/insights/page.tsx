@@ -5,7 +5,7 @@ interface InsightsPageProps {
   params: Promise<{ eventId: string }>;
 }
 
-export const metadata: Metadata = { title: "Attendee Insights | GrabMyTicket" };
+export const metadata: Metadata = { title: "Attendee Insights" };
 
 export default async function EventInsightsPage({ params }: InsightsPageProps) {
   const { eventId } = await params;

@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { DonutChart } from "@/components/charts/donut-chart";
 import { MockMap } from "@/components/common/mock-map";
 import { ProgressBar } from "@/components/common/progress-bar";
+import { OrganizerEventDetailSkeleton } from "@/components/skeleton";
 import type { EventResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
@@ -85,11 +86,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
   if (notFoundFlag) notFound();
 
   if (loading) {
-    return (
-      <p className="rounded-3xl bg-surface p-10 text-center text-sm text-ink-muted shadow-sm">
-        Loading event…
-      </p>
-    );
+    return <OrganizerEventDetailSkeleton />;
   }
 
   if (!event) {

@@ -6,8 +6,11 @@ interface EventPageProps {
 }
 
 export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
-  const { eventId } = await params;
-  return { title: `${eventId} | GrabMyTicket` };
+  await params;
+  // Private, noindex page (see layout.tsx) - a static title avoids an extra
+  // server-side fetch just to echo the event name into the browser tab;
+  // EventDetail already fetches and displays the real title in the page body.
+  return { title: "Manage Event" };
 }
 
 export default async function EventDetailPage({ params }: EventPageProps) {

@@ -7,6 +7,7 @@ import { Calendar, Clock, MapPin, Ticket, ArrowLeft } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { MarketingLayout } from "@/layouts/MarketingLayout";
 import { MockMap } from "@/components/common/mock-map";
+import { EventDetailSkeleton } from "@/components/skeleton";
 import type { EventResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
@@ -49,7 +50,7 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
   if (loading) {
     return (
       <MarketingLayout>
-        <div className="mx-auto max-w-4xl px-4 py-24 text-center text-sm text-ink-muted">Loading event…</div>
+        <EventDetailSkeleton />
       </MarketingLayout>
     );
   }

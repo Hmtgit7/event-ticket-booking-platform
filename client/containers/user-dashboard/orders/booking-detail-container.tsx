@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Ticket } from "lucide-react";
 import { CATEGORY_VISUAL } from "@/enums/event-category.enum";
+import { BookingDetailSkeleton } from "@/components/skeleton";
 import { bookingService } from "@/services/booking.service";
 import { ApiError } from "@/lib/api-client";
 import { formatEventDate, formatEventTime } from "@/lib/events";
@@ -49,11 +50,7 @@ export function BookingDetailContainer({ bookingId }: BookingDetailContainerProp
   if (notFoundFlag) notFound();
 
   if (loading) {
-    return (
-      <p className="rounded-2xl border border-line bg-surface px-5 py-12 text-center text-sm text-ink-muted">
-        Loading ticket…
-      </p>
-    );
+    return <BookingDetailSkeleton />;
   }
 
   if (!booking) {

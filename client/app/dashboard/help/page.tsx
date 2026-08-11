@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Help | GrabMyTicket" };
+export const metadata: Metadata = { title: "Help" };
 
 export default function HelpPage() {
   return (

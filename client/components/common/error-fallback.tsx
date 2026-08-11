@@ -12,14 +12,20 @@ interface ErrorFallbackProps {
   onRetry?: () => void;
   retryLabel?: string;
   showHomeLink?: boolean;
+  showLogo?: boolean;
   digest?: string;
   className?: string;
+  /** "fullscreen" (default) for app/error.tsx and not-found.tsx. "inline"
+   * drops the min-h-screen + logo so it fits inside a dashboard shell that
+   * already has its own nav. */
+  variant?: "fullscreen" | "inline";
 }
 
 /**
- * Shared full-screen fallback used by `app/error.tsx`, `app/global-error.tsx`,
- * and `app/not-found.tsx`. Keeps the three error surfaces visually
- * consistent instead of each hand-rolling its own layout.
+ * Shared fallback used by `app/error.tsx`, `app/global-error.tsx`,
+ * `app/not-found.tsx`, and the per-dashboard scoped error boundaries. Keeps
+ * every error surface visually consistent instead of each hand-rolling its
+ * own layout.
  */
 export function ErrorFallback({
   title,
@@ -28,12 +34,23 @@ export function ErrorFallback({
   onRetry,
   retryLabel = "Try again",
   showHomeLink = true,
+  showLogo,
   digest,
   className,
+  variant = "fullscreen",
 }: ErrorFallbackProps) {
+  const isInline = variant === "inline";
+  const shouldShowLogo = showLogo ?? !isInline;
+
   return (
-    <div className={cn("flex min-h-screen flex-col items-center justify-center gap-6 bg-canvas px-6 py-16 text-center", className)}>
-      <BrandLogo />
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-6 px-6 text-center",
+        isInline ? "rounded-2xl border border-line bg-surface py-16" : "min-h-screen bg-canvas py-16",
+        className,
+      )}
+    >
+      {shouldShowLogo ? <BrandLogo /> : null}
 
       {icon}
 
