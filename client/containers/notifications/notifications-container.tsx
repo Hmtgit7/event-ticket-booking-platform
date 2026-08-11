@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bell, Calendar, Ticket, AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/format-relative-time";
+import { notificationService } from "@/services/notification.service";
+import type { NotificationResponse } from "@/interfaces/notification-api.interface";
 
 type NotifType = "booking" | "event" | "alert" | "system";
-
-interface OrgNotification {
-  id: string;
-  type: NotifType;
-  title: string;
-  body: string;
-  time: string;
-  read: boolean;
-}
 
 const ICON_MAP: Record<NotifType, React.ElementType> = {
   booking: Ticket,
@@ -29,30 +23,44 @@ const COLOR_MAP: Record<NotifType, string> = {
   system:  "bg-ink/5 text-ink-muted",
 };
 
-const SEED: OrgNotification[] = [
-  { id: "n1", type: "booking",  title: "New booking received",            body: "3 VIP tickets for Fashion Empire purchased by Alice Sharma.",      time: "2 min ago",  read: false },
-  { id: "n2", type: "event",    title: "Event published",                 body: "Your event \"Hip Hop Thugs\" is now live and accepting bookings.",  time: "1 hr ago",   read: false },
-  { id: "n3", type: "alert",    title: "Low ticket inventory",            body: "How to Camp has fewer than 10 seats remaining.",                   time: "3 hrs ago",  read: false },
-  { id: "n4", type: "booking",  title: "Booking cancelled",               body: "1 General ticket for Food Exhibition was cancelled by Bob F.",     time: "5 hrs ago",  read: true  },
-  { id: "n5", type: "system",   title: "Payout processed",                body: "$2,450.00 has been transferred to your bank account.",             time: "Yesterday",  read: true  },
-  { id: "n6", type: "alert",    title: "Event flagged for review",        body: "\"How to Camp\" was flagged by a user. Admin review pending.",     time: "2 days ago", read: true  },
-  { id: "n7", type: "system",   title: "Profile verification complete",   body: "Your organizer account is fully verified.",                        time: "3 days ago", read: true  },
-];
+/** Maps backend notification "type" strings (e.g. BOOKING_RECEIVED) to the display bucket used for icon/color - unmapped types fall back to "system" rather than erroring, so a new backend type never breaks this UI. */
+function toDisplayType(type: string): NotifType {
+  if (type.startsWith("BOOKING_")) return "booking";
+  if (type.startsWith("EVENT_")) return "event";
+  if (type.startsWith("ALERT_")) return "alert";
+  return "system";
+}
 
-/** Organizer notifications centre. */
+/** Organizer notifications centre - real data from notification-service, scoped to the signed-in organizer via JWT. */
 export function NotificationsContainer() {
-  const [items, setItems] = useState<OrgNotification[]>(SEED);
+  const [items, setItems] = useState<NotificationResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+
+  const loadNotifications = useCallback(() => {
+    setIsLoading(true);
+    notificationService
+      .myNotifications(0, 50)
+      .then((result) => setItems(result.items))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
 
   const unreadCount = items.filter((n) => !n.read).length;
   const visible = filter === "unread" ? items.filter((n) => !n.read) : items;
 
   function markAllRead() {
+    const unread = items.filter((n) => !n.read);
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    unread.forEach((n) => notificationService.markRead(n.id).catch(() => {}));
   }
 
   function markRead(id: string) {
-    setItems((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    notificationService.markRead(id).catch(() => {});
   }
 
   return (
@@ -87,14 +95,19 @@ export function NotificationsContainer() {
 
       {/* ── List ── */}
       <div className="flex flex-col gap-2">
-        {visible.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface py-16 text-center">
+            <p className="text-sm text-ink-muted">Loading notifications…</p>
+          </div>
+        ) : visible.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface py-16 text-center">
             <CheckCircle2 className="size-10 text-positive" />
             <p className="text-sm font-semibold text-ink">You&apos;re all caught up!</p>
           </div>
         ) : (
           visible.map((notif) => {
-            const Icon = ICON_MAP[notif.type];
+            const displayType = toDisplayType(notif.type);
+            const Icon = ICON_MAP[displayType];
             return (
               <button key={notif.id} type="button" onClick={() => markRead(notif.id)}
                 className={cn(
@@ -103,7 +116,7 @@ export function NotificationsContainer() {
                     ? "border-line bg-background"
                     : "border-brand/20 bg-brand/5"
                 )}>
-                <div className={cn("mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl", COLOR_MAP[notif.type])}>
+                <div className={cn("mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl", COLOR_MAP[displayType])}>
                   <Icon className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -111,9 +124,9 @@ export function NotificationsContainer() {
                     <p className={cn("text-sm font-semibold", notif.read ? "text-ink-muted" : "text-ink")}>
                       {notif.title}
                     </p>
-                    <span className="shrink-0 text-xs text-ink-muted">{notif.time}</span>
+                    <span className="shrink-0 text-xs text-ink-muted">{formatRelativeTime(notif.createdAt)}</span>
                   </div>
-                          <p className="mt-0.5 text-sm text-ink-muted">{notif.body}</p>
+                          <p className="mt-0.5 text-sm text-ink-muted">{notif.message}</p>
                 </div>
                 {!notif.read && (
                   <span className="mt-2 size-2 shrink-0 rounded-full bg-brand" aria-label="Unread" />

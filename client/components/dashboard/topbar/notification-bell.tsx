@@ -8,16 +8,8 @@ import type { NotificationResponse } from "@/interfaces/notification-api.interfa
 import { cn } from "@/lib/utils";
 import { onNotificationRefresh } from "@/lib/notification-events";
 import { playNotificationChime } from "@/lib/notification-sound";
-
-function formatRelativeTime(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const minutes = Math.round(diffMs / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
-}
+import { formatRelativeTime } from "@/lib/format-relative-time";
+import { usePersona } from "@/hooks/use-persona";
 
 /**
  * Click-to-toggle popover (same pattern as ProfileMenu) showing recent
@@ -26,6 +18,11 @@ function formatRelativeTime(iso: string): string {
  * replace the poll later without changing anything that reads this data.
  */
 export function NotificationBell() {
+  const { isOrganizerOnly, isDualRole, activePersona } = usePersona();
+  const isOrganizerView = isOrganizerOnly || (isDualRole && activePersona === "organizer");
+  const viewAllHref = isOrganizerView ? "/dashboard/notifications" : "/user/dashboard/orders";
+  const viewAllLabel = isOrganizerView ? "View all notifications" : "View all orders";
+
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -147,11 +144,11 @@ export function NotificationBell() {
             )}
           </div>
           <Link
-            href="/user/dashboard/orders"
+            href={viewAllHref}
             onClick={() => setIsOpen(false)}
             className="block rounded-xl px-3 py-2.5 text-center text-xs font-semibold text-brand transition hover:bg-surface-hover"
           >
-            View all orders
+            {viewAllLabel}
           </Link>
         </div>
       ) : null}
