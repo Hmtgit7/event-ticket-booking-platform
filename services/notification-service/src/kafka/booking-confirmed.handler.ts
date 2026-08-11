@@ -28,6 +28,13 @@ export class BookingConfirmedHandler {
 
     await this.notificationsService.create(event.userId, NotificationType.BOOKING_CONFIRMED, title, message, event.bookingId);
 
+    // Organizer-facing notification only - never an email here. Email for a
+    // booking goes to the customer who paid, not the organizer who received
+    // the sale; the organizer's signal is purely in-app.
+    const organizerTitle = 'New booking received';
+    const organizerMessage = `${event.quantity} × ${event.ticketTypeName} for ${event.eventTitle} — booking ${event.bookingCode}`;
+    await this.notificationsService.create(event.organizerId, NotificationType.BOOKING_RECEIVED, organizerTitle, organizerMessage, event.bookingId);
+
     const frontendBaseUrl = this.configService.get<string>('FRONTEND_BASE_URL');
     const ticketUrl = `${frontendBaseUrl}/user/dashboard/orders/${event.bookingId}`;
     const html = bookingConfirmedTemplate({

@@ -57,6 +57,7 @@ public class InternalCatalogService {
         return new TicketTypeSnapshotResponse(
                 ticketType.getId(),
                 event.getId(),
+                event.getOrganizerId(),
                 event.getTitle(),
                 event.getStartAt(),
                 event.getBannerImageUrl(),

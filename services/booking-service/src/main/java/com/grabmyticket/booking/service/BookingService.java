@@ -97,7 +97,7 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking confirmed = bookingRepository.save(booking);
-        applicationEventPublisher.publishEvent(toConfirmedEvent(confirmed, userEmail));
+        applicationEventPublisher.publishEvent(toConfirmedEvent(confirmed, userEmail, snapshot.organizerId()));
         return toResponse(confirmed);
     }
 
@@ -152,7 +152,7 @@ public class BookingService {
         return sb.toString();
     }
 
-    private BookingConfirmedEvent toConfirmedEvent(Booking booking, String userEmail) {
+    private BookingConfirmedEvent toConfirmedEvent(Booking booking, String userEmail, UUID organizerId) {
         return new BookingConfirmedEvent(
                 BookingConfirmedEvent.TYPE,
                 booking.getId(),
@@ -160,6 +160,7 @@ public class BookingService {
                 booking.getUserId(),
                 userEmail,
                 booking.getEventId(),
+                organizerId,
                 booking.getEventTitle(),
                 booking.getEventStartAt(),
                 booking.getEventBannerUrl(),

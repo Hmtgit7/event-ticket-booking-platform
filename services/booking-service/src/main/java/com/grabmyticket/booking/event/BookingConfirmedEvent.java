@@ -17,6 +17,7 @@ public record BookingConfirmedEvent(
         UUID userId,
         String userEmail,
         UUID eventId,
+        UUID organizerId,
         String eventTitle,
         Instant eventStartAt,
         String eventBannerUrl,

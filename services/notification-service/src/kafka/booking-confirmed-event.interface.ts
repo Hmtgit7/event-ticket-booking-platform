@@ -6,6 +6,7 @@ export interface BookingConfirmedEvent {
   userId: string;
   userEmail: string;
   eventId: string;
+  organizerId: string;
   eventTitle: string;
   eventStartAt: string;
   eventBannerUrl: string | null;

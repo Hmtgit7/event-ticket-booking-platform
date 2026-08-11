@@ -13,6 +13,7 @@ import java.util.UUID;
 public record TicketTypeSnapshot(
         UUID ticketTypeId,
         UUID eventId,
+        UUID organizerId,
         String eventTitle,
         Instant eventStartAt,
         String eventBannerUrl,

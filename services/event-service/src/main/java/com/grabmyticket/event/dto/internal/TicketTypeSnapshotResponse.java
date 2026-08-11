@@ -10,6 +10,7 @@ import com.grabmyticket.event.entity.EventStatus;
 public record TicketTypeSnapshotResponse(
         UUID ticketTypeId,
         UUID eventId,
+        UUID organizerId,
         String eventTitle,
         Instant eventStartAt,
         String eventBannerUrl,
