@@ -7,6 +7,7 @@ import { LoaderCircle } from "lucide-react";
 
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { InfoTooltip } from "@/components/auth/info-tooltip";
+import { AnimatedLogo } from "@/components/common/animated-logo";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useGoogleAuth } from "@/modules/auth/hooks/use-google-auth";
 import { useBecomeOrganizer } from "@/modules/auth/hooks/use-become-organizer";
@@ -106,7 +107,7 @@ export function OAuthBridgePage() {
           </>
         ) : (
           <>
-            <LoaderCircle className="size-8 animate-spin text-brand" aria-hidden="true" />
+            <AnimatedLogo className="size-14" />
             <p className="text-sm text-ink-muted">
               {isPending ? "Finishing sign-in…" : "Connecting to your Google account…"}
             </p>

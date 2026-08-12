@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { Role } from "@/enums/role.enum";
 import { useAuthStore } from "@/store/auth-store";
 import { resolvePostLoginRedirect } from "@/modules/auth/utils/post-login-redirect";
+import { FullPageLoader } from "@/components/common/full-page-loader";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -64,11 +65,7 @@ export function RequireAuth({ children, anyOfRoles, requireVerifiedEmail = true 
   }, [isHydrated, user, isEmailVerified, hasRequiredRole, pathname, router]);
 
   if (!isHydrated || !user || !isEmailVerified || !hasRequiredRole) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-sm text-ink-muted">
-        Checking your session…
-      </div>
-    );
+    return <FullPageLoader message="Setting up the app for you…" />;
   }
 
   return <>{children}</>;

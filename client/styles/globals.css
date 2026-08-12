@@ -232,6 +232,16 @@ select option {
   background-color: var(--color-brand);
 }
 
+@keyframes logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

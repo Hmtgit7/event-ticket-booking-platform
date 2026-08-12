@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, LoaderCircle, MailWarning } from "lucide-react";
+import { CheckCircle2, MailWarning } from "lucide-react";
 
 import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
+import { AnimatedLogo } from "@/components/common/animated-logo";
 import { useVerifyEmail } from "@/modules/auth/hooks/use-verify-email";
 import { useResendVerification } from "@/modules/auth/hooks/use-resend-verification";
 
@@ -41,7 +42,12 @@ function TokenVerification({ token }: { token: string }) {
   }, []);
 
   if (isPending) {
-    return <StatusCard icon={<LoaderCircle className="size-8 animate-spin text-brand" />} title="Verifying your email…" />;
+    return (
+      <div className="flex flex-col items-center gap-3 text-center">
+        <AnimatedLogo className="size-14" />
+        <h1 className="text-xl font-semibold text-ink">Verifying your email…</h1>
+      </div>
+    );
   }
   if (isSuccess) {
     return (
