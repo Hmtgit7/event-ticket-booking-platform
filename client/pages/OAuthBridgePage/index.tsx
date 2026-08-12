@@ -16,6 +16,7 @@ import { resolvePostLoginRedirect } from "@/modules/auth/utils/post-login-redire
 import { useAuthStore } from "@/store/auth-store";
 import { Role } from "@/enums/role.enum";
 import { AuthLayout } from "@/layouts/AuthLayout";
+import { AuthSessionProvider } from "@/providers/auth-session-provider";
 
 /**
  * NextAuth lands here after Google's handshake completes. We exchange the
@@ -24,8 +25,25 @@ import { AuthLayout } from "@/layouts/AuthLayout";
  * the same "also host events" switch the signup form has, since the Google
  * flow has no other point where that intent can be captured. Once answered
  * either way, rolePromptSeen is persisted so it never asks again.
+ *
+ * `useSession()` below is this app's ONLY consumer of NextAuth's own session
+ * state (everything else runs on our zustand store + cookies - see auth.ts).
+ * AuthSessionProvider is deliberately scoped to just this page rather than
+ * the root layout: NextAuth's SessionProvider polls `/api/auth/session` on
+ * every window focus/visibility change, which was firing across the whole
+ * app (dashboard included) for a session nothing there reads. Keeping it
+ * local means that polling only exists for the few seconds this bridge page
+ * is actually mounted.
  */
 export function OAuthBridgePage() {
+  return (
+    <AuthSessionProvider>
+      <OAuthBridgeContent />
+    </AuthSessionProvider>
+  );
+}
+
+function OAuthBridgeContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { exchangeGoogleToken, isPending, isError, errorMessage } = useGoogleAuth();

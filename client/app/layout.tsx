@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Syne, Playfair_Display } from "next/font/google";
 import "../styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/lib/query-client";
-import { AuthSessionProvider } from "@/providers/auth-session-provider";
 import { AuthHydrator } from "@/providers/auth-hydrator";
 
 
@@ -62,10 +61,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <QueryProvider>
-            <AuthSessionProvider>
-              <AuthHydrator />
-              {children}
-            </AuthSessionProvider>
+            <AuthHydrator />
+            {children}
           </QueryProvider>
         </ThemeProvider>
       </body>
