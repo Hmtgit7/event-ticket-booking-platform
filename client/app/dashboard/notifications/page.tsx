@@ -4,5 +4,5 @@ import { NotificationsContainer } from "@/containers/notifications/notifications
 export const metadata: Metadata = { title: "Notifications" };
 
 export default function NotificationsPage() {
-  return <NotificationsContainer />;
+  return <NotificationsContainer audience="ORGANIZER" />;
 }

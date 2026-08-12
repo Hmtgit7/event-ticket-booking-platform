@@ -5,6 +5,7 @@ import { Bell, Calendar, Ticket, AlertCircle, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { notificationService } from "@/services/notification.service";
+import type { NotificationAudience } from "@/services/notification.service";
 import { triggerNotificationRefresh } from "@/lib/notification-events";
 import type { NotificationResponse } from "@/interfaces/notification-api.interface";
 
@@ -32,8 +33,8 @@ function toDisplayType(type: string): NotifType {
   return "system";
 }
 
-/** Organizer notifications centre - real data from notification-service, scoped to the signed-in organizer via JWT. */
-export function NotificationsContainer() {
+/** Reusable notifications inbox - same component powers the organizer, user, and admin "Notifications" pages, scoped by the `audience` prop to the signed-in account's real data from notification-service. */
+export function NotificationsContainer({ audience }: { audience: NotificationAudience }) {
   const [items, setItems] = useState<NotificationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -41,10 +42,10 @@ export function NotificationsContainer() {
   const loadNotifications = useCallback(() => {
     setIsLoading(true);
     notificationService
-      .myNotifications("ORGANIZER", 0, 50)
+      .myNotifications(audience, 0, 50)
       .then((result) => setItems(result.items))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [audience]);
 
   useEffect(() => {
     loadNotifications();
