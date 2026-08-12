@@ -12,6 +12,10 @@ datasource db {
 model Notification {
   id          String   @id @default(cuid())
   userId      String
+  /// Who this notification is FOR, not just whose account it's on - a dual-role
+  /// account has one userId but should see isolated USER vs ORGANIZER inboxes.
+  /// Extensible: ADMIN comes later as just another string value, no schema change.
+  audience    String   @default("USER")
   type        String
   title       String
   message     String
@@ -22,6 +26,6 @@ model Notification {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([userId, createdAt])
+  @@index([userId, audience, createdAt])
   @@map("notifications")
 }

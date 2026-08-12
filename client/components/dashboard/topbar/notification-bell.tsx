@@ -20,6 +20,7 @@ import { usePersona } from "@/hooks/use-persona";
 export function NotificationBell() {
   const { isOrganizerOnly, isDualRole, activePersona } = usePersona();
   const isOrganizerView = isOrganizerOnly || (isDualRole && activePersona === "organizer");
+  const audience = isOrganizerView ? "ORGANIZER" : "USER";
   const viewAllHref = isOrganizerView ? "/dashboard/notifications" : "/user/dashboard/orders";
   const viewAllLabel = isOrganizerView ? "View all notifications" : "View all orders";
 
@@ -32,7 +33,7 @@ export function NotificationBell() {
 
   const refreshUnreadCount = useCallback(() => {
     notificationService
-      .unreadCount()
+      .unreadCount(audience)
       .then((result) => {
         // Only chime once we've established a baseline - otherwise the very
         // first load (going from "unknown" to e.g. 3) would chime for
@@ -47,7 +48,14 @@ export function NotificationBell() {
       .catch(() => {
         // Not signal-worthy to the user - the badge just stays at its last known count.
       });
-  }, []);
+  }, [audience]);
+
+  useEffect(() => {
+    // Persona can flip (dual-role switch) while this component stays mounted -
+    // reset the chime baseline so switching context never misfires a chime by
+    // comparing an unread count from one audience against the other's.
+    hasLoadedOnce.current = false;
+  }, [audience]);
 
   useEffect(() => {
     refreshUnreadCount();
@@ -72,8 +80,8 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!isOpen) return;
-    notificationService.myNotifications(0, 10).then((result) => setNotifications(result.items));
-  }, [isOpen]);
+    notificationService.myNotifications(audience, 0, 10).then((result) => setNotifications(result.items));
+  }, [isOpen, audience]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

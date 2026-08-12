@@ -37,11 +37,20 @@ public class BookingEventPublisher {
     public void onBookingConfirmed(BookingConfirmedEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(bookingProperties.eventsTopic(), event.bookingId().toString(), payload);
+            kafkaTemplate.send(bookingProperties.eventsTopic(), event.bookingId().toString(), payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            // Same reasoning as the catch below: never let a failed publish
+                            // look like a failed booking. But it must be LOUD in the logs -
+                            // a silently-swallowed send() here previously meant a broker auth
+                            // failure (e.g. wrong SASL config) produced no visible signal at
+                            // all, anywhere, while the booking itself looked completely fine.
+                            log.error("Failed to publish booking.confirmed event for booking {}", event.bookingId(), ex);
+                        } else {
+                            log.info("Published booking.confirmed for booking {}", event.bookingId());
+                        }
+                    });
         } catch (JsonProcessingException ex) {
-            // A booking is already confirmed and paid for at this point - a failed
-            // notification publish must never look like a failed booking. Log and
-            // move on; the user still sees their confirmed booking either way.
             log.error("Failed to serialize booking.confirmed event for booking {}", event.bookingId(), ex);
         }
     }

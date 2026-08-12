@@ -5,6 +5,7 @@ import { Bell, Calendar, Ticket, AlertCircle, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { notificationService } from "@/services/notification.service";
+import { triggerNotificationRefresh } from "@/lib/notification-events";
 import type { NotificationResponse } from "@/interfaces/notification-api.interface";
 
 type NotifType = "booking" | "event" | "alert" | "system";
@@ -40,7 +41,7 @@ export function NotificationsContainer() {
   const loadNotifications = useCallback(() => {
     setIsLoading(true);
     notificationService
-      .myNotifications(0, 50)
+      .myNotifications("ORGANIZER", 0, 50)
       .then((result) => setItems(result.items))
       .finally(() => setIsLoading(false));
   }, []);
@@ -56,11 +57,16 @@ export function NotificationsContainer() {
     const unread = items.filter((n) => !n.read);
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
     unread.forEach((n) => notificationService.markRead(n.id).catch(() => {}));
+    // The bell's badge is separate local state that only ever changes on its
+    // own poll/events - without this, marking read here left it stale until
+    // the next 30s poll or a hard refresh.
+    triggerNotificationRefresh();
   }
 
   function markRead(id: string) {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     notificationService.markRead(id).catch(() => {});
+    triggerNotificationRefresh();
   }
 
   return (
