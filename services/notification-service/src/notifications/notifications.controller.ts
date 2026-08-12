@@ -6,12 +6,12 @@ import { NotificationResponseDto, PageResponseDto } from './dto/notification-res
 import { NotificationAudience } from './notification-audience';
 
 function parseAudience(raw: string | undefined): NotificationAudience {
-  if (raw === NotificationAudience.USER || raw === NotificationAudience.ORGANIZER) {
+  if (raw === NotificationAudience.USER || raw === NotificationAudience.ORGANIZER || raw === NotificationAudience.ADMIN) {
     return raw;
   }
   // Required, not defaulted - a silently-defaulted audience is exactly how the
   // USER/ORGANIZER inboxes ended up merged in the first place.
-  throw new BadRequestException('audience query param is required (USER or ORGANIZER)');
+  throw new BadRequestException('audience query param is required (USER, ORGANIZER, or ADMIN)');
 }
 
 @Controller('notifications')
