@@ -7,12 +7,12 @@
     <artifactId>grabmyticket-services</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>GrabMyTicket Services</name>
+    <n>GrabMyTicket Services</n>
     <description>Aggregator for local CI across independent Spring Boot services.</description>
     <modules>
         <module>services/auth-service</module>
         <module>services/event-service</module>
         <module>services/booking-service</module>
+        <module>services/payment-service</module>
     </modules>
 </project>
-

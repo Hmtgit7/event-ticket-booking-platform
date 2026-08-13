@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: payment-service
+  profiles:
+    default: local
+
+  flyway:
+    # Each service owns its own schema history table to avoid version collisions
+    # when multiple services share the same database.
+    table: flyway_schema_history_payment
+    baseline-on-migrate: true
+    baseline-version: 0
+
+server:
+  port: ${PORT:${SERVER_PORT:8084}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  jwt:
+    issuer: grabmyticket-auth
+    secret: ${JWT_SECRET:change-me-local-development-secret-change-me}
+  internal:
+    secret: ${INTERNAL_API_SECRET:change-me-local-development-internal-secret}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+  payment:
+    events-topic: ${PAYMENT_EVENTS_TOPIC:payment-events}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000},${CORS_ADDITIONAL_ORIGINS:}
