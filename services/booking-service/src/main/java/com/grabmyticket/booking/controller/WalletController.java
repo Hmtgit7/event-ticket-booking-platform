@@ -6,21 +6,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabmyticket.booking.dto.PageResponse;
-import com.grabmyticket.booking.dto.RechargeWalletRequest;
 import com.grabmyticket.booking.dto.WalletResponse;
 import com.grabmyticket.booking.dto.WalletTransactionResponse;
 import com.grabmyticket.booking.service.WalletService;
 
-import jakarta.validation.Valid;
-
-/** Every endpoint here requires ROLE_USER and operates only on the caller's own wallet - userId always comes from the JWT, never a path/query param. */
+/**
+ * Read-only now - every endpoint here requires ROLE_USER and operates only
+ * on the caller's own wallet, userId always comes from the JWT. Recharge is
+ * no longer a booking-service endpoint: the client calls payment-service's
+ * POST /payments/orders to start a recharge, and this service's balance
+ * only ever changes via PaymentEventListener once Razorpay actually
+ * confirms the payment - never from a direct client call.
+ */
 @RestController
 @RequestMapping("/wallet")
 @PreAuthorize("hasRole('USER')")
@@ -35,11 +37,6 @@ public class WalletController {
     @GetMapping
     public ResponseEntity<WalletResponse> getWallet(Authentication authentication) {
         return ResponseEntity.ok(walletService.getWallet(userId(authentication)));
-    }
-
-    @PostMapping("/recharge")
-    public ResponseEntity<WalletResponse> recharge(Authentication authentication, @Valid @RequestBody RechargeWalletRequest request) {
-        return ResponseEntity.ok(walletService.recharge(userId(authentication), request));
     }
 
     @GetMapping("/transactions")

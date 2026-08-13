@@ -11,4 +11,7 @@ import com.grabmyticket.booking.entity.WalletTransaction;
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, UUID> {
 
     Page<WalletTransaction> findByWalletIdOrderByCreatedAtDesc(UUID walletId, Pageable pageable);
+
+    /** Idempotency check for Kafka-driven credits (payment.completed can be delivered more than once for the same payment). */
+    boolean existsByReferenceId(UUID referenceId);
 }

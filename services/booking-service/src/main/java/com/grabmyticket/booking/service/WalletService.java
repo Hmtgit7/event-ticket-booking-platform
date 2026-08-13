@@ -3,6 +3,8 @@ package com.grabmyticket.booking.service;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.grabmyticket.booking.dto.PageResponse;
-import com.grabmyticket.booking.dto.RechargeWalletRequest;
 import com.grabmyticket.booking.dto.WalletResponse;
 import com.grabmyticket.booking.dto.WalletTransactionResponse;
 import com.grabmyticket.booking.entity.TransactionReason;
@@ -26,13 +27,15 @@ import com.grabmyticket.booking.repository.WalletTransactionRepository;
 /**
  * Owns every wallet balance mutation in the system - nothing else is allowed
  * to touch Wallet.balance directly. debit()/credit() are the extension point
- * for other reasons (RECHARGE today; BOOKING_PAYMENT/BOOKING_REFUND land here
- * unchanged when BookingService starts calling them - open for extension,
- * closed for modification: adding a reason never means editing this math).
+ * for other reasons (BOOKING_PAYMENT/BOOKING_REFUND already use them;
+ * creditFromPayment() below is what payment-service's Kafka event now drives
+ * for RECHARGE - open for extension, closed for modification).
  */
 @Service
 @Transactional
 public class WalletService {
+
+    private static final Logger log = LoggerFactory.getLogger(WalletService.class);
 
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository transactionRepository;
@@ -42,10 +45,21 @@ public class WalletService {
         this.transactionRepository = transactionRepository;
     }
 
-    public WalletResponse recharge(UUID userId, RechargeWalletRequest request) {
+    /**
+     * Called only from PaymentEventListener once payment-service has
+     * confirmed a Razorpay payment actually captured. paymentTransactionId
+     * becomes the WalletTransaction's referenceId and is the idempotency
+     * key - a duplicate delivery of the same payment.completed event (Kafka
+     * consumer redelivery, Razorpay webhook retry replayed upstream) is a
+     * no-op here rather than a double credit.
+     */
+    public void creditFromPayment(UUID userId, UUID paymentTransactionId, BigDecimal amount) {
+        if (transactionRepository.existsByReferenceId(paymentTransactionId)) {
+            log.info("Ignoring duplicate payment.completed for paymentTransactionId {} - already credited", paymentTransactionId);
+            return;
+        }
         Wallet wallet = getOrCreateWallet(userId);
-        credit(wallet, request.amount(), TransactionReason.RECHARGE, "Wallet recharge", null);
-        return toResponse(wallet);
+        credit(wallet, amount, TransactionReason.RECHARGE, "Wallet recharge", paymentTransactionId);
     }
 
     @Transactional(readOnly = true)

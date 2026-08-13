@@ -2,11 +2,12 @@ package com.grabmyticket.booking.dto;
 
 import java.math.BigDecimal;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-
-/** "Payment integration coming soon" dummy recharge - just credits the entered amount. No min/max by design for now. */
-public record RechargeWalletRequest(
-        @NotNull @DecimalMin(value = "0.01", message = "amount must be greater than 0") BigDecimal amount
-) {
+/**
+ * UNUSED as of the payment-service split - WalletController no longer has a
+ * recharge endpoint (recharges start at payment-service's
+ * POST /payments/orders and land here only via PaymentEventListener). Kept
+ * only because this MCP session has no file-delete capability - safe to
+ * delete this file manually (git rm) whenever convenient.
+ */
+public record RechargeWalletRequest(BigDecimal amount) {
 }
