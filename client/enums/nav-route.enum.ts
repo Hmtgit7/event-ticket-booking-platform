@@ -24,6 +24,7 @@ export const NavRoute = {
   UserWallet: "/user/dashboard/wallet",
   UserProfile: "/user/dashboard/profile",
   UserSupport: "/user/dashboard/support",
+  UserNotifications: "/user/dashboard/notifications",
 
   // Admin dashboard
   AdminDashboard: "/admin/dashboard",
@@ -33,6 +34,7 @@ export const NavRoute = {
   AdminReports: "/admin/dashboard/reports",
   AdminSettings: "/admin/dashboard/settings",
   AdminSupport: "/admin/dashboard/support",
+  AdminNotifications: "/admin/dashboard/notifications",
 } as const;
 
 export type NavRoute = (typeof NavRoute)[keyof typeof NavRoute];

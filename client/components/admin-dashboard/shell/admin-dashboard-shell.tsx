@@ -18,6 +18,7 @@ const ADMIN_CRUMBS: Record<string, { section: string; crumb: string }> = {
   [NavRoute.AdminBookings]:  { section: "Admin / Manage", crumb: "Bookings"       },
   [NavRoute.AdminReports]:   { section: "Admin / Manage", crumb: "Reports"        },
   [NavRoute.AdminSupport]:   { section: "Admin / Manage", crumb: "Support Tickets"},
+  [NavRoute.AdminNotifications]: { section: "Admin / Manage", crumb: "Notifications" },
   [NavRoute.AdminSettings]:  { section: "Admin / System", crumb: "Settings"       },
 };
 

@@ -20,6 +20,7 @@ const USER_CRUMBS: Record<string, { section: string; crumb: string }> = {
   [NavRoute.UserSaved]:     { section: "My Account / Tickets", crumb: "Saved Events" },
   [NavRoute.UserWallet]:    { section: "My Account / Payments", crumb: "Wallet" },
   [NavRoute.UserProfile]:   { section: "My Account / Settings", crumb: "Profile" },
+  [NavRoute.UserNotifications]: { section: "My Account / Settings", crumb: "Notifications" },
   [NavRoute.UserSupport]:   { section: "My Account / Help", crumb: "Help & Support" },
 };
 

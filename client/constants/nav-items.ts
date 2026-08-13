@@ -71,6 +71,7 @@ export const USER_NAV_SECTIONS: NavSection[] = [
     title: "Account",
     items: [
       { id: "user-profile", label: "Profile", href: NavRoute.UserProfile, icon: UserCircleFreeIcons, matchPrefix: true },
+      { id: "user-notifications", label: "Notifications", href: NavRoute.UserNotifications, icon: Notification02FreeIcons, matchPrefix: true },
       { id: "user-support", label: "Help & Support", href: NavRoute.UserSupport, icon: HelpCircleFreeIcons, matchPrefix: true },
     ],
   },
@@ -91,6 +92,7 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
     title: "Management",
     items: [
       { id: "admin-users",     label: "Users",      href: NavRoute.AdminUsers,     icon: UserMultiple02FreeIcons,   matchPrefix: true },
+      { id: "admin-notifications", label: "Notifications", href: NavRoute.AdminNotifications, icon: Notification02FreeIcons, matchPrefix: true },
       { id: "admin-support",   label: "Support",    href: NavRoute.AdminSupport,   icon: CustomerSupportFreeIcons,  matchPrefix: true },
     ],
   },
