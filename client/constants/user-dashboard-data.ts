@@ -27,9 +27,3 @@ export const DUMMY_SUPPORT_TICKETS: SupportTicket[] = [
   { id: "SUP-001", subject: "Refund request for Hip Hop Night", date: "Oct 20, 2025", status: "Open" },
   { id: "SUP-002", subject: "Unable to download ticket PDF", date: "Sep 10, 2025", status: "Resolved" },
 ];
-
-export const DUMMY_NOTIFICATIONS = [
-  "Food Exhibition moved check-in to Gate B.",
-  "Your AI Make us Better ticket is ready for download.",
-  "Adventure Hiking has 28 seats left — book now.",
-];
