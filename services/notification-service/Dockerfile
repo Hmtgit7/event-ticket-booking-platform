@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 RUN corepack enable && corepack prepare pnpm@11.18.0 --activate
 WORKDIR /app
@@ -16,7 +16,7 @@ RUN pnpm exec prisma generate
 RUN pnpm run build
 RUN pnpm prune --prod --ignore-scripts
 
-FROM node:22-alpine AS production
+FROM node:26-alpine AS production
 
 WORKDIR /app
 ENV NODE_ENV=production
