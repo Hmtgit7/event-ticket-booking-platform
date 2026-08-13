@@ -10,6 +10,8 @@ import { onNotificationRefresh } from "@/lib/notification-events";
 import { playNotificationChime } from "@/lib/notification-sound";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import { usePersona } from "@/hooks/use-persona";
+import { useAuthStore } from "@/store/auth-store";
+import { Role } from "@/enums/role.enum";
 
 /**
  * Click-to-toggle popover (same pattern as ProfileMenu) showing recent
@@ -19,10 +21,16 @@ import { usePersona } from "@/hooks/use-persona";
  */
 export function NotificationBell() {
   const { isOrganizerOnly, isDualRole, activePersona } = usePersona();
+  const isAdmin = useAuthStore((state) => !!state.user && state.user.roles.includes(Role.Admin));
   const isOrganizerView = isOrganizerOnly || (isDualRole && activePersona === "organizer");
-  const audience = isOrganizerView ? "ORGANIZER" : "USER";
-  const viewAllHref = isOrganizerView ? "/dashboard/notifications" : "/user/dashboard/orders";
-  const viewAllLabel = isOrganizerView ? "View all notifications" : "View all orders";
+
+  const audience = isAdmin ? "ADMIN" : isOrganizerView ? "ORGANIZER" : "USER";
+  const viewAllHref = isAdmin
+    ? "/admin/dashboard/notifications"
+    : isOrganizerView
+      ? "/dashboard/notifications"
+      : "/user/dashboard/notifications";
+  const viewAllLabel = "View all notifications";
 
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
