@@ -1,6 +1,6 @@
 /**
- * Shapes returned by / sent to booking-service's wallet endpoints. Field
- * names match WalletResponse.java / WalletTransactionResponse.java exactly.
+ * Shapes returned by booking-service's wallet endpoints. Field names match
+ * WalletResponse.java / WalletTransactionResponse.java exactly.
  */
 
 export interface WalletResponse {
@@ -24,8 +24,4 @@ export interface WalletTransactionResponse {
   description: string;
   referenceId: string | null;
   createdAt: string;
-}
-
-export interface RechargeWalletPayload {
-  amount: number;
 }

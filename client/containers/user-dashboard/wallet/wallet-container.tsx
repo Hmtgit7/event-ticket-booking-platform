@@ -14,8 +14,9 @@ import type { WalletResponse, WalletTransactionResponse } from "@/interfaces/wal
 
 /**
  * Wallet page container — balance hero card + recent transaction history,
- * both backed by booking-service. "Add funds" is a dummy recharge until a
- * real payment gateway lands (see RechargeWalletModal).
+ * both backed by booking-service. "Add funds" opens a real Razorpay order
+ * via payment-service; the balance itself only updates once the payment is
+ * confirmed and credited over Kafka (see RechargeWalletModal).
  */
 export function WalletContainer() {
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
@@ -103,7 +104,12 @@ export function WalletContainer() {
         </div>
       </div>
 
-      <RechargeWalletModal open={modalOpen} onClose={() => setModalOpen(false)} onRecharged={handleRecharged} />
+      <RechargeWalletModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onRecharged={handleRecharged}
+        currentBalance={wallet?.balance ?? 0}
+      />
     </div>
   );
 }
