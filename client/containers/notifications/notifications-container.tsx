@@ -40,7 +40,6 @@ export function NotificationsContainer({ audience }: { audience: NotificationAud
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const loadNotifications = useCallback(() => {
-    setIsLoading(true);
     notificationService
       .myNotifications(audience, 0, 50)
       .then((result) => setItems(result.items))
