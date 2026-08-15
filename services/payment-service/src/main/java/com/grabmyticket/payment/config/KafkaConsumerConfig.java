@@ -31,11 +31,18 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
+    public String bookingEventsTopic(BookingConsumerProperties bookingConsumerProperties) {
+        return bookingConsumerProperties.resolvedEventsTopic();
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-            ConsumerFactory<String, String> consumerFactory
+            ConsumerFactory<String, String> consumerFactory,
+            KafkaProperties kafkaProperties
     ) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+        factory.setAutoStartup(kafkaProperties.getListener().isAutoStartup());
         return factory;
     }
 }

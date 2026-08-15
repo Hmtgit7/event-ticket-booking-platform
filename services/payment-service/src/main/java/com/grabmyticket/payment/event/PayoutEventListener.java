@@ -28,7 +28,7 @@ public class PayoutEventListener {
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "#{@bookingConsumerProperties.resolvedEventsTopic()}")
+    @KafkaListener(topics = "#{@bookingEventsTopic}")
     public void onBookingEvent(String payload) {
         PayoutApprovedEvent event;
         try {
