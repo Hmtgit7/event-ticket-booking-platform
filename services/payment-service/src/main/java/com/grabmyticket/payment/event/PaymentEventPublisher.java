@@ -58,4 +58,26 @@ public class PaymentEventPublisher {
             log.error("Failed to serialize payment.completed event for transaction {}", event.paymentTransactionId(), ex);
         }
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onPayoutExecuted(PayoutExecutedEvent event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            String topic = paymentProperties.payment().eventsTopic();
+            kafkaTemplate.send(topic, event.payoutRequestId().toString(), payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            // Same severity as the payment.completed case above - the
+                            // PayoutTransaction row is already terminal and correct, but a
+                            // silently-swallowed send() here leaves booking-service's
+                            // PayoutRequest stuck in APPROVED forever with no visible signal.
+                            log.error("Failed to publish payout.executed event for payoutRequestId {}", event.payoutRequestId(), ex);
+                        } else {
+                            log.info("Published payout.executed ({}) for payoutRequestId {}", event.status(), event.payoutRequestId());
+                        }
+                    });
+        } catch (JsonProcessingException ex) {
+            log.error("Failed to serialize payout.executed event for payoutRequestId {}", event.payoutRequestId(), ex);
+        }
+    }
 }
