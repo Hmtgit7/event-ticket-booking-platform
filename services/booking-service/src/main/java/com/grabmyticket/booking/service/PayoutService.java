@@ -122,6 +122,35 @@ public class PayoutService {
         return toResponse(payoutRequestRepository.save(request));
     }
 
+    // ─────────────────────── payment-service callback (Phase 2c-ii) ───────────────────────
+
+    /**
+     * Called by PayoutEventListener once payment-service confirms (via
+     * payout.executed) whether the Razorpay transfer actually went through.
+     * Idempotent - a redelivered event for an already-PAID/FAILED request is
+     * a no-op, same guard style as WalletService.creditFromPayment.
+     */
+    public void markPayoutExecuted(UUID payoutRequestId, boolean paid, String razorpayPayoutId, String failureReason) {
+        PayoutRequest request = payoutRequestRepository.findById(payoutRequestId).orElse(null);
+        if (request == null) {
+            return;
+        }
+        if (request.getStatus() == PayoutStatus.PAID || request.getStatus() == PayoutStatus.FAILED) {
+            return;
+        }
+
+        request.setStatus(paid ? PayoutStatus.PAID : PayoutStatus.FAILED);
+        request.setRazorpayPayoutId(razorpayPayoutId);
+        if (!paid && request.getReviewNote() == null) {
+            // reviewNote is otherwise an admin's rejection reason - reused
+            // here only because this request was never rejected by an admin
+            // (it was APPROVED, then failed downstream at Razorpay), so
+            // there's no conflict with an actual admin note.
+            request.setReviewNote(failureReason);
+        }
+        payoutRequestRepository.save(request);
+    }
+
     // ───────────────────────── helpers ─────────────────────────
 
     private PayoutRequest getReviewableRequest(UUID payoutRequestId) {
