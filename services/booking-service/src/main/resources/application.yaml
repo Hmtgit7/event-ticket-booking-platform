@@ -31,6 +31,11 @@ app:
   booking:
     hold-ttl: ${BOOKING_HOLD_TTL:5m}
     events-topic: ${BOOKING_EVENTS_TOPIC:booking-events}
+    # Fraction of gross confirmed-booking revenue GrabMyTicket keeps before an
+    # organizer's payout balance is computed. Placeholder value - confirm the
+    # real commission rate with Hemant before go-live, this is not a decision
+    # Claude should make.
+    platform-commission-rate: ${PLATFORM_COMMISSION_RATE:0.10}
   payment:
     # Must match payment-service's app.payment.events-topic exactly - this is
     # the topic PaymentEventListener consumes to credit wallet recharges.

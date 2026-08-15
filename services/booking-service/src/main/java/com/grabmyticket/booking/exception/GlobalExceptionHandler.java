@@ -50,6 +50,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
+    @ExceptionHandler(InsufficientPayoutBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientPayoutBalance(InsufficientPayoutBalanceException ex) {
+        return build(HttpStatus.PAYMENT_REQUIRED, ex.getMessage());
+    }
+
+    @ExceptionHandler(PayoutRequestNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePayoutRequestNotFound(PayoutRequestNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(PayoutRequestNotReviewableException.class)
+    public ResponseEntity<ErrorResponse> handlePayoutRequestNotReviewable(PayoutRequestNotReviewableException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()

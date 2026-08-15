@@ -54,4 +54,21 @@ public class BookingEventPublisher {
             log.error("Failed to serialize booking.confirmed event for booking {}", event.bookingId(), ex);
         }
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onPayoutApproved(PayoutApprovedEvent event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send(bookingProperties.eventsTopic(), event.payoutRequestId().toString(), payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            log.error("Failed to publish payout.approved event for payoutRequestId {}", event.payoutRequestId(), ex);
+                        } else {
+                            log.info("Published payout.approved for payoutRequestId {}", event.payoutRequestId());
+                        }
+                    });
+        } catch (JsonProcessingException ex) {
+            log.error("Failed to serialize payout.approved event for payoutRequestId {}", event.payoutRequestId(), ex);
+        }
+    }
 }
