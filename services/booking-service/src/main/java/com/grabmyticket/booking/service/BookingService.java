@@ -17,6 +17,8 @@ import com.grabmyticket.booking.client.EventCatalogClient;
 import com.grabmyticket.booking.client.TicketTypeSnapshot;
 import com.grabmyticket.booking.dto.BookingResponse;
 import com.grabmyticket.booking.dto.CreateBookingRequest;
+import com.grabmyticket.booking.dto.OrganizerRevenueResponse;
+import com.grabmyticket.booking.dto.OrganizerTicketsSoldResponse;
 import com.grabmyticket.booking.dto.PageResponse;
 import com.grabmyticket.booking.entity.Booking;
 import com.grabmyticket.booking.entity.BookingStatus;
@@ -72,6 +74,7 @@ public class BookingService {
                 .bookingCode(generateUniqueBookingCode())
                 .userId(userId)
                 .eventId(snapshot.eventId())
+                .organizerId(snapshot.organizerId())
                 .ticketTypeId(request.ticketTypeId())
                 .eventTitle(snapshot.eventTitle())
                 .eventStartAt(snapshot.eventStartAt())
@@ -113,6 +116,27 @@ public class BookingService {
         Booking booking = bookingRepository.findByIdAndUserId(bookingId, userId)
                 .orElseThrow(BookingNotFoundException::new);
         return toResponse(booking);
+    }
+
+    // Organizer-facing (Phase 2a) - deliberately separate, single-metric methods
+    // rather than one consolidated "dashboard summary", so each is independently
+    // callable (e.g. by the AI service later) without paying for unused metrics.
+
+    @Transactional(readOnly = true)
+    public PageResponse<BookingResponse> getOrganizerBookings(UUID organizerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Booking> bookings = bookingRepository.findByOrganizerIdOrderByCreatedAtDesc(organizerId, pageable);
+        return PageResponse.of(bookings.map(this::toResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public OrganizerRevenueResponse getOrganizerRevenue(UUID organizerId) {
+        return new OrganizerRevenueResponse(bookingRepository.sumRevenueByOrganizerId(organizerId), "INR");
+    }
+
+    @Transactional(readOnly = true)
+    public OrganizerTicketsSoldResponse getOrganizerTicketsSold(UUID organizerId) {
+        return new OrganizerTicketsSoldResponse(bookingRepository.sumTicketsSoldByOrganizerId(organizerId));
     }
 
     // ───────────────────────── helpers ─────────────────────────

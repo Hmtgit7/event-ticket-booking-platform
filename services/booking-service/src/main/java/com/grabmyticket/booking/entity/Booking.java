@@ -54,6 +54,10 @@ public class Booking {
     @Column(name = "event_id", nullable = false)
     private UUID eventId;
 
+    /** Snapshot of the event's organizer at booking time - what Phase 2's organizer revenue/tickets-sold endpoints group by. Nullable only for rows that predate this column (see V2 migration). */
+    @Column(name = "organizer_id")
+    private UUID organizerId;
+
     @Column(name = "ticket_type_id", nullable = false)
     private UUID ticketTypeId;
 
