@@ -39,7 +39,7 @@ public class PaymentEventPublisher {
     public void onPaymentCompleted(PaymentCompletedEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
-            String topic = paymentProperties.payment().eventsTopic();
+            String topic = paymentProperties.payment().resolvedEventsTopic();
             kafkaTemplate.send(topic, event.paymentTransactionId().toString(), payload)
                     .whenComplete((result, ex) -> {
                         if (ex != null) {
@@ -63,7 +63,7 @@ public class PaymentEventPublisher {
     public void onPayoutExecuted(PayoutExecutedEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
-            String topic = paymentProperties.payment().eventsTopic();
+            String topic = paymentProperties.payment().resolvedEventsTopic();
             kafkaTemplate.send(topic, event.payoutRequestId().toString(), payload)
                     .whenComplete((result, ex) -> {
                         if (ex != null) {

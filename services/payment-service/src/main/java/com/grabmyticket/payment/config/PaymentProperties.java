@@ -21,6 +21,10 @@ public record PaymentProperties(Razorpay razorpay, RazorpayX razorpayX, Payment 
     }
 
     public record Payment(String eventsTopic) {
+
+        public String resolvedEventsTopic() {
+            return (eventsTopic == null || eventsTopic.isBlank()) ? "payment-events" : eventsTopic;
+        }
     }
 
     public String resolvedXKeyId() {
