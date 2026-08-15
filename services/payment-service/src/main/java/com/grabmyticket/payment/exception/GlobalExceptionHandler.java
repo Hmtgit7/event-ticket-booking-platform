@@ -26,6 +26,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(PayoutAccountAlreadyActiveException.class)
+    public ResponseEntity<ErrorResponse> handlePayoutAccountAlreadyActive(PayoutAccountAlreadyActiveException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(PayoutAccountNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePayoutAccountNotFound(PayoutAccountNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()

@@ -34,7 +34,26 @@ app:
     key-id: ${RAZORPAY_KEY_ID:}
     key-secret: ${RAZORPAY_KEY_SECRET:}
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+  razorpay-x:
+    # Leave blank to reuse app.razorpay's keys (common case: RazorpayX activated
+    # on the same account). Only set these if Razorpay issued separate X keys.
+    key-id: ${RAZORPAY_X_KEY_ID:}
+    key-secret: ${RAZORPAY_X_KEY_SECRET:}
+    # RazorpayX "Customer Identifier" / Current Account number - Dashboard >
+    # My Account & Settings > Banking > Customer Identifier. Different value
+    # in Test Mode vs Live Mode. NOT set up yet as of Phase 2c-i - the actual
+    # payout call (Phase 2c-ii) will fail until this exists.
+    account-number: ${RAZORPAYX_ACCOUNT_NUMBER:}
+    payout-mode: ${RAZORPAYX_PAYOUT_MODE:IMPS}
+    # Must be a purpose classification that exists on the RazorpayX dashboard
+    # (Settings > Payout Purposes) - the API rejects unknown purposes and
+    # cannot create new ones itself.
+    payout-purpose: ${RAZORPAYX_PAYOUT_PURPOSE:payout}
   payment:
     events-topic: ${PAYMENT_EVENTS_TOPIC:payment-events}
+  booking:
+    # The topic THIS service consumes from - must match booking-service's own
+    # app.booking.events-topic exactly. That's where payout.approved arrives.
+    events-topic: ${BOOKING_EVENTS_TOPIC:booking-events}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000},${CORS_ADDITIONAL_ORIGINS:}
