@@ -98,6 +98,16 @@ public class Event {
     @Column(name = "published_at")
     private Instant publishedAt;
 
+    /** Set whenever status becomes FLAGGED or REMOVED (see EventService's admin moderation methods) - cleared on unflag/restore. Shown to the organizer on their own event view so they know why, per the platform's transparency principle for moderation actions. */
+    @Column(name = "moderation_reason", length = 500)
+    private String moderationReason;
+
+    @Column(name = "moderated_by")
+    private UUID moderatedBy;
+
+    @Column(name = "moderated_at")
+    private Instant moderatedAt;
+
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("price ASC")
     @Builder.Default

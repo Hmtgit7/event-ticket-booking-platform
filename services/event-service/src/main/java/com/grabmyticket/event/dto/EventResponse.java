@@ -24,6 +24,8 @@ public record EventResponse(
         String bannerPublicId,
         EventStatus status,
         Instant publishedAt,
+        /** Only non-null when status is FLAGGED or REMOVED - see Event.moderationReason. */
+        String moderationReason,
         List<TicketTypeResponse> ticketTypes,
         Instant createdAt,
         Instant updatedAt

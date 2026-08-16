@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.grabmyticket.event.dto.CreateEventRequest;
 import com.grabmyticket.event.dto.EventResponse;
 import com.grabmyticket.event.dto.EventSummaryResponse;
+import com.grabmyticket.event.dto.ModerateEventRequest;
 import com.grabmyticket.event.dto.PageResponse;
 import com.grabmyticket.event.dto.TicketTypeRequest;
 import com.grabmyticket.event.dto.TicketTypeResponse;
@@ -40,10 +41,12 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final TicketTypeRepository ticketTypeRepository;
+    private final AuditLogService auditLogService;
 
-    public EventService(EventRepository eventRepository, TicketTypeRepository ticketTypeRepository) {
+    public EventService(EventRepository eventRepository, TicketTypeRepository ticketTypeRepository, AuditLogService auditLogService) {
         this.eventRepository = eventRepository;
         this.ticketTypeRepository = ticketTypeRepository;
+        this.auditLogService = auditLogService;
     }
 
     // ───────────────────────── organizer: create / update ─────────────────────────
@@ -239,6 +242,76 @@ public class EventService {
 
     // ───────────────────────── helpers ─────────────────────────
 
+    // ─────────────────────── admin: moderation (Phase 4) ───────────────────────
+
+    @Transactional(readOnly = true)
+    public PageResponse<EventSummaryResponse> listAllEventsForAdmin(EventStatus status, int page, int size) {
+        Specification<Event> spec = status == null ? null : EventSpecifications.hasStatus(status);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Event> events = eventRepository.findAll(spec, pageable);
+        return PageResponse.of(events.map(this::toSummary));
+    }
+
+    public EventResponse flagEvent(UUID adminId, UUID eventId, ModerateEventRequest request) {
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        if (event.getStatus() != EventStatus.PUBLISHED) {
+            throw new InvalidEventStateException("Only a published event can be flagged");
+        }
+        event.setStatus(EventStatus.FLAGGED);
+        applyModeration(event, adminId, request.reason());
+        Event saved = eventRepository.save(event);
+        auditLogService.record(adminId, AuditActions.EVENT_FLAGGED, AuditActions.TARGET_EVENT, eventId, request.reason());
+        return toResponse(saved);
+    }
+
+    public EventResponse unflagEvent(UUID adminId, UUID eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        if (event.getStatus() != EventStatus.FLAGGED) {
+            throw new InvalidEventStateException("Only a flagged event can be unflagged");
+        }
+        event.setStatus(EventStatus.PUBLISHED);
+        clearModeration(event);
+        Event saved = eventRepository.save(event);
+        auditLogService.record(adminId, AuditActions.EVENT_UNFLAGGED, AuditActions.TARGET_EVENT, eventId, null);
+        return toResponse(saved);
+    }
+
+    public EventResponse removeEvent(UUID adminId, UUID eventId, ModerateEventRequest request) {
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        if (event.getStatus() != EventStatus.PUBLISHED && event.getStatus() != EventStatus.FLAGGED) {
+            throw new InvalidEventStateException("Only a published or flagged event can be removed");
+        }
+        event.setStatus(EventStatus.REMOVED);
+        applyModeration(event, adminId, request.reason());
+        Event saved = eventRepository.save(event);
+        auditLogService.record(adminId, AuditActions.EVENT_REMOVED, AuditActions.TARGET_EVENT, eventId, request.reason());
+        return toResponse(saved);
+    }
+
+    public EventResponse restoreEvent(UUID adminId, UUID eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(EventNotFoundException::new);
+        if (event.getStatus() != EventStatus.REMOVED) {
+            throw new InvalidEventStateException("Only a removed event can be restored");
+        }
+        event.setStatus(EventStatus.PUBLISHED);
+        clearModeration(event);
+        Event saved = eventRepository.save(event);
+        auditLogService.record(adminId, AuditActions.EVENT_RESTORED, AuditActions.TARGET_EVENT, eventId, null);
+        return toResponse(saved);
+    }
+
+    private void applyModeration(Event event, UUID adminId, String reason) {
+        event.setModerationReason(reason);
+        event.setModeratedBy(adminId);
+        event.setModeratedAt(Instant.now());
+    }
+
+    private void clearModeration(Event event) {
+        event.setModerationReason(null);
+        event.setModeratedBy(null);
+        event.setModeratedAt(null);
+    }
+
     private Event getOwnedEvent(UUID organizerId, UUID eventId) {
         return eventRepository.findByIdAndOrganizerId(eventId, organizerId)
                 .orElseThrow(EventNotFoundException::new);
@@ -304,6 +377,7 @@ public class EventService {
                 event.getBannerPublicId(),
                 event.getStatus(),
                 event.getPublishedAt(),
+                event.getModerationReason(),
                 tickets,
                 event.getCreatedAt(),
                 event.getUpdatedAt()
@@ -346,7 +420,8 @@ public class EventService {
                 event.getStatus(),
                 fromPrice,
                 totalCapacity,
-                totalSold
+                totalSold,
+                event.getModerationReason()
         );
     }
 }

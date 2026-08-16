@@ -23,6 +23,8 @@ public record EventSummaryResponse(
         /** Sum of quantityTotal across all tiers. */
         Integer totalCapacity,
         /** Sum of (quantityTotal - quantityAvailable) across all tiers. */
-        Integer totalSold
+        Integer totalSold,
+        /** Only non-null when status is FLAGGED or REMOVED - see Event.moderationReason. */
+        String moderationReason
 ) {
 }
