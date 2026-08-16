@@ -47,17 +47,20 @@ public class PayoutService {
     private final BookingRepository bookingRepository;
     private final BookingProperties bookingProperties;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final AuditLogService auditLogService;
 
     public PayoutService(
             PayoutRequestRepository payoutRequestRepository,
             BookingRepository bookingRepository,
             BookingProperties bookingProperties,
-            ApplicationEventPublisher applicationEventPublisher
+            ApplicationEventPublisher applicationEventPublisher,
+            AuditLogService auditLogService
     ) {
         this.payoutRequestRepository = payoutRequestRepository;
         this.bookingRepository = bookingRepository;
         this.bookingProperties = bookingProperties;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
@@ -110,6 +113,7 @@ public class PayoutService {
 
         applicationEventPublisher.publishEvent(new PayoutApprovedEvent(
                 PayoutApprovedEvent.TYPE, saved.getId(), saved.getOrganizerId(), saved.getAmount(), Instant.now()));
+        auditLogService.record(adminId, AuditActions.PAYOUT_APPROVED, AuditActions.TARGET_PAYOUT_REQUEST, saved.getId(), null);
         return toResponse(saved);
     }
 
@@ -119,7 +123,9 @@ public class PayoutService {
         request.setReviewedBy(adminId);
         request.setReviewNote(note);
         request.setReviewedAt(Instant.now());
-        return toResponse(payoutRequestRepository.save(request));
+        PayoutRequest saved = payoutRequestRepository.save(request);
+        auditLogService.record(adminId, AuditActions.PAYOUT_REJECTED, AuditActions.TARGET_PAYOUT_REQUEST, saved.getId(), note);
+        return toResponse(saved);
     }
 
     // ─────────────────────── payment-service callback (Phase 2c-ii) ───────────────────────
