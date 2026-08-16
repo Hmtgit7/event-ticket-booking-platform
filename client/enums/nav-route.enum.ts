@@ -11,6 +11,7 @@ export const NavRoute = {
   AttendeeInsights: "/dashboard/insights",
   Media: "/dashboard/media",
   Revenue: "/dashboard/revenue",
+  Payouts: "/dashboard/payouts",
   Promotions: "/dashboard/promotions",
   Notifications: "/dashboard/notifications",
   Settings: "/dashboard/settings",

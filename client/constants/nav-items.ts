@@ -36,6 +36,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Manage",
     items: [
       { id: "revenue",      label: "Revenue",           href: NavRoute.Revenue,            icon: DollarSignFreeIcons,    matchPrefix: true },
+      { id: "payouts",      label: "Payouts",           href: NavRoute.Payouts,            icon: WalletAdd01FreeIcons,   matchPrefix: true },
       { id: "promotions",   label: "Promotions",        href: NavRoute.Promotions,         icon: CouponPercentFreeIcons, matchPrefix: true },
       { id: "media",        label: "Media Library",     href: NavRoute.Media,              icon: CloudUploadFreeIcons,   matchPrefix: true },
       { id: "notifications",label: "Notifications",     href: NavRoute.Notifications,      icon: Notification02FreeIcons,matchPrefix: true },

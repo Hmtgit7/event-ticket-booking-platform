@@ -20,6 +20,7 @@ const STATIC_CRUMBS: Record<string, { section: string; crumb: string }> = {
   [NavRoute.AttendeeInsights]:{ section: "Dashboard / Insights",     crumb: "Attendee Insights" },
   [NavRoute.Media]:         { section: "Dashboard / Media",          crumb: "Media Library"     },
   [NavRoute.Revenue]:       { section: "Dashboard / Finance",        crumb: "Revenue"           },
+  [NavRoute.Payouts]:       { section: "Dashboard / Finance",        crumb: "Payouts"           },
   [NavRoute.Promotions]:    { section: "Dashboard / Finance",        crumb: "Promotions"        },
   [NavRoute.Notifications]: { section: "Dashboard",                  crumb: "Notifications"     },
   [NavRoute.Settings]:      { section: "Dashboard / Settings",       crumb: "Settings"          },
