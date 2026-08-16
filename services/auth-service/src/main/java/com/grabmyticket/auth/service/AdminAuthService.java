@@ -31,6 +31,7 @@ public class AdminAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final AuditLogService auditLogService;
     private final String bootstrapSecret;
 
     public AdminAuthService(
@@ -39,6 +40,7 @@ public class AdminAuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
+            AuditLogService auditLogService,
             @Value("${app.admin.bootstrap-secret:}") String bootstrapSecret
     ) {
         this.userRepository = userRepository;
@@ -46,6 +48,7 @@ public class AdminAuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.auditLogService = auditLogService;
         this.bootstrapSecret = bootstrapSecret;
     }
 
@@ -87,6 +90,12 @@ public class AdminAuthService {
                             "Role ROLE_ADMIN is missing from the database - check V1 migration ran"));
             user.getRoles().add(adminRole);
             userRepository.save(user);
+
+            // actorId = the account being bootstrapped itself - there's no
+            // existing admin performing this action, that's the whole point
+            // of bootstrap(). Still worth a permanent record of exactly when
+            // and for whom this happened.
+            auditLogService.record(user.getId(), AuditActions.ADMIN_BOOTSTRAPPED, AuditActions.TARGET_USER, user.getId(), null);
         }
     }
 }

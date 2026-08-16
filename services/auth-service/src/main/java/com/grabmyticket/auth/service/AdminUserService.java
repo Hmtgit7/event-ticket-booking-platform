@@ -20,10 +20,12 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final AuditLogService auditLogService;
 
-    public AdminUserService(UserRepository userRepository, RoleRepository roleRepository) {
+    public AdminUserService(UserRepository userRepository, RoleRepository roleRepository, AuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -51,5 +53,12 @@ public class AdminUserService {
         }
 
         userRepository.save(user);
+
+        auditLogService.record(
+                actingAdminId,
+                action == RoleAction.GRANT ? AuditActions.ROLE_GRANTED : AuditActions.ROLE_REVOKED,
+                AuditActions.TARGET_USER,
+                targetUserId,
+                role.name());
     }
 }
