@@ -25,6 +25,7 @@ import com.grabmyticket.auth.exception.EmailAlreadyExistsException;
 import com.grabmyticket.auth.exception.EmailNotVerifiedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
 import com.grabmyticket.auth.exception.InvalidRoleOperationException;
+import com.grabmyticket.auth.exception.SuspendedAccountException;
 import com.grabmyticket.auth.exception.UserNotFoundException;
 import com.grabmyticket.auth.repository.RoleRepository;
 import com.grabmyticket.auth.repository.UserRepository;
@@ -324,6 +325,16 @@ public class AuthService {
     }
 
     private AuthResponse issueTokenPair(User user) {
+        // Single choke point for every flow that ever mints a token (login,
+        // google login, refresh, email verify, password reset, persona
+        // switch) - a suspended account is blocked from all of them here
+        // rather than needing the check repeated at each call site.
+        if (!user.isEnabled()) {
+            throw new SuspendedAccountException(
+                    user.getSuspensionReason() != null
+                            ? "Your account has been suspended: " + user.getSuspensionReason()
+                            : "Your account has been suspended. Contact support for details.");
+        }
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = refreshTokenService.issue(user);
         return AuthResponse.bearer(accessToken, refreshToken, jwtService.getAccessTokenTtlSeconds(), user);

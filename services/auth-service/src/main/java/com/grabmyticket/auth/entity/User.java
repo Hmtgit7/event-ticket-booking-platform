@@ -77,6 +77,20 @@ public class User {
     @Column(name = "active_persona", length = 20)
     private String activePersona;
 
+    /** false = suspended by an admin, blocked from login/refresh entirely (see AuthService.issueTokenPair / RefreshTokenService.rotate). Never touched by any self-service flow - only AdminUserService. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean enabled = true;
+
+    @Column(name = "suspension_reason", length = 500)
+    private String suspensionReason;
+
+    @Column(name = "suspended_by")
+    private UUID suspendedBy;
+
+    @Column(name = "suspended_at")
+    private Instant suspendedAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",

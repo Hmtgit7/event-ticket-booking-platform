@@ -14,6 +14,9 @@ public final class AuditActions {
     public static final String ROLE_GRANTED = "ROLE_GRANTED";
     public static final String ROLE_REVOKED = "ROLE_REVOKED";
     public static final String ADMIN_BOOTSTRAPPED = "ADMIN_BOOTSTRAPPED";
+    public static final String USER_SUSPENDED = "USER_SUSPENDED";
+    public static final String USER_REINSTATED = "USER_REINSTATED";
+    public static final String USER_PII_VIEWED = "USER_PII_VIEWED";
 
     public static final String TARGET_USER = "USER";
 }

@@ -53,7 +53,7 @@ public class RefreshTokenService {
                 .orElseThrow(InvalidRefreshTokenException::new);
 
         if (existing.getRevokedAt() != null) {
-            revokeAllActiveTokensFor(existing.getUser());
+            revokeAllActiveTokensForInternal(existing.getUser());
             throw new InvalidRefreshTokenException();
         }
         if (Instant.now().isAfter(existing.getExpiresAt())) {
@@ -61,6 +61,14 @@ public class RefreshTokenService {
         }
 
         User user = existing.getUser();
+        if (!user.isEnabled()) {
+            // Defense in depth - suspendUser already revokes every active token
+            // synchronously, so this branch should rarely fire, but a token
+            // presented in the narrow window between the DB write and this
+            // check should still be rejected outright, not rotated into a
+            // fresh one.
+            throw new InvalidRefreshTokenException();
+        }
         IssuedToken next = createToken(user);
 
         existing.setRevokedAt(Instant.now());
@@ -81,7 +89,13 @@ public class RefreshTokenService {
                 });
     }
 
-    private void revokeAllActiveTokensFor(User user) {
+    /** Called by AdminUserService.suspendUser - boots the account out immediately rather than waiting for their current access token to expire naturally. Public (unlike the reuse-detection path in rotate(), which stays private) since this is invoked from outside this class. */
+    @Transactional
+    public void revokeAllActiveTokensFor(User user) {
+        revokeAllActiveTokensForInternal(user);
+    }
+
+    private void revokeAllActiveTokensForInternal(User user) {
         Instant now = Instant.now();
         refreshTokenRepository.findByUserAndRevokedAtIsNull(user)
                 .forEach(token -> token.setRevokedAt(now));

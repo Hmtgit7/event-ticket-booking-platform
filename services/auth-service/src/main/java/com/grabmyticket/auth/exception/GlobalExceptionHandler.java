@@ -55,6 +55,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), "EMAIL_NOT_VERIFIED");
     }
 
+    @ExceptionHandler(SuspendedAccountException.class)
+    public ResponseEntity<ErrorResponse> handleSuspendedAccount(SuspendedAccountException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), "ACCOUNT_SUSPENDED");
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());

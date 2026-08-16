@@ -3,6 +3,8 @@ package com.grabmyticket.auth.repository;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.grabmyticket.auth.entity.AuthProvider;
@@ -15,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     Optional<User> findByProviderAndProviderId(AuthProvider provider, String providerId);
+
+    /** Admin user search (Phase 5) - matches on email or name, case-insensitive, partial. */
+    Page<User> findByEmailContainingIgnoreCaseOrFullNameContainingIgnoreCase(String email, String fullName, Pageable pageable);
 }
