@@ -13,7 +13,6 @@ export default function AdminDashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- surfaced until Sentry/monitoring lands
     console.error("Admin dashboard error boundary caught:", error);
   }, [error]);
 

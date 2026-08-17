@@ -9,6 +9,7 @@ import com.grabmyticket.event.entity.EventStatus;
 /** Lighter shape for list/browse views (organizer's "My Events" and the public listing). */
 public record EventSummaryResponse(
         UUID id,
+        UUID organizerId,
         String title,
         String slug,
         String category,

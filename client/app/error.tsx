@@ -17,7 +17,6 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- surfaced until Sentry/monitoring lands (see Chunk 4)
     console.error("Route error boundary caught:", error);
   }, [error]);
 

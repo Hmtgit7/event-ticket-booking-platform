@@ -13,7 +13,6 @@ export default function UserDashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- surfaced until Sentry/monitoring lands
     console.error("User dashboard error boundary caught:", error);
   }, [error]);
 

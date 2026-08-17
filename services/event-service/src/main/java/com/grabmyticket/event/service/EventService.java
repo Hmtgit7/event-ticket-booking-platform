@@ -409,6 +409,7 @@ public class EventService {
                 .sum();
         return new EventSummaryResponse(
                 event.getId(),
+                event.getOrganizerId(),
                 event.getTitle(),
                 event.getSlug(),
                 event.getCategory(),

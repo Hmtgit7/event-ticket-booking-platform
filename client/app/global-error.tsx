@@ -20,7 +20,6 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- surfaced until Sentry/monitoring lands (see Chunk 4)
     console.error("Root layout error boundary caught:", error);
   }, [error]);
 

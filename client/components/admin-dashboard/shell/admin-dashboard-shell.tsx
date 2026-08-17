@@ -14,6 +14,7 @@ interface AdminDashboardShellProps {
 const ADMIN_CRUMBS: Record<string, { section: string; crumb: string }> = {
   [NavRoute.AdminDashboard]: { section: "Admin",          crumb: "Overview"       },
   [NavRoute.AdminUsers]:     { section: "Admin / Manage", crumb: "Users"          },
+  [NavRoute.AdminApprovals]: { section: "Admin / Manage", crumb: "Approvals"      },
   [NavRoute.AdminEvents]:    { section: "Admin / Manage", crumb: "Events"         },
   [NavRoute.AdminBookings]:  { section: "Admin / Manage", crumb: "Bookings"       },
   [NavRoute.AdminReports]:   { section: "Admin / Manage", crumb: "Reports"        },

@@ -17,7 +17,6 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- surfaced until Sentry/monitoring lands
     console.error("Organizer dashboard error boundary caught:", error);
   }, [error]);
 

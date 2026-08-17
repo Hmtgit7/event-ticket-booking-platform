@@ -17,6 +17,7 @@ import {
   DollarSignFreeIcons,
   CouponPercentFreeIcons,
   Notification02FreeIcons,
+  CheckmarkCircle02FreeIcons,
 } from "@hugeicons/core-free-icons";
 import { NavRoute } from "@/enums/nav-route.enum";
 import type { NavSection } from "@/interfaces/nav.interface";
@@ -93,6 +94,7 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
     title: "Management",
     items: [
       { id: "admin-users",     label: "Users",      href: NavRoute.AdminUsers,     icon: UserMultiple02FreeIcons,   matchPrefix: true },
+      { id: "admin-approvals", label: "Approvals",  href: NavRoute.AdminApprovals, icon: CheckmarkCircle02FreeIcons, matchPrefix: true },
       { id: "admin-notifications", label: "Notifications", href: NavRoute.AdminNotifications, icon: Notification02FreeIcons, matchPrefix: true },
       { id: "admin-support",   label: "Support",    href: NavRoute.AdminSupport,   icon: CustomerSupportFreeIcons,  matchPrefix: true },
     ],

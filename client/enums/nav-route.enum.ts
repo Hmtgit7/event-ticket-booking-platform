@@ -30,6 +30,7 @@ export const NavRoute = {
   // Admin dashboard
   AdminDashboard: "/admin/dashboard",
   AdminUsers: "/admin/dashboard/users",
+  AdminApprovals: "/admin/dashboard/approvals",
   AdminEvents: "/admin/dashboard/events",
   AdminBookings: "/admin/dashboard/bookings",
   AdminReports: "/admin/dashboard/reports",
