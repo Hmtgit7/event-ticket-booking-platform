@@ -8,6 +8,9 @@ public final class AuditActions {
 
     public static final String PAYOUT_APPROVED = "PAYOUT_APPROVED";
     public static final String PAYOUT_REJECTED = "PAYOUT_REJECTED";
+    public static final String CANCELLATION_APPROVED = "CANCELLATION_APPROVED";
+    public static final String CANCELLATION_REJECTED = "CANCELLATION_REJECTED";
 
     public static final String TARGET_PAYOUT_REQUEST = "PAYOUT_REQUEST";
+    public static final String TARGET_CANCELLATION_REQUEST = "CANCELLATION_REQUEST";
 }

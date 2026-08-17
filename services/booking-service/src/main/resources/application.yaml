@@ -36,6 +36,10 @@ app:
     # real commission rate with Hemant before go-live, this is not a decision
     # Claude should make.
     platform-commission-rate: ${PLATFORM_COMMISSION_RATE:0.10}
+    # Fraction of a cancelled booking's totalAmount withheld as a cancellation
+    # fee before the remainder is refunded to the customer's wallet. Placeholder
+    # value - confirm the real rate with Hemant before go-live.
+    cancellation-fee-rate: ${CANCELLATION_FEE_RATE:0.05}
   payment:
     # Must match payment-service's app.payment.events-topic exactly - this is
     # the topic PaymentEventListener consumes to credit wallet recharges.

@@ -65,6 +65,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(CancellationRequestNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCancellationRequestNotFound(CancellationRequestNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCancellationRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCancellationRequest(InvalidCancellationRequestException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
