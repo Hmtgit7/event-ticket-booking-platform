@@ -15,6 +15,10 @@
     "build:notification-service": "pnpm --dir services/notification-service build",
     "test:services": "powershell -ExecutionPolicy Bypass -File scripts/check-services.ps1 test",
     "build:services": "powershell -ExecutionPolicy Bypass -File scripts/check-services.ps1 package",
+    "mobile:start": "pnpm --dir mobile start",
+    "mobile:android": "pnpm --dir mobile android",
+    "mobile:ios": "pnpm --dir mobile ios",
+    "mobile:web": "pnpm --dir mobile web",
     "check": "pnpm lint && pnpm typecheck && pnpm lint:notification-service && pnpm typecheck:notification-service && pnpm test:notification-service && pnpm build:client && pnpm build:notification-service && pnpm build:services"
   },
   "devDependencies": {

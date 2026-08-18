@@ -1,5 +1,6 @@
 packages:
   - client
+  - mobile
   - services/*
 
 minimumReleaseAge: 0
