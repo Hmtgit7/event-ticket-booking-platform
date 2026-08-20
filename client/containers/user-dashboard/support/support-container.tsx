@@ -3,8 +3,7 @@
 import { RefreshCcw, Send, Users, Download, MessageCircle } from "lucide-react";
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { SupportActionCard } from "@/components/user-dashboard/support/support-action-card";
-import { DUMMY_SUPPORT_TICKETS } from "@/constants/user-dashboard-data";
-import { cn } from "@/lib/utils";
+import { SupportTicketsPanel } from "@/components/common/support/support-tickets-panel";
 
 const ACTIONS = [
   { title: "Request a refund",     description: "Start a guided refund request.",           icon: RefreshCcw    },
@@ -14,14 +13,10 @@ const ACTIONS = [
   { title: "Live chat support",    description: "Chat with a support agent in real time.",   icon: MessageCircle },
 ];
 
-const STATUS_CLASSES = {
-  Open:     "bg-brand/10 text-brand border-brand/30",
-  Resolved: "bg-positive/10 text-positive border-positive/30",
-  Pending:  "bg-ink/10 text-ink-muted border-line",
-};
-
 /**
- * Help & Support page container — quick-action cards and open ticket log.
+ * Help & Support page container — quick-action cards (still placeholders;
+ * refund/transfer/live-chat aren't part of the SupportTicket system) plus
+ * the real submit-a-ticket / view-my-tickets panel.
  */
 export function SupportContainer() {
   return (
@@ -40,28 +35,7 @@ export function SupportContainer() {
         ))}
       </div>
 
-      {/* ── Open tickets ── */}
-      <div className="rounded-2xl border border-line bg-surface p-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
-          Your open tickets
-        </p>
-        <div className="mt-4 flex flex-col gap-3">
-          {DUMMY_SUPPORT_TICKETS.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="flex flex-col gap-1 rounded-xl border border-line bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <p className="text-sm font-semibold text-ink">{ticket.subject}</p>
-                <p className="mt-0.5 text-xs text-ink-muted">{ticket.id} · {ticket.date}</p>
-              </div>
-              <span className={cn("rounded-lg border px-3 py-1 text-xs font-bold", STATUS_CLASSES[ticket.status])}>
-                {ticket.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <SupportTicketsPanel />
     </div>
   );
 }
