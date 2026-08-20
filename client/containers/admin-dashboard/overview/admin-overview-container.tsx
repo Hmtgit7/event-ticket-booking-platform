@@ -34,18 +34,32 @@ const TICKET_CATEGORY_LABELS: Record<string, string> = {
 export function AdminOverviewContainer() {
   const recentEvents = ADMIN_EVENTS.slice(0, 5);
   const [openTickets, setOpenTickets] = useState<SupportTicketResponse[] | null>(null);
+  const [openTicketCount, setOpenTicketCount] = useState<number | null>(null);
 
   useEffect(() => {
     adminSupportTicketService.getAllTickets("All", 0, 20).then((res) => {
       setOpenTickets(res.items.filter((t) => t.status === "OPEN" || t.status === "IN_PROGRESS").slice(0, 4));
     });
+
+    Promise.all([
+      adminSupportTicketService.getAllTickets("OPEN", 0, 1),
+      adminSupportTicketService.getAllTickets("IN_PROGRESS", 0, 1),
+    ]).then(([open, inProgress]) => {
+      setOpenTicketCount(open.totalElements + inProgress.totalElements);
+    });
   }, []);
+
+  const platformStats = ADMIN_PLATFORM_STATS.map((stat) =>
+    stat.id === "open-tickets"
+      ? { ...stat, value: openTicketCount === null ? "…" : String(openTicketCount), deltaPct: 0, comparedTo: "live count" }
+      : stat,
+  );
 
   return (
     <div className="flex flex-col gap-6">
       {/* ── Stat grid ── */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {ADMIN_PLATFORM_STATS.map((stat) => (
+        {platformStats.map((stat) => (
           <AdminStatCard key={stat.id} stat={stat} />
         ))}
       </div>
