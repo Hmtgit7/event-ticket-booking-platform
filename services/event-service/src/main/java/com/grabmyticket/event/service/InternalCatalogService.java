@@ -66,7 +66,10 @@ public class InternalCatalogService {
                 ticketType.getPrice(),
                 ticketType.getQuantityAvailable(),
                 ticketType.getSalesStart(),
-                ticketType.getSalesEnd()
+                ticketType.getSalesEnd(),
+                event.getVenueName(),
+                event.getAddress(),
+                event.getCity()
         );
     }
 }
