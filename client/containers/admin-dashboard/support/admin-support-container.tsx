@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { AdminSectionTitle } from "@/components/admin-dashboard/widgets/admin-section-title";
 import { SupportTicketRow } from "@/components/admin-dashboard/support/support-ticket-row";
@@ -29,10 +29,15 @@ export function AdminSupportContainer() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("All");
   const [tickets, setTickets] = useState<SupportTicketResponse[] | null>(null);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    setTickets(null);
-    adminSupportTicketService.getAllTickets(statusFilter).then((res) => setTickets(res.items));
+    const requestId = ++requestIdRef.current;
+    adminSupportTicketService.getAllTickets(statusFilter).then((res) => {
+      if (requestIdRef.current === requestId) {
+        setTickets(res.items);
+      }
+    });
   }, [statusFilter]);
 
   async function handleUpdate(
