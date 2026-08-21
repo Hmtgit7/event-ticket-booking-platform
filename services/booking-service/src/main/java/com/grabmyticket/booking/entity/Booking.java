@@ -73,6 +73,16 @@ public class Booking {
     @Column(name = "ticket_type_name", nullable = false, length = 100)
     private String ticketTypeName;
 
+    /** Snapshot of the event's venue at booking time - same rationale as eventTitle. Nullable only for rows that predate this column (see V7 migration). */
+    @Column(name = "venue_name", length = 200)
+    private String venueName;
+
+    @Column(length = 300)
+    private String address;
+
+    @Column(length = 100)
+    private String city;
+
     @Column(nullable = false)
     private Integer quantity;
 

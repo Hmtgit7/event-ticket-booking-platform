@@ -22,6 +22,9 @@ public record BookingConfirmedEvent(
         Instant eventStartAt,
         String eventBannerUrl,
         String ticketTypeName,
+        String venueName,
+        String address,
+        String city,
         Integer quantity,
         BigDecimal totalAmount,
         Instant confirmedAt

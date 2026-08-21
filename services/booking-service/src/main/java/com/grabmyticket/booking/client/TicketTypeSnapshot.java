@@ -22,6 +22,9 @@ public record TicketTypeSnapshot(
         BigDecimal price,
         Integer quantityAvailable,
         Instant salesStart,
-        Instant salesEnd
+        Instant salesEnd,
+        String venueName,
+        String address,
+        String city
 ) {
 }

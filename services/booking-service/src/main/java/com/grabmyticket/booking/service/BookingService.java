@@ -80,6 +80,9 @@ public class BookingService {
                 .eventStartAt(snapshot.eventStartAt())
                 .eventBannerUrl(snapshot.eventBannerUrl())
                 .ticketTypeName(snapshot.ticketTypeName())
+                .venueName(snapshot.venueName())
+                .address(snapshot.address())
+                .city(snapshot.city())
                 .quantity(request.quantity())
                 .unitPrice(snapshot.price())
                 .totalAmount(totalAmount)
@@ -189,6 +192,9 @@ public class BookingService {
                 booking.getEventStartAt(),
                 booking.getEventBannerUrl(),
                 booking.getTicketTypeName(),
+                booking.getVenueName(),
+                booking.getAddress(),
+                booking.getCity(),
                 booking.getQuantity(),
                 booking.getTotalAmount(),
                 Instant.now()
