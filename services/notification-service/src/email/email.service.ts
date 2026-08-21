@@ -15,11 +15,18 @@ export class EmailService {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async send(toEmail: string, toName: string, subject: string, htmlContent: string): Promise<void> {
+  async send(
+    toEmail: string,
+    toName: string,
+    subject: string,
+    htmlContent: string,
+    attachment?: { name: string; contentBase64: string },
+  ): Promise<void> {
     const apiKey = this.configService.get<string>('BREVO_API_KEY');
 
     if (!apiKey) {
-      this.logger.log(`[console-stub email] to=${toEmail} subject="${subject}"\n${htmlContent}`);
+      const attachmentNote = attachment ? ` [+attachment: ${attachment.name}]` : '';
+      this.logger.log(`[console-stub email] to=${toEmail} subject="${subject}"${attachmentNote}\n${htmlContent}`);
       return;
     }
 
@@ -38,6 +45,7 @@ export class EmailService {
         to: [{ email: toEmail, name: toName }],
         subject,
         htmlContent,
+        ...(attachment && { attachment: [{ name: attachment.name, content: attachment.contentBase64 }] }),
       }),
     });
 

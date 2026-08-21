@@ -5,6 +5,7 @@ import { NotificationType } from '../notifications/notification-type';
 import { NotificationAudience } from '../notifications/notification-audience';
 import { EmailService } from '../email/email.service';
 import { bookingConfirmedTemplate } from '../email/email.templates';
+import { TicketPdfService } from '../pdf/ticket-pdf.service';
 import { BookingConfirmedEvent } from './booking-confirmed-event.interface';
 
 /**
@@ -20,6 +21,7 @@ export class BookingConfirmedHandler {
   constructor(
     private readonly notificationsService: NotificationsService,
     private readonly emailService: EmailService,
+    private readonly ticketPdfService: TicketPdfService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -48,7 +50,28 @@ export class BookingConfirmedHandler {
       ticketUrl,
     });
 
-    await this.emailService.send(event.userEmail, event.userEmail, `Your ticket for ${event.eventTitle} is confirmed`, html);
+    let attachment: { name: string; contentBase64: string } | undefined;
+    try {
+      const pdfBuffer = await this.ticketPdfService.generate({
+        eventTitle: event.eventTitle,
+        eventStartAt: event.eventStartAt,
+        venueName: event.venueName,
+        address: event.address,
+        city: event.city,
+        ticketTypeName: event.ticketTypeName,
+        quantity: event.quantity,
+        totalAmount: event.totalAmount,
+        bookingCode: event.bookingCode,
+        bookingId: event.bookingId,
+      });
+      attachment = { name: `${event.bookingCode}-ticket.pdf`, contentBase64: pdfBuffer.toString('base64') };
+    } catch (err) {
+      // A booking is already confirmed and paid for by the time this runs - a
+      // failed PDF must never block the confirmation email from going out.
+      this.logger.error(`Ticket PDF generation failed for booking ${event.bookingId}: ${err}`);
+    }
+
+    await this.emailService.send(event.userEmail, event.userEmail, `Your ticket for ${event.eventTitle} is confirmed`, html, attachment);
     this.logger.log(`Processed booking.confirmed for booking ${event.bookingId}`);
   }
 }

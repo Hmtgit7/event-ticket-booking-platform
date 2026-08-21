@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { EmailModule } from './email/email.module';
+import { PdfModule } from './pdf/pdf.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { KafkaModule } from './kafka/kafka.module';
 
@@ -14,6 +15,7 @@ import { KafkaModule } from './kafka/kafka.module';
     PrismaModule,
     HealthModule,
     EmailModule,
+    PdfModule,
     NotificationsModule,
     KafkaModule,
   ],

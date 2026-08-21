@@ -11,6 +11,9 @@ export interface BookingConfirmedEvent {
   eventStartAt: string;
   eventBannerUrl: string | null;
   ticketTypeName: string;
+  venueName: string | null;
+  address: string | null;
+  city: string | null;
   quantity: number;
   totalAmount: string;
   confirmedAt: string;
