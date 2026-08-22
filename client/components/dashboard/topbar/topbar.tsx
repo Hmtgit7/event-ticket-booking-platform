@@ -3,6 +3,7 @@
 import { Menu, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { PendingDeletionBanner } from "@/components/dashboard/pending-deletion-banner";
 import { ProfileMenu } from "./profile-menu";
 import { NotificationBell } from "./notification-bell";
 
@@ -19,6 +20,7 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
   const { toggle } = useSidebar();
 
   return (
+    <>
     <header className="sticky top-0 z-30 flex shrink-0 items-center gap-4 rounded-[28px] bg-surface/95 px-4 py-3.5 shadow-sm backdrop-blur sm:px-6">
       <button
         type="button"
@@ -50,5 +52,7 @@ export function DashboardTopbar({ section, crumb }: DashboardTopbarProps) {
         <ProfileMenu />
       </div>
     </header>
+    <PendingDeletionBanner />
+    </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bell, Palette, Shield, UserRound } from "lucide-react";
 
 import { ChangePasswordCard } from "@/components/auth/change-password-card";
+import { DangerZoneCard } from "@/components/auth/danger-zone-card";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -66,6 +67,8 @@ export default function SettingsPage() {
         </section>
 
         <ChangePasswordCard />
+
+        <DangerZoneCard persona="organizer" />
       </div>
     </div>
   );

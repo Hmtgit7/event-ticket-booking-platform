@@ -1,4 +1,5 @@
 import type { Role } from "@/enums/role.enum";
+import type { DeletionScope, DeletionStatus } from "@/interfaces/account-deletion.interface";
 
 /** Mirrors auth-service's AuthResponse. */
 export interface AuthResponse {
@@ -37,6 +38,11 @@ export interface UserProfileResponse {
   hasPassword: boolean;
   activePersona: "organizer" | "user" | null;
   roles: Role[];
+  /** ACTIVE unless a deletion request is pending/finalized - see PendingDeletionBanner. */
+  deletionStatus: DeletionStatus;
+  /** Null unless deletionStatus is PENDING_DELETION. */
+  deletionScope: DeletionScope | null;
+  deletionScheduledFor: string | null;
 }
 
 /** Mirrors auth-service's ErrorResponse. */

@@ -4,6 +4,7 @@ import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/user-dashboard/widgets/section-title";
 import { ChangePasswordCard } from "@/components/auth/change-password-card";
+import { DangerZoneCard } from "@/components/auth/danger-zone-card";
 
 const PROFILE_FIELDS = [
   { label: "Full name",    value: "Hemant Gehlod" },
@@ -54,6 +55,8 @@ export function ProfileContainer() {
           <ChangePasswordCard />
         </div>
       </div>
+
+      <DangerZoneCard persona="user" />
     </div>
   );
 }
