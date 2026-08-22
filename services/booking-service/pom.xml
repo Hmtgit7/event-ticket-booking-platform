@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.7</version>
+        <version>4.1.0</version>
         <relativePath/>
     </parent>
     <groupId>com.grabmyticket</groupId>
@@ -15,14 +15,14 @@
     <description>GrabMyTicket Booking Service.</description>
     <properties>
         <java.version>21</java.version>
-        <jjwt.version>0.12.6</jjwt.version>
+        <jjwt.version>0.13.0</jjwt.version>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>me.paulschwarz</groupId>
                 <artifactId>spring-dotenv-bom</artifactId>
-                <version>5.0.1</version>
+                <version>5.1.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
