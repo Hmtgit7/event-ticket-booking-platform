@@ -18,5 +18,11 @@ public final class AuditActions {
     public static final String USER_REINSTATED = "USER_REINSTATED";
     public static final String USER_PII_VIEWED = "USER_PII_VIEWED";
 
+    /** Phase 9: account/profile deletion - self-service, actorId is the account holder themselves except ACCOUNT_DELETION_FINALIZED/ACCOUNT_DELETION_BLOCKED which come from AccountDeletionReaper (a scheduled job, not a human actor - actorId is still the affected user's own id there, same as ACCOUNT_DELETION_REQUESTED). */
+    public static final String ACCOUNT_DELETION_REQUESTED = "ACCOUNT_DELETION_REQUESTED";
+    public static final String ACCOUNT_DELETION_CANCELLED = "ACCOUNT_DELETION_CANCELLED";
+    public static final String ACCOUNT_DELETION_FINALIZED = "ACCOUNT_DELETION_FINALIZED";
+    public static final String ACCOUNT_DELETION_BLOCKED = "ACCOUNT_DELETION_BLOCKED";
+
     public static final String TARGET_USER = "USER";
 }

@@ -91,6 +91,27 @@ public class User {
     @Column(name = "suspended_at")
     private Instant suspendedAt;
 
+    /** See DeletionStatus - self-service, distinct from the admin-only suspension fields above. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "deletion_status", nullable = false, length = 20)
+    @Builder.Default
+    private DeletionStatus deletionStatus = DeletionStatus.ACTIVE;
+
+    /** Which persona is being torn down - null unless deletionStatus is PENDING_DELETION or DELETED. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "deletion_scope", length = 20)
+    private DeletionScope deletionScope;
+
+    @Column(name = "deletion_requested_at")
+    private Instant deletionRequestedAt;
+
+    /** requestedAt + the configured grace period (see AccountDeletionProperties) - when AccountDeletionReaper finalizes this, absent a cancellation first. */
+    @Column(name = "deletion_scheduled_for")
+    private Instant deletionScheduledFor;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",

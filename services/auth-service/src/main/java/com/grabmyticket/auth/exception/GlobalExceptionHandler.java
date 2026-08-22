@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import com.grabmyticket.auth.dto.DeletionEligibilityResponse;
 import com.grabmyticket.auth.dto.ErrorResponse;
 
 @RestControllerAdvice
@@ -68,6 +69,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRoleOperationException.class)
     public ResponseEntity<ErrorResponse> handleInvalidRoleOperation(InvalidRoleOperationException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /** 409 with the full structured blocker/warning list, not a flat ErrorResponse - the frontend renders this directly, same payload shape GET /auth/me/deletion-eligibility would have returned. */
+    @ExceptionHandler(DeletionBlockedException.class)
+    public ResponseEntity<DeletionEligibilityResponse> handleDeletionBlocked(DeletionBlockedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getEligibility());
+    }
+
+    @ExceptionHandler(DeletionAlreadyRequestedException.class)
+    public ResponseEntity<ErrorResponse> handleDeletionAlreadyRequested(DeletionAlreadyRequestedException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(NoDeletionRequestException.class)
+    public ResponseEntity<ErrorResponse> handleNoDeletionRequest(NoDeletionRequestException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccountDeletionServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAccountDeletionServiceUnavailable(AccountDeletionServiceUnavailableException ex) {
+        log.error("Account deletion dependency unreachable", ex);
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
