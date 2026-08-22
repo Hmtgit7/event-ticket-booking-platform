@@ -1,6 +1,7 @@
 package com.grabmyticket.booking.repository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.grabmyticket.booking.entity.Booking;
+import com.grabmyticket.booking.entity.BookingStatus;
 
 public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
@@ -32,4 +34,12 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     @Query("SELECT COALESCE(SUM(b.quantity), 0) FROM Booking b WHERE b.organizerId = :organizerId AND b.status = 'CONFIRMED'")
     long sumTicketsSoldByOrganizerId(@Param("organizerId") UUID organizerId);
+
+    // ───────────────────────── Phase 9: account deletion ─────────────────────────
+
+    /** C1 - mid-checkout/mid-payment bookings that would be orphaned by deletion. */
+    long countByUserIdAndStatus(UUID userId, BookingStatus status);
+
+    /** C3 - confirmed bookings for events that haven't started yet, i.e. a live, unused ticket. Uses the eventStartAt snapshot rather than a live join to event-service, same as everywhere else this table is read. */
+    long countByUserIdAndStatusAndEventStartAtAfter(UUID userId, BookingStatus status, Instant after);
 }

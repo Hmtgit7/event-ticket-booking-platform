@@ -19,4 +19,9 @@ public interface CancellationRequestRepository extends JpaRepository<Cancellatio
     Page<CancellationRequest> findByStatusOrderByCreatedAtAsc(CancellationStatus status, Pageable pageable);
 
     Optional<CancellationRequest> findByIdAndUserId(UUID id, UUID userId);
+
+    // ───────────────────────── Phase 9: account deletion ─────────────────────────
+
+    /** C2 - a refund decision an admin hasn't made yet; deletion must wait until it resolves either way. */
+    long countByUserIdAndStatus(UUID userId, CancellationStatus status);
 }

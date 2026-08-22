@@ -25,4 +25,9 @@ public interface PayoutRequestRepository extends JpaRepository<PayoutRequest, UU
     /** Sum of everything already committed against this organizer's balance - REQUESTED/APPROVED (not yet paid, but reserved) and PAID (already sent). REJECTED/FAILED excluded, since those never held funds or gave them back. */
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM PayoutRequest p WHERE p.organizerId = :organizerId AND p.status IN :statuses")
     BigDecimal sumAmountByOrganizerIdAndStatusIn(@Param("organizerId") UUID organizerId, @Param("statuses") Collection<PayoutStatus> statuses);
+
+    // ───────────────────────── Phase 9: account deletion ─────────────────────────
+
+    /** O3 - payout requests still mid-flight (money in motion, decision not yet final). */
+    long countByOrganizerIdAndStatusIn(UUID organizerId, Collection<PayoutStatus> statuses);
 }
