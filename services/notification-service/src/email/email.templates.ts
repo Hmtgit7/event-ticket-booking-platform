@@ -15,6 +15,38 @@ export function buttonTemplate(title: string, bodyHtml: string, actionUrl: strin
   `;
 }
 
+/** Same shell as buttonTemplate but with no call-to-action link - for purely informational emails where there's nothing to click through to (the account/profile this email is about is, by definition, gone or being taken away). */
+export function plainTemplate(title: string, bodyHtml: string): string {
+  return `
+    <div style="font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a;">
+      <h2 style="margin: 0 0 16px; font-size: 20px;">${title}</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #444;">${bodyHtml}</p>
+    </div>
+  `;
+}
+
+export function accountDeletedTemplate(params: { fullName: string; deletedAt: string }): string {
+  const body = `
+    Hi ${params.fullName},<br><br>
+    Your GrabMyTicket account was permanently deleted on
+    ${new Date(params.deletedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}.<br><br>
+    Your login details have been removed and can't be recovered. If this wasn't you, please contact support right away.
+  `;
+  return plainTemplate('Your account has been deleted', body);
+}
+
+export function personaRemovedTemplate(params: { fullName: string; scope: 'CUSTOMER' | 'ORGANIZER'; removedAt: string }): string {
+  const scopeLabel = params.scope === 'CUSTOMER' ? 'customer' : 'organizer';
+  const body = `
+    Hi ${params.fullName},<br><br>
+    Your ${scopeLabel} profile on GrabMyTicket was removed on
+    ${new Date(params.removedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}.
+    The rest of your account is unaffected and you can keep using it as before.<br><br>
+    If this wasn't you, please contact support right away.
+  `;
+  return plainTemplate(`Your ${scopeLabel} profile was removed`, body);
+}
+
 export function bookingConfirmedTemplate(params: {
   eventTitle: string;
   eventStartAt: string;

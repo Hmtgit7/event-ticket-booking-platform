@@ -3,13 +3,22 @@ import { ConfigService } from '@nestjs/config';
 import { Consumer, Kafka, KafkaConfig } from 'kafkajs';
 import { BookingConfirmedEvent } from './booking-confirmed-event.interface';
 import { BookingConfirmedHandler } from './booking-confirmed.handler';
+import { AccountDeletedEvent } from './account-deleted-event.interface';
+import { AccountDeletedHandler } from './account-deleted.handler';
+import { PersonaRemovedEvent } from './persona-removed-event.interface';
+import { PersonaRemovedHandler } from './persona-removed.handler';
 
 /**
  * Plain kafkajs consumer, not @nestjs/microservices' Kafka transport - the
- * producer (booking-service, Spring Kafka) sends a raw JSON string, not
- * NestJS's microservice envelope, so a manual JSON.parse + switch on
- * eventType is simpler and more correct here than fighting a transport
- * built for NestJS-to-NestJS messaging.
+ * producers (booking-service and auth-service, both Spring Kafka) send a raw
+ * JSON string, not NestJS's microservice envelope, so a manual JSON.parse +
+ * switch on eventType is simpler and more correct here than fighting a
+ * transport built for NestJS-to-NestJS messaging.
+ *
+ * Subscribes to every topic in `topics` with a single consumer/group -
+ * eventType (not the topic) is what decides which handler runs, so adding a
+ * new producing service just means adding its topic to this list and a new
+ * case in handleMessage, never a second consumer instance.
  */
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
@@ -19,6 +28,8 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly configService: ConfigService,
     private readonly bookingConfirmedHandler: BookingConfirmedHandler,
+    private readonly accountDeletedHandler: AccountDeletedHandler,
+    private readonly personaRemovedHandler: PersonaRemovedHandler,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -41,15 +52,19 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       sasl: useSasl && username && password ? { mechanism: 'scram-sha-256', username, password } : undefined,
     });
 
-    const topic = this.configService.get<string>('BOOKING_EVENTS_TOPIC') ?? 'booking-events';
+    const bookingTopic = this.configService.get<string>('BOOKING_EVENTS_TOPIC') ?? 'booking-events';
+    const authTopic = this.configService.get<string>('AUTH_EVENTS_TOPIC') ?? 'auth-events';
+    const topics = [...new Set([bookingTopic, authTopic])];
+
     const admin = kafka.admin();
     await admin.connect();
     try {
-      const topics = await admin.listTopics();
-      if (!topics.includes(topic)) {
+      const existingTopics = await admin.listTopics();
+      const missing = topics.filter((topic) => !existingTopics.includes(topic));
+      if (missing.length > 0) {
         await admin.createTopics({
           waitForLeaders: true,
-          topics: [{ topic, numPartitions: 1, replicationFactor: 1 }],
+          topics: missing.map((topic) => ({ topic, numPartitions: 1, replicationFactor: 1 })),
         });
       }
     } finally {
@@ -61,7 +76,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     });
 
     await this.consumer.connect();
-    await this.consumer.subscribe({ topic, fromBeginning: false });
+    await this.consumer.subscribe({ topics, fromBeginning: false });
 
     await this.consumer.run({
       eachMessage: async ({ message }) => {
@@ -69,7 +84,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
-    this.logger.log(`Kafka consumer subscribed to "${topic}"`);
+    this.logger.log(`Kafka consumer subscribed to [${topics.join(', ')}]`);
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -87,6 +102,12 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       switch (event.eventType) {
         case 'booking.confirmed':
           await this.bookingConfirmedHandler.handle(event as BookingConfirmedEvent);
+          break;
+        case 'user.account.deleted':
+          await this.accountDeletedHandler.handle(event as AccountDeletedEvent);
+          break;
+        case 'user.persona.removed':
+          await this.personaRemovedHandler.handle(event as PersonaRemovedEvent);
           break;
         default:
           this.logger.warn(`Unhandled eventType "${event.eventType}" - ignoring`);
