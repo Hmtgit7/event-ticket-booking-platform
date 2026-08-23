@@ -69,3 +69,6 @@ app:
     base-url: ${EVENT_SERVICE_BASE_URL:http://localhost:8082}
   account-deletion:
     grace-period: ${ACCOUNT_DELETION_GRACE_PERIOD:14d}
+    # Must match notification-service's AUTH_EVENTS_TOPIC exactly - the topic
+    # AccountDeletionEventPublisher sends user.account.deleted / user.persona.removed to.
+    events-topic: ${AUTH_EVENTS_TOPIC:auth-events}

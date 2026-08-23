@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,8 @@ import com.grabmyticket.auth.entity.DeletionStatus;
 import com.grabmyticket.auth.entity.Role;
 import com.grabmyticket.auth.entity.RoleName;
 import com.grabmyticket.auth.entity.User;
+import com.grabmyticket.auth.event.AccountDeletedEvent;
+import com.grabmyticket.auth.event.PersonaRemovedEvent;
 import com.grabmyticket.auth.exception.DeletionAlreadyRequestedException;
 import com.grabmyticket.auth.exception.DeletionBlockedException;
 import com.grabmyticket.auth.exception.InvalidCredentialsException;
@@ -50,6 +53,7 @@ public class AccountDeletionService {
     private final RefreshTokenService refreshTokenService;
     private final AuditLogService auditLogService;
     private final AccountDeletionProperties accountDeletionProperties;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public AccountDeletionService(
             UserRepository userRepository,
@@ -59,7 +63,8 @@ public class AccountDeletionService {
             EventServiceDeletionClient eventServiceDeletionClient,
             RefreshTokenService refreshTokenService,
             AuditLogService auditLogService,
-            AccountDeletionProperties accountDeletionProperties
+            AccountDeletionProperties accountDeletionProperties,
+            ApplicationEventPublisher applicationEventPublisher
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -69,6 +74,7 @@ public class AccountDeletionService {
         this.refreshTokenService = refreshTokenService;
         this.auditLogService = auditLogService;
         this.accountDeletionProperties = accountDeletionProperties;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -192,13 +198,25 @@ public class AccountDeletionService {
 
         boolean noRolesLeft = user.getRoles().isEmpty();
         if (scope == DeletionScope.FULL_ACCOUNT || noRolesLeft) {
+            // Captured before anonymize() overwrites them - the Kafka event is
+            // self-contained so notification-service can send a final
+            // confirmation without reading the now-anonymized row back.
+            String preAnonymizationEmail = user.getEmail();
+            String preAnonymizationFullName = user.getFullName();
+
             anonymize(user);
+            Instant deletedAt = Instant.now();
             user.setDeletionStatus(DeletionStatus.DELETED);
-            user.setDeletedAt(Instant.now());
+            user.setDeletedAt(deletedAt);
+            userRepository.save(user);
+
+            applicationEventPublisher.publishEvent(new AccountDeletedEvent(
+                    AccountDeletedEvent.TYPE, user.getId(), preAnonymizationEmail, preAnonymizationFullName, deletedAt));
         } else {
             // Dual-role partial deletion - the account keeps working for its
             // remaining persona, so it's not "deleted", just back to normal
             // with one role permanently gone.
+            Instant removedAt = Instant.now();
             user.setDeletionStatus(DeletionStatus.ACTIVE);
             user.setDeletionScope(null);
             user.setDeletionRequestedAt(null);
@@ -209,9 +227,12 @@ public class AccountDeletionService {
             if ("user".equals(user.getActivePersona()) && !user.hasRole(RoleName.ROLE_USER)) {
                 user.setActivePersona("organizer");
             }
+            userRepository.save(user);
+
+            applicationEventPublisher.publishEvent(new PersonaRemovedEvent(
+                    PersonaRemovedEvent.TYPE, user.getId(), user.getEmail(), user.getFullName(), scope, removedAt));
         }
 
-        userRepository.save(user);
         auditLogService.record(user.getId(), AuditActions.ACCOUNT_DELETION_FINALIZED, AuditActions.TARGET_USER, user.getId(), scope.name());
     }
 
