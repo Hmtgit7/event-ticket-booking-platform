@@ -13,6 +13,7 @@ import com.grabmyticket.auth.dto.AdminUserDetailResponse;
 import com.grabmyticket.auth.dto.AdminUserSummaryResponse;
 import com.grabmyticket.auth.dto.PageResponse;
 import com.grabmyticket.auth.dto.RoleAction;
+import com.grabmyticket.auth.entity.DeletionScope;
 import com.grabmyticket.auth.entity.Role;
 import com.grabmyticket.auth.entity.RoleName;
 import com.grabmyticket.auth.entity.User;
@@ -29,17 +30,20 @@ public class AdminUserService {
     private final RoleRepository roleRepository;
     private final AuditLogService auditLogService;
     private final RefreshTokenService refreshTokenService;
+    private final AccountDeletionService accountDeletionService;
 
     public AdminUserService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             AuditLogService auditLogService,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            AccountDeletionService accountDeletionService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.auditLogService = auditLogService;
         this.refreshTokenService = refreshTokenService;
+        this.accountDeletionService = accountDeletionService;
     }
 
     @Transactional
@@ -134,5 +138,12 @@ public class AdminUserService {
         userRepository.save(user);
 
         auditLogService.record(actingAdminId, AuditActions.USER_REINSTATED, AuditActions.TARGET_USER, targetUserId, null);
+    }
+
+    // ───────────────────────── Phase 9: admin force-delete ─────────────────────────
+
+    /** Thin delegation - AccountDeletionService owns every mechanic of what "delete" actually does (role removal, event-service cleanup, anonymize-or-reactivate, Kafka publish); this class only owns the admin-authorization surface, same split as everywhere else in this service. See AccountDeletionService.forceDelete's class comment for exactly what it bypasses and what it still refuses to. */
+    public void forceDeleteUser(UUID actingAdminId, UUID targetUserId, DeletionScope scope, String reason) {
+        accountDeletionService.forceDelete(actingAdminId, targetUserId, scope, reason);
     }
 }

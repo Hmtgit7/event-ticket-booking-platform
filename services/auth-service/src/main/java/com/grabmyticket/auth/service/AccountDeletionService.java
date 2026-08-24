@@ -196,6 +196,79 @@ public class AccountDeletionService {
             }
         }
 
+        applyDeletion(user, scope);
+        auditLogService.record(user.getId(), AuditActions.ACCOUNT_DELETION_FINALIZED, AuditActions.TARGET_USER, user.getId(), scope.name());
+    }
+
+    // ───────────────────────── AdminUserController entry point ─────────────────────────
+
+    /**
+     * Bypasses blockers, warnings, and the 14-day grace period entirely - the
+     * point of "force". For stuck accounts (unresponsive organizer, abuse
+     * cleanup, a DPDP/GDPR-style erasure request) where waiting on the
+     * account holder to clear their own blockers isn't realistic.
+     *
+     * What this can NOT bypass: event-service's own refusal when a live/
+     * upcoming event still has tickets sold (surfaces as
+     * ForceDeleteBlockedException, a 409) - that's a data-integrity and
+     * money-movement protection, not a "waiting on the user" blocker, and no
+     * admin action should silently cancel a paying customer's ticket. An
+     * admin who hits this must resolve those events first (via the existing
+     * event moderation/cancellation tools) before force-deleting the organizer.
+     */
+    @Transactional
+    public void forceDelete(UUID actingAdminId, UUID targetUserId, DeletionScope scope, String reason) {
+        if (targetUserId.equals(actingAdminId)) {
+            throw new InvalidRoleOperationException("Use self-service deletion for your own account, not the admin force-delete path");
+        }
+
+        User user = userRepository.findById(targetUserId).orElseThrow(UserNotFoundException::new);
+        if (user.hasRole(RoleName.ROLE_ADMIN)) {
+            throw new InvalidRoleOperationException("Admin accounts can't be force-deleted - revoke admin access first if this is truly intended");
+        }
+        requireRoleForScope(user, scope);
+
+        // Fetched for the audit trail, not to block - the whole point of
+        // "force" is that these blockers/warnings are deliberately overridden,
+        // but the override itself must be visible afterward, not silent.
+        DeletionEligibilityResponse bypassedEligibility = deletionEligibilityService.check(user, scope);
+
+        if (scope == DeletionScope.ORGANIZER || scope == DeletionScope.FULL_ACCOUNT) {
+            if (user.hasRole(RoleName.ROLE_ORGANIZER)) {
+                eventServiceDeletionClient.cleanup(user.getId());
+                user.getRoles().remove(requireRole(RoleName.ROLE_ORGANIZER));
+            }
+        }
+        if (scope == DeletionScope.CUSTOMER || scope == DeletionScope.FULL_ACCOUNT) {
+            if (user.hasRole(RoleName.ROLE_USER)) {
+                user.getRoles().remove(requireRole(RoleName.ROLE_USER));
+            }
+        }
+
+        refreshTokenService.revokeAllActiveTokensFor(user);
+        applyDeletion(user, scope);
+
+        String auditDetail = "reason: " + reason + (bypassedEligibility.eligible()
+                ? ""
+                : " | bypassed: " + bypassedEligibility.blockers().size() + " blocker(s), " + bypassedEligibility.warnings().size() + " warning(s)");
+        auditLogService.record(actingAdminId, AuditActions.ACCOUNT_FORCE_DELETED, AuditActions.TARGET_USER, targetUserId, auditDetail);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UUID> findDueForFinalization() {
+        return userRepository.findIdsByDeletionStatusAndDeletionScheduledForBefore(DeletionStatus.PENDING_DELETION, Instant.now());
+    }
+
+    // ───────────────────────── helpers ─────────────────────────
+
+    /**
+     * Role removal (see both callers above) must already be done before this
+     * runs - this only decides FULL_ACCOUNT-vs-partial and does the
+     * anonymize-or-reactivate + Kafka publish, shared identically by both
+     * the self-service reaper and the admin force-delete path so they can
+     * never drift apart on what "finalized" actually means.
+     */
+    private void applyDeletion(User user, DeletionScope scope) {
         boolean noRolesLeft = user.getRoles().isEmpty();
         if (scope == DeletionScope.FULL_ACCOUNT || noRolesLeft) {
             // Captured before anonymize() overwrites them - the Kafka event is
@@ -232,16 +305,7 @@ public class AccountDeletionService {
             applicationEventPublisher.publishEvent(new PersonaRemovedEvent(
                     PersonaRemovedEvent.TYPE, user.getId(), user.getEmail(), user.getFullName(), scope, removedAt));
         }
-
-        auditLogService.record(user.getId(), AuditActions.ACCOUNT_DELETION_FINALIZED, AuditActions.TARGET_USER, user.getId(), scope.name());
     }
-
-    @Transactional(readOnly = true)
-    public List<UUID> findDueForFinalization() {
-        return userRepository.findIdsByDeletionStatusAndDeletionScheduledForBefore(DeletionStatus.PENDING_DELETION, Instant.now());
-    }
-
-    // ───────────────────────── helpers ─────────────────────────
 
     /**
      * email/fullName are overwritten with an opaque, non-reversible placeholder;

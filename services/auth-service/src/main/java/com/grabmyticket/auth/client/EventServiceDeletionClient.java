@@ -3,10 +3,12 @@ package com.grabmyticket.auth.client;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import com.grabmyticket.auth.dto.internal.DeletionCheckResponse;
 import com.grabmyticket.auth.exception.AccountDeletionServiceUnavailableException;
+import com.grabmyticket.auth.exception.ForceDeleteBlockedException;
 
 /** Only place in auth-service that talks to event-service. Same conventions as BookingServiceDeletionClient. */
 @Component
@@ -43,6 +45,13 @@ public class EventServiceDeletionClient {
                     .header(INTERNAL_API_KEY_HEADER, apiKeyProperties.secret())
                     .retrieve()
                     .toBodilessEntity();
+        } catch (HttpClientErrorException.Conflict ex) {
+            // event-service's own defensive refusal - a live/upcoming event with
+            // tickets sold still exists. Deliberately NOT the same failure mode
+            // as "couldn't reach the service" - this must never be silently
+            // retried or bypassed, including by AccountDeletionService.forceDelete.
+            throw new ForceDeleteBlockedException(
+                    "Organizer still has live/upcoming events with tickets sold - resolve or complete those first");
         } catch (Exception ex) {
             throw new AccountDeletionServiceUnavailableException(
                     "Couldn't clean up organizer's events in event-service while finalizing account deletion.");

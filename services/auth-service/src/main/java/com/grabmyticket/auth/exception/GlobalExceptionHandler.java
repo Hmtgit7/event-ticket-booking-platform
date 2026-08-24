@@ -93,6 +93,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
+    @ExceptionHandler(ForceDeleteBlockedException.class)
+    public ResponseEntity<ErrorResponse> handleForceDeleteBlocked(ForceDeleteBlockedException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyRequests(TooManyRequestsException ex) {
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());

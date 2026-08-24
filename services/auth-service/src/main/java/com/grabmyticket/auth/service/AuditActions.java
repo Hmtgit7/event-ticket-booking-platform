@@ -23,6 +23,8 @@ public final class AuditActions {
     public static final String ACCOUNT_DELETION_CANCELLED = "ACCOUNT_DELETION_CANCELLED";
     public static final String ACCOUNT_DELETION_FINALIZED = "ACCOUNT_DELETION_FINALIZED";
     public static final String ACCOUNT_DELETION_BLOCKED = "ACCOUNT_DELETION_BLOCKED";
+    /** Admin-actor, not the account holder - AdminUserService.forceDelete, bypasses blockers/grace-period entirely (see that method's class comment for what it can NOT bypass). */
+    public static final String ACCOUNT_FORCE_DELETED = "ACCOUNT_FORCE_DELETED";
 
     public static final String TARGET_USER = "USER";
 }
