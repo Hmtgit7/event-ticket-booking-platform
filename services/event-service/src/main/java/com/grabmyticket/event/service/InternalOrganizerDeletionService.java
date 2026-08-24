@@ -12,6 +12,7 @@ import com.grabmyticket.event.dto.internal.DeletionBlocker;
 import com.grabmyticket.event.dto.internal.DeletionCheckResponse;
 import com.grabmyticket.event.entity.Event;
 import com.grabmyticket.event.entity.EventStatus;
+import com.grabmyticket.event.exception.OrganizerStillHasActiveEventsException;
 import com.grabmyticket.event.repository.EventRepository;
 
 /**
@@ -82,8 +83,8 @@ public class InternalOrganizerDeletionService {
     public void cleanupForDeletedOrganizer(UUID organizerId) {
         Instant now = Instant.now();
         if (!eventRepository.findSoldAndActive(organizerId, EventStatus.PUBLISHED, now).isEmpty()) {
-            throw new IllegalStateException(
-                    "Refusing to clean up organizer " + organizerId + " - still has live/upcoming events with tickets sold");
+            throw new OrganizerStillHasActiveEventsException(
+                    "Organizer " + organizerId + " still has live/upcoming events with tickets sold - refusing to clean up");
         }
 
         for (Event draft : eventRepository.findByOrganizerIdAndStatus(organizerId, EventStatus.DRAFT)) {
