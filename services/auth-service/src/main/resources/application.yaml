@@ -72,3 +72,5 @@ app:
     # Must match notification-service's AUTH_EVENTS_TOPIC exactly - the topic
     # AccountDeletionEventPublisher sends user.account.deleted / user.persona.removed to.
     events-topic: ${AUTH_EVENTS_TOPIC:auth-events}
+    # Per-user cooldown on POST /auth/me/deletion-request - see DeletionRequestRateLimiter.
+    request-cooldown: ${ACCOUNT_DELETION_REQUEST_COOLDOWN:60s}

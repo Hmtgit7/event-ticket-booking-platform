@@ -54,6 +54,7 @@ public class AccountDeletionService {
     private final AuditLogService auditLogService;
     private final AccountDeletionProperties accountDeletionProperties;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final DeletionRequestRateLimiter deletionRequestRateLimiter;
 
     public AccountDeletionService(
             UserRepository userRepository,
@@ -64,7 +65,8 @@ public class AccountDeletionService {
             RefreshTokenService refreshTokenService,
             AuditLogService auditLogService,
             AccountDeletionProperties accountDeletionProperties,
-            ApplicationEventPublisher applicationEventPublisher
+            ApplicationEventPublisher applicationEventPublisher,
+            DeletionRequestRateLimiter deletionRequestRateLimiter
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -75,6 +77,7 @@ public class AccountDeletionService {
         this.auditLogService = auditLogService;
         this.accountDeletionProperties = accountDeletionProperties;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.deletionRequestRateLimiter = deletionRequestRateLimiter;
     }
 
     @Transactional(readOnly = true)
@@ -95,6 +98,10 @@ public class AccountDeletionService {
         if (user.getDeletionStatus() == DeletionStatus.PENDING_DELETION) {
             throw new DeletionAlreadyRequestedException();
         }
+        // Checked before the (more expensive) password/eligibility work below -
+        // a retry storm shouldn't keep hammering the password encoder or the
+        // booking-service/event-service round trips on every hit.
+        deletionRequestRateLimiter.checkAndRecord(user.getId());
         requireRoleForScope(user, scope);
 
         // Re-auth guard, same conditional-on-having-a-password logic as changePassword -
