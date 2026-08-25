@@ -12,7 +12,7 @@ LOG_DIR="logs"
 PID_DIR=".pids"
 mkdir -p "$LOG_DIR" "$PID_DIR"
 
-MAVEN_SERVICES=(auth-service event-service booking-service)
+MAVEN_SERVICES=(auth-service event-service booking-service payment-service)
 
 start_infra() {
   echo "==> Starting infra (postgres, redis, redpanda)"
