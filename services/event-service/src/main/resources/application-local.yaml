@@ -19,6 +19,11 @@ spring:
     baseline-version: 0
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway owns all schema changes here, same as every other service -
+      # this was previously left as "update" (a known past mistake per this
+      # project's own history: it lets Hibernate silently auto-alter schema
+      # independent of Flyway, which is exactly what produces "migration
+      # resolved but not applied" drift like the one that just happened).
+      ddl-auto: validate
     open-in-view: false
 
