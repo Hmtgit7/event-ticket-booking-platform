@@ -21,4 +21,6 @@ export const notificationService = {
     notificationApiClient.get<{ count: number }>(`/notifications/unread-count?audience=${audience}`),
 
   markRead: (id: string) => notificationApiClient.patch<{ success: true }>(`/notifications/${id}/read`),
+
+  delete: (id: string) => notificationApiClient.delete<{ success: true }>(`/notifications/${id}`),
 };

@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { Bell, Check, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { notificationService } from "@/services/notification.service";
 import type { NotificationResponse } from "@/interfaces/notification-api.interface";
@@ -9,9 +10,14 @@ import { cn } from "@/lib/utils";
 import { onNotificationRefresh } from "@/lib/notification-events";
 import { playNotificationChime } from "@/lib/notification-sound";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { getNotificationLink } from "@/lib/notification-link";
 import { usePersona } from "@/hooks/use-persona";
 import { useAuthStore } from "@/store/auth-store";
 import { Role } from "@/enums/role.enum";
+
+/** Dropdown only ever shows the most recent handful - the full inbox lives
+ * on the "View all notifications" page. */
+const DROPDOWN_LIMIT = 6;
 
 /**
  * Click-to-toggle popover (same pattern as ProfileMenu) showing recent
@@ -20,6 +26,7 @@ import { Role } from "@/enums/role.enum";
  * replace the poll later without changing anything that reads this data.
  */
 export function NotificationBell() {
+  const router = useRouter();
   const { isOrganizerOnly, isDualRole, activePersona } = usePersona();
   const isAdmin = useAuthStore((state) => !!state.user && state.user.roles.includes(Role.Admin));
   const isOrganizerView = isOrganizerOnly || (isDualRole && activePersona === "organizer");
@@ -86,10 +93,14 @@ export function NotificationBell() {
     });
   }, [refreshUnreadCount]);
 
+  const loadRecent = useCallback(() => {
+    notificationService.myNotifications(audience, 0, DROPDOWN_LIMIT).then((result) => setNotifications(result.items));
+  }, [audience]);
+
   useEffect(() => {
     if (!isOpen) return;
-    notificationService.myNotifications(audience, 0, 10).then((result) => setNotifications(result.items));
-  }, [isOpen, audience]);
+    loadRecent();
+  }, [isOpen, loadRecent]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -114,6 +125,25 @@ export function NotificationBell() {
       setNotifications((current) => current.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
       setUnreadCount((current) => Math.max(0, current - 1));
     });
+  }
+
+  function handleDelete(notification: NotificationResponse) {
+    setNotifications((current) => current.filter((n) => n.id !== notification.id));
+    if (!notification.read) {
+      setUnreadCount((current) => Math.max(0, current - 1));
+    }
+    notificationService.delete(notification.id).catch(() => {
+      // Roll back on failure - a delete that silently didn't happen is
+      // worse than a notification that briefly reappears.
+      loadRecent();
+      refreshUnreadCount();
+    });
+  }
+
+  function handleView(notification: NotificationResponse) {
+    handleMarkRead(notification);
+    setIsOpen(false);
+    router.push(getNotificationLink(notification, audience, viewAllHref));
   }
 
   return (
@@ -143,19 +173,69 @@ export function NotificationBell() {
               <p className="px-3 py-8 text-center text-sm text-ink-muted">You&apos;re all caught up.</p>
             ) : (
               notifications.map((notification) => (
-                <button
+                <div
                   key={notification.id}
-                  type="button"
-                  onClick={() => handleMarkRead(notification)}
                   className={cn(
-                    "flex w-full flex-col gap-0.5 rounded-xl px-3 py-2.5 text-left transition hover:bg-surface-hover",
+                    "group/notif relative flex items-start gap-2 rounded-xl py-2.5 pl-3 pr-2 transition hover:bg-surface-hover",
                     !notification.read && "bg-brand/5",
                   )}
                 >
-                  <p className="text-sm font-semibold text-ink">{notification.title}</p>
-                  <p className="text-xs text-ink-muted">{notification.message}</p>
-                  <p className="mt-0.5 text-[11px] text-ink-muted">{formatRelativeTime(notification.createdAt)}</p>
-                </button>
+                  {/* Unread indicator - stays in the layout even when read
+                   * (just goes transparent) so rows never shift width. */}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "mt-1.5 size-1.5 shrink-0 rounded-full",
+                      !notification.read ? "bg-brand" : "bg-transparent",
+                    )}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => handleMarkRead(notification)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className={cn("truncate pr-14 text-sm font-semibold", notification.read ? "text-ink-muted" : "text-ink")}>
+                      {notification.title}
+                    </p>
+                    <p className="line-clamp-2 pr-14 text-xs text-ink-muted">{notification.message}</p>
+                    <p className="mt-0.5 text-[11px] text-ink-muted">{formatRelativeTime(notification.createdAt)}</p>
+                  </button>
+
+                  {/* Hover-revealed actions - reserved space (pr-14 above)
+                   * means nothing reflows when this fades in. */}
+                  <div className="absolute right-2 top-2 flex items-center gap-0.5 rounded-lg border border-line bg-surface p-0.5 opacity-0 shadow-sm transition-opacity group-hover/notif:opacity-100">
+                    {!notification.read && (
+                      <button
+                        type="button"
+                        onClick={() => handleMarkRead(notification)}
+                        aria-label="Mark as read"
+                        title="Mark as read"
+                        className="flex size-6 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-hover hover:text-ink"
+                      >
+                        <Check className="size-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleView(notification)}
+                      aria-label="View"
+                      title="View"
+                      className="flex size-6 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-hover hover:text-ink"
+                    >
+                      <Eye className="size-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(notification)}
+                      aria-label="Delete"
+                      title="Delete"
+                      className="flex size-6 items-center justify-center rounded-md text-ink-muted transition hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
               ))
             )}
           </div>
