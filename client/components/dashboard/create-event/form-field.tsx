@@ -48,7 +48,3 @@ export const inputCls =
 /** Shared textarea className. */
 export const textareaCls =
   "w-full rounded-xl border border-line bg-background px-3 py-2.5 text-sm text-ink placeholder:text-ink-muted outline-none resize-none transition focus:border-brand";
-
-/** Shared select className. */
-export const selectCls =
-  "h-10 w-full rounded-xl border border-line bg-background px-3 text-sm text-ink outline-none transition focus:border-brand cursor-pointer";

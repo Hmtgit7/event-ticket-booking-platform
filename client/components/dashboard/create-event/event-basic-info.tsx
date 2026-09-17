@@ -1,5 +1,6 @@
 import { EventCategory } from "@/enums/event-category.enum";
-import { FormField, inputCls, textareaCls, selectCls } from "./form-field";
+import { SelectField } from "@/components/common/select-field";
+import { FormField, inputCls, textareaCls } from "./form-field";
 import type { CreateEventDraft } from "@/types/create-event.types";
 
 interface EventBasicInfoProps {
@@ -26,17 +27,13 @@ export function EventBasicInfo({ draft, onChange }: EventBasicInfoProps) {
       </FormField>
 
       <FormField label="Category" htmlFor="category" required>
-        <select
+        <SelectField
           id="category"
           value={draft.category}
-          onChange={(e) => onChange({ category: e.target.value as EventCategory })}
-          className={selectCls}
-        >
-          <option value="">Select a category</option>
-          {Object.values(EventCategory).map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+          onChange={(value) => onChange({ category: value as EventCategory })}
+          options={Object.values(EventCategory)}
+          placeholder="Select a category"
+        />
       </FormField>
 
       <FormField
