@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 
 import { GrabMyTicketLogoMark } from "@/icons/grabmyticket-logo";
-import { USER_NAV_SECTIONS } from "@/constants/nav-items";
+import { USER_NAV_SECTIONS, USER_SUPPORT_NAV_ITEM } from "@/constants/nav-items";
 import { useActiveNav } from "@/hooks/use-active-nav";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useLogout } from "@/modules/auth/hooks/use-logout";
@@ -24,7 +24,7 @@ export function UserDashboardSidebar() {
   const logout = useLogout();
 
   const allItems = useMemo(
-    () => USER_NAV_SECTIONS.flatMap((section) => section.items),
+    () => [...USER_NAV_SECTIONS.flatMap((section) => section.items), USER_SUPPORT_NAV_ITEM],
     [],
   );
   const activeId = useActiveNav(allItems);
@@ -96,17 +96,24 @@ export function UserDashboardSidebar() {
       {/* ── Bottom actions — pinned, never scrolls ── */}
       <div className="mt-3 flex shrink-0 flex-col gap-3">
         <SidebarDownloadCard collapsed={collapsed} />
-        <button
-          type="button"
-          onClick={logout}
-          className={cn(
-            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
-            collapsed && "justify-center px-0",
-          )}
-        >
-          <LogOut className="size-[18px] shrink-0" />
-          <span className={cn(collapsed && "sr-only")}>Logout</span>
-        </button>
+        <div className="flex flex-col gap-0.5 border-t border-sidebar-foreground/10 pt-3">
+          <SidebarNavItem
+            item={USER_SUPPORT_NAV_ITEM}
+            active={activeId === USER_SUPPORT_NAV_ITEM.id}
+            collapsed={collapsed}
+          />
+          <button
+            type="button"
+            onClick={logout}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              collapsed && "justify-center px-0",
+            )}
+          >
+            <LogOut className="size-[18px] shrink-0" />
+            <span className={cn(collapsed && "sr-only")}>Logout</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

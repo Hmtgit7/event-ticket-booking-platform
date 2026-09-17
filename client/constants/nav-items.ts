@@ -20,7 +20,7 @@ import {
   CheckmarkCircle02FreeIcons,
 } from "@hugeicons/core-free-icons";
 import { NavRoute } from "@/enums/nav-route.enum";
-import type { NavSection } from "@/interfaces/nav.interface";
+import type { NavItem, NavSection } from "@/interfaces/nav.interface";
 
 /** Organizer dashboard nav */
 export const NAV_SECTIONS: NavSection[] = [
@@ -74,10 +74,19 @@ export const USER_NAV_SECTIONS: NavSection[] = [
     items: [
       { id: "user-profile", label: "Profile", href: NavRoute.UserProfile, icon: UserCircleFreeIcons, matchPrefix: true },
       { id: "user-notifications", label: "Notifications", href: NavRoute.UserNotifications, icon: Notification02FreeIcons, matchPrefix: true },
-      { id: "user-support", label: "Help & Support", href: NavRoute.UserSupport, icon: HelpCircleFreeIcons, matchPrefix: true },
     ],
   },
 ];
+
+/** Rendered separately, pinned above Logout at the bottom of the user
+ * sidebar, rather than in the scrollable nav list - see UserDashboardSidebar. */
+export const USER_SUPPORT_NAV_ITEM: NavItem = {
+  id: "user-support",
+  label: "Help & Support",
+  href: NavRoute.UserSupport,
+  icon: HelpCircleFreeIcons,
+  matchPrefix: true,
+};
 
 /** Super-admin dashboard nav */
 export const ADMIN_NAV_SECTIONS: NavSection[] = [
