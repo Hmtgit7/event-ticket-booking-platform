@@ -45,6 +45,15 @@ export class NotificationsService {
     }
   }
 
+  async delete(userId: string, id: string): Promise<void> {
+    const result = await this.prisma.notification.deleteMany({
+      where: { id, userId },
+    });
+    if (result.count === 0) {
+      throw new NotFoundException('Notification not found');
+    }
+  }
+
   async unreadCount(userId: string, audience: NotificationAudience): Promise<number> {
     return this.prisma.notification.count({ where: { userId, audience, read: false } });
   }
