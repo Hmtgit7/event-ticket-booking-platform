@@ -31,14 +31,21 @@ public final class EventSpecifications {
         return (root, query, cb) -> cb.equal(cb.lower(root.get("city")), city.toLowerCase());
     }
 
-    public static Specification<Event> titleOrDescriptionContains(String search) {
+    /**
+     * Free-text keyword match used by the topbar/explore search box - matches
+     * title, description, venue name, or city so a query like "Mumbai" or
+     * "comedy" both surface relevant events, not just title/description hits.
+     */
+    public static Specification<Event> keywordContains(String search) {
         if (search == null || search.isBlank()) {
             return null;
         }
         String pattern = "%" + search.toLowerCase() + "%";
         return (root, query, cb) -> cb.or(
                 cb.like(cb.lower(root.get("title")), pattern),
-                cb.like(cb.lower(root.get("description")), pattern)
+                cb.like(cb.lower(root.get("description")), pattern),
+                cb.like(cb.lower(root.get("venueName")), pattern),
+                cb.like(cb.lower(root.get("city")), pattern)
         );
     }
 

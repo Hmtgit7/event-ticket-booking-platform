@@ -223,7 +223,7 @@ public class EventService {
                 EventSpecifications.hasStatus(EventStatus.PUBLISHED),
                 EventSpecifications.hasCategory(category),
                 EventSpecifications.hasCity(city),
-                EventSpecifications.titleOrDescriptionContains(search),
+                EventSpecifications.keywordContains(search),
                 EventSpecifications.startsAfter(fromDate),
                 EventSpecifications.startsBefore(toDate)
         );
