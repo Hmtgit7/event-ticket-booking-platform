@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
-import { AdminSettingsContainer } from "@/containers/admin-dashboard/settings/admin-settings-container";
+import { redirect } from "next/navigation";
+import { NavRoute } from "@/enums/nav-route.enum";
 
-export const metadata: Metadata = { title: "Settings | Admin" };
-
+/**
+ * Admin settings hub — redirects to the Platform tab. Tabbed content now
+ * lives under /admin/dashboard/settings/{platform,business-rules,danger-zone}.
+ */
 export default function AdminSettingsPage() {
-  return <AdminSettingsContainer />;
+  redirect(NavRoute.AdminSettingsPlatform);
 }

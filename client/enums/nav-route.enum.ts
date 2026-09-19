@@ -42,6 +42,9 @@ export const NavRoute = {
   AdminBookings: "/admin/dashboard/bookings",
   AdminReports: "/admin/dashboard/reports",
   AdminSettings: "/admin/dashboard/settings",
+  AdminSettingsPlatform: "/admin/dashboard/settings/platform",
+  AdminSettingsBusinessRules: "/admin/dashboard/settings/business-rules",
+  AdminSettingsDangerZone: "/admin/dashboard/settings/danger-zone",
   AdminSupport: "/admin/dashboard/support",
   AdminNotifications: "/admin/dashboard/notifications",
 } as const;

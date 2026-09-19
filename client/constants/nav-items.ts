@@ -19,6 +19,7 @@ import {
   Notification02FreeIcons,
   CheckmarkCircle02FreeIcons,
   Shield01FreeIcons,
+  Alert01FreeIcons,
 } from "@hugeicons/core-free-icons";
 import { NavRoute } from "@/enums/nav-route.enum";
 import type { NavItem, NavSection } from "@/interfaces/nav.interface";
@@ -105,6 +106,18 @@ export const USER_SETTINGS_NAV_ITEMS: NavItem[] = [
   { id: "settings-preferences",   label: "Preferences",   href: NavRoute.UserProfilePreferences,  icon: Settings01FreeIcons },
   { id: "settings-notifications", label: "Notifications", href: NavRoute.UserProfileNotifications,icon: Notification02FreeIcons },
   { id: "settings-security",      label: "Security",      href: NavRoute.UserProfileSecurity,     icon: Shield01FreeIcons },
+];
+
+/**
+ * Admin settings tabs — deliberately different shape from the
+ * organizer/customer settings hub. Admin settings are platform
+ * configuration (business rules, feature flags, destructive ops), not
+ * personal account settings, so there's no Profile/Preferences tab here.
+ */
+export const ADMIN_SETTINGS_NAV_ITEMS: NavItem[] = [
+  { id: "settings-platform",       label: "Platform",       href: NavRoute.AdminSettingsPlatform,      icon: Settings01FreeIcons },
+  { id: "settings-business-rules", label: "Business Rules", href: NavRoute.AdminSettingsBusinessRules, icon: DollarSignFreeIcons },
+  { id: "settings-danger-zone",    label: "Danger Zone",    href: NavRoute.AdminSettingsDangerZone,    icon: Alert01FreeIcons },
 ];
 
 /** Super-admin dashboard nav */
