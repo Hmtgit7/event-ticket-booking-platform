@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { SettingsShell } from "@/components/settings/settings-shell";
 import { USER_SETTINGS_NAV_ITEMS } from "@/constants/nav-items";
-import { ProfileTabContainer } from "@/containers/user-dashboard/settings/profile-tab-container";
+import { PreferencesTabContainer } from "@/containers/user-dashboard/settings/preferences-tab-container";
 
-export const metadata: Metadata = { title: "Profile" };
+export const metadata: Metadata = { title: "Profile — Preferences" };
 
-export default function UserProfilePage() {
+export default function UserProfilePreferencesPage() {
   return (
     <SettingsShell navItems={USER_SETTINGS_NAV_ITEMS}>
-      <ProfileTabContainer />
+      <PreferencesTabContainer />
     </SettingsShell>
   );
 }
