@@ -13,6 +13,12 @@ import { NotificationBell } from "./notification-bell";
 interface DashboardTopbarProps {
   section: string;
   crumb: string;
+  /** Where the avatar menu's "Profile settings" link goes. Each shell
+   * passes its own persona's settings entry point — never share this
+   * across shells, or one persona's menu will land on another
+   * persona's settings (this was a real bug: all three shells used to
+   * hardcode the organizer's /dashboard/settings route). */
+  settingsHref: string;
   /** Event keyword search only makes sense for the customer-facing user
    * dashboard - organizer and admin topbars render without it. Defaults
    * to off so existing shells don't need to change. */
@@ -23,7 +29,7 @@ interface DashboardTopbarProps {
  * toggle, messages, notifications) and the signed-in user on the right.
  * `section`/`crumb` come from the route so this stays a dumb, reusable
  * shell shared by every dashboard page. */
-export function DashboardTopbar({ section, crumb, showSearch = false }: DashboardTopbarProps) {
+export function DashboardTopbar({ section, crumb, settingsHref, showSearch = false }: DashboardTopbarProps) {
   const { toggle } = useSidebar();
   const { query, setQuery, results, loading, open, setOpen, reset } = useTopbarSearch();
   const searchRef = useRef<HTMLDivElement>(null);
@@ -80,7 +86,7 @@ export function DashboardTopbar({ section, crumb, showSearch = false }: Dashboar
         <ThemeToggle />
         {/* <IconButton icon={Mail} label="Messages" /> */}
         <NotificationBell />
-        <ProfileMenu />
+        <ProfileMenu settingsHref={settingsHref} />
       </div>
     </header>
     <PendingDeletionBanner />

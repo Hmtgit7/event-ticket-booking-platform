@@ -65,7 +65,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       <DashboardSidebar />
       {/* right column: topbar fixed at top, main scrolls beneath it */}
       <div className="main-scroll flex min-w-0 flex-1 flex-col overflow-y-auto">
-        <DashboardTopbar section={section} crumb={crumb} />
+        <DashboardTopbar section={section} crumb={crumb} settingsHref={NavRoute.SettingsProfile} />
         <main className="flex-1 mt-4 pb-4">{children}</main>
       </div>
     </div>

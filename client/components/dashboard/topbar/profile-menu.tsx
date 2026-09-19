@@ -8,9 +8,14 @@ import { Avatar } from "@/components/common/avatar";
 import { useAuthStore } from "@/store/auth-store";
 import { useLogout } from "@/modules/auth/hooks/use-logout";
 
+interface ProfileMenuProps {
+  /** Persona-specific settings entry point, passed down from DashboardTopbar. */
+  settingsHref: string;
+}
+
 /** Click-to-toggle popover (closes on outside click / Escape) showing the
  * signed-in user's name + email, with links to settings and logout. */
-export function ProfileMenu() {
+export function ProfileMenu({ settingsHref }: ProfileMenuProps) {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +63,7 @@ export function ProfileMenu() {
             <p className="truncate text-xs text-ink-muted">{displayEmail}</p>
           </div>
           <Link
-            href="/dashboard/settings"
+            href={settingsHref}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-surface-hover"
           >

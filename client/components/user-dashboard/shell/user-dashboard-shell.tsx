@@ -50,7 +50,7 @@ export function UserDashboardShell({ children }: UserDashboardShellProps) {
       <UserDashboardSidebar />
       {/* right column: topbar fixed at top, main scrolls beneath it */}
       <div className="main-scroll flex min-w-0 flex-1 flex-col overflow-y-auto">
-        <DashboardTopbar section={section} crumb={crumb} showSearch />
+        <DashboardTopbar section={section} crumb={crumb} settingsHref={NavRoute.UserProfile} showSearch />
         <main className="flex-1 mt-4 pb-4">{children}</main>
       </div>
     </div>
