@@ -4,6 +4,8 @@ packages:
 
 minimumReleaseAge: 0
 
+confirmModulesPurge: false
+
 allowBuilds:
   '@prisma/engines': true
   prisma: true
