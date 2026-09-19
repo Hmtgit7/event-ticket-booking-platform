@@ -18,6 +18,7 @@ import {
   CouponPercentFreeIcons,
   Notification02FreeIcons,
   CheckmarkCircle02FreeIcons,
+  Shield01FreeIcons,
 } from "@hugeicons/core-free-icons";
 import { NavRoute } from "@/enums/nav-route.enum";
 import type { NavItem, NavSection } from "@/interfaces/nav.interface";
@@ -87,6 +88,24 @@ export const USER_SUPPORT_NAV_ITEM: NavItem = {
   icon: HelpCircleFreeIcons,
   matchPrefix: true,
 };
+
+/**
+ * Settings hub tabs — shared shape/order across both personas so the
+ * Settings UI is visually identical. Only the target routes differ.
+ */
+export const ORGANIZER_SETTINGS_NAV_ITEMS: NavItem[] = [
+  { id: "settings-profile",       label: "Profile",       href: NavRoute.SettingsProfile,       icon: UserCircleFreeIcons },
+  { id: "settings-preferences",   label: "Preferences",   href: NavRoute.SettingsPreferences,   icon: Settings01FreeIcons },
+  { id: "settings-notifications", label: "Notifications", href: NavRoute.SettingsNotifications, icon: Notification02FreeIcons },
+  { id: "settings-security",      label: "Security",      href: NavRoute.SettingsSecurity,      icon: Shield01FreeIcons },
+];
+
+export const USER_SETTINGS_NAV_ITEMS: NavItem[] = [
+  { id: "settings-profile",       label: "Profile",       href: NavRoute.UserProfile,             icon: UserCircleFreeIcons },
+  { id: "settings-preferences",   label: "Preferences",   href: NavRoute.UserProfilePreferences,  icon: Settings01FreeIcons },
+  { id: "settings-notifications", label: "Notifications", href: NavRoute.UserProfileNotifications,icon: Notification02FreeIcons },
+  { id: "settings-security",      label: "Security",      href: NavRoute.UserProfileSecurity,     icon: Shield01FreeIcons },
+];
 
 /** Super-admin dashboard nav */
 export const ADMIN_NAV_SECTIONS: NavSection[] = [

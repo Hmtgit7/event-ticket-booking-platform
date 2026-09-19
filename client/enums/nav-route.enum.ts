@@ -15,6 +15,10 @@ export const NavRoute = {
   Promotions: "/dashboard/promotions",
   Notifications: "/dashboard/notifications",
   Settings: "/dashboard/settings",
+  SettingsProfile: "/dashboard/settings/profile",
+  SettingsPreferences: "/dashboard/settings/preferences",
+  SettingsNotifications: "/dashboard/settings/notifications",
+  SettingsSecurity: "/dashboard/settings/security",
   Help: "/dashboard/help",
 
   // User dashboard
@@ -24,6 +28,9 @@ export const NavRoute = {
   UserSaved: "/user/dashboard/saved",
   UserWallet: "/user/dashboard/wallet",
   UserProfile: "/user/dashboard/profile",
+  UserProfilePreferences: "/user/dashboard/profile/preferences",
+  UserProfileNotifications: "/user/dashboard/profile/notifications",
+  UserProfileSecurity: "/user/dashboard/profile/security",
   UserSupport: "/user/dashboard/support",
   UserNotifications: "/user/dashboard/notifications",
 
