@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.grabmyticket.auth.dto.DeletionEligibilityResponse;
@@ -69,6 +70,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidRoleOperationException.class)
     public ResponseEntity<ErrorResponse> handleInvalidRoleOperation(InvalidRoleOperationException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTimezoneException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTimezone(InvalidTimezoneException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /** e.g. ?scope=FOO against a PreferenceScope/DeletionScope @RequestParam - a client mistake, was previously falling through to the generic 500 handler below. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'";
+        return build(HttpStatus.BAD_REQUEST, message);
     }
 
     /** 409 with the full structured blocker/warning list, not a flat ErrorResponse - the frontend renders this directly, same payload shape GET /auth/me/deletion-eligibility would have returned. */
