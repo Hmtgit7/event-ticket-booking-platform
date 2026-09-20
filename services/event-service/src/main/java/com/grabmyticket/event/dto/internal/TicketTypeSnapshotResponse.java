@@ -22,6 +22,8 @@ public record TicketTypeSnapshotResponse(
         Instant salesEnd,
         String venueName,
         String address,
-        String city
+        String city,
+        /** Nullable only for events created before the V7 migration added Event.timezone. */
+        String timezone
 ) {
 }

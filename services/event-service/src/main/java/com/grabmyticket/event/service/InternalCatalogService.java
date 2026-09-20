@@ -69,7 +69,8 @@ public class InternalCatalogService {
                 ticketType.getSalesEnd(),
                 event.getVenueName(),
                 event.getAddress(),
-                event.getCity()
+                event.getCity(),
+                event.getTimezone()
         );
     }
 }
