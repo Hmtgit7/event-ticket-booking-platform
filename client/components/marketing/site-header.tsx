@@ -2,6 +2,7 @@
 import { ArrowRight, Menu } from "lucide-react";
 import { BrandLogo } from "@/components/common/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { CountrySwitcher } from "@/components/dashboard/topbar/country-switcher";
 import { MARKETING_NAV } from "@/constants/marketing-content";
 
 export function SiteHeader() {
@@ -19,6 +20,9 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <CountrySwitcher />
+          </div>
           <div className="hidden sm:block [&_button]:size-10 [&_button]:rounded-xl">
             <ThemeToggle />
           </div>

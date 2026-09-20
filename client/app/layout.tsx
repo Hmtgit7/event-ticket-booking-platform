@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/lib/query-client";
 import { AuthHydrator } from "@/providers/auth-hydrator";
+import { LocationResolver } from "@/providers/location-resolver";
 
 
 const geistSans = Geist({
@@ -62,6 +63,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <AuthHydrator />
+            <LocationResolver />
             {children}
           </QueryProvider>
         </ThemeProvider>

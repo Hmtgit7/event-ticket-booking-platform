@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTopbarSearch } from "@/hooks/use-topbar-search";
 import { PendingDeletionBanner } from "@/components/dashboard/pending-deletion-banner";
+import { CountrySwitcher } from "./country-switcher";
 import { SearchResultsDropdown } from "./search-results-dropdown";
 import { ProfileMenu } from "./profile-menu";
 import { NotificationBell } from "./notification-bell";
@@ -83,6 +84,7 @@ export function DashboardTopbar({ section, crumb, settingsHref, showSearch = fal
       )}
 
       <div className="flex shrink-0 items-center gap-2">
+        <CountrySwitcher />
         <ThemeToggle />
         {/* <IconButton icon={Mail} label="Messages" /> */}
         <NotificationBell />
