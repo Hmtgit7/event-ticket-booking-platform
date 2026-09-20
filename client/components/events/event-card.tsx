@@ -59,11 +59,11 @@ export function EventCard({ event, variant = "grid" }: EventCardProps) {
         <div className="flex flex-col gap-1 text-xs text-ink-muted">
           <span className="flex items-center gap-1.5">
             <Calendar className="size-3.5" />
-            {formatEventDate(event.startAt)}
+            {formatEventDate(event.startAt, event.timezone)}
           </span>
           <span className="flex items-center gap-1.5">
             <Clock className="size-3.5" />
-            {formatEventTime(event.startAt)}
+            {formatEventTime(event.startAt, event.timezone)}
           </span>
           <span className="flex items-center gap-1.5">
             <MapPin className="size-3.5" />

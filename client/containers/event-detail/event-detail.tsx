@@ -13,7 +13,8 @@ import { OrganizerEventDetailSkeleton } from "@/components/skeleton";
 import type { EventResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
-import { STATUS_BADGE, formatEventDate, formatEventTime, formatPrice, ticketsSoldPct } from "@/lib/events";
+import { STATUS_BADGE, formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation, ticketsSoldPct } from "@/lib/events";
+import { EventTimeNote } from "@/components/common/event-time-note";
 import { NavRoute } from "@/enums/nav-route.enum";
 
 interface EventDetailProps {
@@ -152,17 +153,19 @@ export function EventDetail({ eventId }: EventDetailProps) {
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-ink-muted">
               <span className="flex items-center gap-1.5">
                 <Clock className="size-4" />
-                {formatEventTime(event.startAt)} – {formatEventTime(event.endAt)}
+                {formatEventTime(event.startAt, event.timezone)} – {formatEventTime(event.endAt, event.timezone)}
+                {event.timezone && <span className="text-xs">{formatTimezoneAbbreviation(event.startAt, event.timezone)}</span>}
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="size-4" />
-                {formatEventDate(event.startAt)}
+                {formatEventDate(event.startAt, event.timezone)}
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-4" />
                 {event.city}, {event.venueName}
               </span>
             </div>
+            <EventTimeNote startAt={event.startAt} endAt={event.endAt} timezone={event.timezone} className="mt-1" />
             <p className="mt-4 whitespace-pre-line leading-7 text-ink-muted">{event.description}</p>
             <p className="mt-2 text-xs text-ink-muted">{event.address}</p>
 

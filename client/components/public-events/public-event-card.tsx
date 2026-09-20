@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
-import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
+import { formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation } from "@/lib/events";
 import { cn } from "@/lib/utils";
 import { BookNowAction } from "@/components/public-events/book-now-action";
 
@@ -46,8 +46,12 @@ export function PublicEventCard({ event, variant = "grid" }: PublicEventCardProp
 
       <div className={cn("flex flex-col gap-4 p-5", isList && "justify-between")}>
         <div className="grid gap-2 text-sm font-medium text-ink-muted sm:grid-cols-2">
-          <p className="flex items-center gap-2"><Calendar className="size-4" />{formatEventDate(event.startAt)}</p>
-          <p className="flex items-center gap-2"><Clock className="size-4" />{formatEventTime(event.startAt)}</p>
+          <p className="flex items-center gap-2"><Calendar className="size-4" />{formatEventDate(event.startAt, event.timezone)}</p>
+          <p className="flex items-center gap-2">
+            <Clock className="size-4" />
+            {formatEventTime(event.startAt, event.timezone)}
+            {event.timezone && <span className="text-xs">{formatTimezoneAbbreviation(event.startAt, event.timezone)}</span>}
+          </p>
           <p className="flex items-center gap-2 sm:col-span-2"><MapPin className="size-4" />{event.venueName}, {event.city}</p>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">

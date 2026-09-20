@@ -11,7 +11,8 @@ import { EventDetailSkeleton } from "@/components/skeleton";
 import type { EventResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
-import { formatEventDate, formatEventTime, formatPrice } from "@/lib/events";
+import { formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation } from "@/lib/events";
+import { EventTimeNote } from "@/components/common/event-time-note";
 import { useAuthStore } from "@/store/auth-store";
 import { BookNowAction } from "@/components/public-events/book-now-action";
 
@@ -111,10 +112,15 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
         <div className="flex flex-col gap-8">
           <div className="rounded-[24px] border border-line bg-canvas p-6 shadow-sm dark:bg-[#211b14]">
             <div className="grid gap-3 text-sm font-medium text-ink-muted sm:grid-cols-2">
-              <p className="flex items-center gap-2"><Calendar className="size-4" />{formatEventDate(event.startAt)}</p>
-              <p className="flex items-center gap-2"><Clock className="size-4" />{formatEventTime(event.startAt)} – {formatEventTime(event.endAt)}</p>
+              <p className="flex items-center gap-2"><Calendar className="size-4" />{formatEventDate(event.startAt, event.timezone)}</p>
+              <p className="flex items-center gap-2">
+                <Clock className="size-4" />
+                {formatEventTime(event.startAt, event.timezone)} – {formatEventTime(event.endAt, event.timezone)}
+                {event.timezone && <span className="text-xs">{formatTimezoneAbbreviation(event.startAt, event.timezone)}</span>}
+              </p>
               <p className="flex items-center gap-2 sm:col-span-2"><MapPin className="size-4" />{event.venueName}, {event.address}, {event.city}</p>
             </div>
+            <EventTimeNote startAt={event.startAt} endAt={event.endAt} timezone={event.timezone} className="mt-2" />
             <p className="mt-5 whitespace-pre-line text-base leading-7 text-ink-muted">{event.description}</p>
           </div>
 
