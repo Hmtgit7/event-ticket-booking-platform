@@ -67,6 +67,10 @@ public class Booking {
     @Column(name = "event_start_at", nullable = false)
     private Instant eventStartAt;
 
+    /** Snapshot of the event's timezone at booking time - same rationale as eventTitle/venueName. Nullable only for rows that predate this column (V8 migration) or for events with no timezone set (pre-globalization events). */
+    @Column(name = "event_timezone", length = 50)
+    private String eventTimezone;
+
     @Column(name = "event_banner_url", length = 500)
     private String eventBannerUrl;
 

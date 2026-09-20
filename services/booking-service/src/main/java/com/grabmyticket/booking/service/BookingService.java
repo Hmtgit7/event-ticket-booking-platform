@@ -78,6 +78,7 @@ public class BookingService {
                 .ticketTypeId(request.ticketTypeId())
                 .eventTitle(snapshot.eventTitle())
                 .eventStartAt(snapshot.eventStartAt())
+                .eventTimezone(snapshot.timezone())
                 .eventBannerUrl(snapshot.eventBannerUrl())
                 .ticketTypeName(snapshot.ticketTypeName())
                 .venueName(snapshot.venueName())
@@ -190,6 +191,7 @@ public class BookingService {
                 organizerId,
                 booking.getEventTitle(),
                 booking.getEventStartAt(),
+                booking.getEventTimezone(),
                 booking.getEventBannerUrl(),
                 booking.getTicketTypeName(),
                 booking.getVenueName(),
@@ -209,6 +211,7 @@ public class BookingService {
                 booking.getTicketTypeId(),
                 booking.getEventTitle(),
                 booking.getEventStartAt(),
+                booking.getEventTimezone(),
                 booking.getEventBannerUrl(),
                 booking.getTicketTypeName(),
                 booking.getQuantity(),

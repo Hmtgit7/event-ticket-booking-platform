@@ -20,6 +20,8 @@ public record BookingConfirmedEvent(
         UUID organizerId,
         String eventTitle,
         Instant eventStartAt,
+        /** Nullable only for events with no timezone set (pre-globalization events). */
+        String eventTimezone,
         String eventBannerUrl,
         String ticketTypeName,
         String venueName,

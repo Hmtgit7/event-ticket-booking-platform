@@ -13,6 +13,8 @@ public record BookingResponse(
         UUID ticketTypeId,
         String eventTitle,
         Instant eventStartAt,
+        /** Nullable only for events with no timezone set (pre-globalization events) - see Booking.eventTimezone. */
+        String eventTimezone,
         String eventBannerUrl,
         String ticketTypeName,
         Integer quantity,
