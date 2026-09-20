@@ -1,0 +1,17 @@
+{
+  "location": {
+    "title": "See events near you",
+    "body": "Allow location access so we can show relevant events, prices in your currency, and times in your timezone. You can change this anytime from the country switcher.",
+    "allow": "Allow location",
+    "notNow": "Not now"
+  },
+  "country": {
+    "changeCountry": "Change country",
+    "selectCountry": "Select country",
+    "searchPlaceholder": "Search country",
+    "noMatches": "No matches."
+  },
+  "common": {
+    "loading": "Loading\u2026"
+  }
+}

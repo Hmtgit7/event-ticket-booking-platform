@@ -1,0 +1,17 @@
+{
+  "location": {
+    "title": "Descubre eventos cerca de ti",
+    "body": "Permite el acceso a tu ubicación para mostrarte eventos relevantes, precios en tu moneda y horarios en tu zona horaria. Puedes cambiarlo cuando quieras desde el selector de país.",
+    "allow": "Permitir ubicación",
+    "notNow": "Ahora no"
+  },
+  "country": {
+    "changeCountry": "Cambiar país",
+    "selectCountry": "Seleccionar país",
+    "searchPlaceholder": "Buscar país",
+    "noMatches": "Sin resultados."
+  },
+  "common": {
+    "loading": "Cargando\u2026"
+  }
+}

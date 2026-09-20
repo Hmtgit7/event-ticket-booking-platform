@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface LocationPermissionModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface LocationPermissionModalProps {
  * primitive.
  */
 export function LocationPermissionModal({ open, onAllow, onDismiss }: LocationPermissionModalProps) {
+  const t = useTranslations("location");
   const [mounted, setMounted] = useState(false);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -57,17 +59,14 @@ export function LocationPermissionModal({ open, onAllow, onDismiss }: LocationPe
           <MapPin className="size-6" />
         </div>
         <h2 id="location-permission-title" className="mt-4 text-lg font-bold text-ink">
-          See events near you
+          {t("title")}
         </h2>
-        <p className="mt-2 text-sm text-ink-muted">
-          Allow location access so we can show relevant events, prices in your currency, and times in your
-          timezone. You can change this anytime from the country switcher.
-        </p>
+        <p className="mt-2 text-sm text-ink-muted">{t("body")}</p>
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="outline" onClick={onDismiss}>
-            Not now
+            {t("notNow")}
           </Button>
-          <Button onClick={onAllow}>Allow location</Button>
+          <Button onClick={onAllow}>{t("allow")}</Button>
         </div>
       </div>
     </div>,
