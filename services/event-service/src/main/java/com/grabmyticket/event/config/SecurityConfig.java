@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/events/public/**",
+                                "/geo/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
