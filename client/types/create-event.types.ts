@@ -29,6 +29,10 @@ export interface CreateEventDraft {
   venue: string;
   address: string;
   city: string;
+  /** ISO 3166-1 alpha-2, e.g. "IN" - set when a /geo/cities suggestion is picked (see EventCityField), required by the backend on submit. */
+  countryCode?: string;
+  /** IANA zone id, e.g. "Asia/Kolkata" - set alongside countryCode from the picked city. */
+  timezone?: string;
   lat?: number;
   lng?: number;
 

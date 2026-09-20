@@ -31,6 +31,8 @@ export interface CreateEventPayload {
   venueName: string;
   address: string;
   city: string;
+  countryCode: string;
+  timezone: string;
   latitude?: number | null;
   longitude?: number | null;
   /** ISO-8601 instant, e.g. new Date(...).toISOString() */
@@ -54,6 +56,10 @@ export interface EventResponse {
   venueName: string;
   address: string;
   city: string;
+  /** Nullable only for events created before country/timezone were added - see event-service's Event.countryCode. */
+  countryCode: string | null;
+  /** Nullable only for events created before country/timezone were added - see event-service's Event.timezone. */
+  timezone: string | null;
   latitude: number | null;
   longitude: number | null;
   startAt: string;
@@ -74,6 +80,8 @@ export interface EventSummaryResponse {
   category: string;
   venueName: string;
   city: string;
+  /** Nullable only for events created before country/timezone were added. */
+  timezone: string | null;
   startAt: string;
   endAt: string;
   bannerImageUrl: string | null;

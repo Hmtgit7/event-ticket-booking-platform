@@ -1,4 +1,5 @@
 import { FormField, inputCls } from "./form-field";
+import { EventCityField } from "./event-city-field";
 import type { CreateEventDraft } from "@/types/create-event.types";
 
 interface EventDateLocationProps {
@@ -67,14 +68,18 @@ export function EventDateLocation({ draft, onChange }: EventDateLocationProps) {
           />
         </FormField>
 
-        <FormField label="City" htmlFor="city" required>
-          <input
-            id="city"
-            type="text"
-            placeholder="e.g. Colombo"
+        <FormField label="City" htmlFor="city" required hint="Pick a suggestion so we can auto-set the event's timezone.">
+          <EventCityField
             value={draft.city}
-            onChange={(e) => onChange({ city: e.target.value })}
-            className={inputCls}
+            onSelect={(city) =>
+              onChange({
+                city: city.city,
+                countryCode: city.countryCode,
+                timezone: city.timezone,
+                lat: city.latitude,
+                lng: city.longitude,
+              })
+            }
           />
         </FormField>
       </div>

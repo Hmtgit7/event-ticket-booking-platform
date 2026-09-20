@@ -26,6 +26,8 @@ function validate(step: CreateEventStep, draft: CreateEventDraft): string | null
     if (!draft.venue.trim())    return "Venue name is required.";
     if (!draft.address.trim())  return "Address is required.";
     if (!draft.city.trim())     return "City is required.";
+    if (!draft.countryCode || !draft.timezone)
+      return "Please pick a city from the suggestions so we can set its country and timezone.";
   }
   if (step === 3) {
     if (draft.ticketTiers.length === 0) return "Add at least one ticket tier.";
@@ -58,6 +60,8 @@ function buildPayload(draft: CreateEventDraft, publishImmediately: boolean): Cre
     venueName: draft.venue.trim(),
     address: draft.address.trim(),
     city: draft.city.trim(),
+    countryCode: draft.countryCode ?? "",
+    timezone: draft.timezone ?? "",
     latitude: draft.lat ?? null,
     longitude: draft.lng ?? null,
     startAt,
