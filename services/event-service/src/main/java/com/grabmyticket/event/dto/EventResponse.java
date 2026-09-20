@@ -16,6 +16,10 @@ public record EventResponse(
         String venueName,
         String address,
         String city,
+        /** Nullable only for events created before the V7 migration - see Event.countryCode. */
+        String countryCode,
+        /** Nullable only for events created before the V7 migration - see Event.timezone. */
+        String timezone,
         Double latitude,
         Double longitude,
         Instant startAt,

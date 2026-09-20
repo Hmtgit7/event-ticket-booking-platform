@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidTimezoneException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTimezone(InvalidTimezoneException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(OrganizerStillHasActiveEventsException.class)
     public ResponseEntity<ErrorResponse> handleOrganizerStillHasActiveEvents(OrganizerStillHasActiveEventsException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage());

@@ -15,6 +15,8 @@ public record EventSummaryResponse(
         String category,
         String venueName,
         String city,
+        /** Nullable only for events created before the V7 migration - lets list views show the event's own time without a full detail fetch. */
+        String timezone,
         Instant startAt,
         Instant endAt,
         String bannerImageUrl,

@@ -1,7 +1,9 @@
 package com.grabmyticket.event.service;
 
 import java.security.SecureRandom;
+import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -27,6 +29,7 @@ import com.grabmyticket.event.entity.EventStatus;
 import com.grabmyticket.event.entity.TicketType;
 import com.grabmyticket.event.exception.EventNotFoundException;
 import com.grabmyticket.event.exception.InvalidEventStateException;
+import com.grabmyticket.event.exception.InvalidTimezoneException;
 import com.grabmyticket.event.exception.TicketTypeNotFoundException;
 import com.grabmyticket.event.repository.EventRepository;
 import com.grabmyticket.event.repository.EventSpecifications;
@@ -55,6 +58,7 @@ public class EventService {
         if (request.endAt().isBefore(request.startAt()) || request.endAt().equals(request.startAt())) {
             throw new InvalidEventStateException("endAt must be after startAt");
         }
+        validateTimezone(request.timezone());
 
         Event event = Event.builder()
                 .organizerId(organizerId)
@@ -65,6 +69,8 @@ public class EventService {
                 .venueName(request.venueName())
                 .address(request.address())
                 .city(request.city())
+                .countryCode(request.countryCode())
+                .timezone(request.timezone())
                 .latitude(request.latitude())
                 .longitude(request.longitude())
                 .startAt(request.startAt())
@@ -96,6 +102,7 @@ public class EventService {
         if (request.endAt().isBefore(request.startAt()) || request.endAt().equals(request.startAt())) {
             throw new InvalidEventStateException("endAt must be after startAt");
         }
+        validateTimezone(request.timezone());
 
         event.setTitle(request.title());
         event.setCategory(request.category());
@@ -103,6 +110,8 @@ public class EventService {
         event.setVenueName(request.venueName());
         event.setAddress(request.address());
         event.setCity(request.city());
+        event.setCountryCode(request.countryCode());
+        event.setTimezone(request.timezone());
         event.setLatitude(request.latitude());
         event.setLongitude(request.longitude());
         event.setStartAt(request.startAt());
@@ -328,6 +337,14 @@ public class EventService {
                 .build();
     }
 
+    private void validateTimezone(String timezone) {
+        try {
+            ZoneId.of(timezone);
+        } catch (DateTimeException ex) {
+            throw new InvalidTimezoneException("'" + timezone + "' is not a valid IANA timezone id");
+        }
+    }
+
     private String generateUniqueSlug(String title) {
         String base = title.toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9\\s-]", "")
@@ -369,6 +386,8 @@ public class EventService {
                 event.getVenueName(),
                 event.getAddress(),
                 event.getCity(),
+                event.getCountryCode(),
+                event.getTimezone(),
                 event.getLatitude(),
                 event.getLongitude(),
                 event.getStartAt(),
@@ -415,6 +434,7 @@ public class EventService {
                 event.getCategory(),
                 event.getVenueName(),
                 event.getCity(),
+                event.getTimezone(),
                 event.getStartAt(),
                 event.getEndAt(),
                 event.getBannerImageUrl(),

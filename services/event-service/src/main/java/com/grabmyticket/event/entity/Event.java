@@ -74,6 +74,14 @@ public class Event {
     @Column(nullable = false, length = 100)
     private String city;
 
+    /** ISO 3166-1 alpha-2, e.g. "IN" - from the city the organizer picked via GET /geo/cities. Nullable only for events created before this field existed (V7 migration). */
+    @Column(name = "country_code", length = 2)
+    private String countryCode;
+
+    /** IANA zone id, e.g. "Asia/Kolkata" - what event times are shown in regardless of who's viewing (see the frontend's timezone display, chunk 4). Nullable only for pre-V7 events. */
+    @Column(length = 50)
+    private String timezone;
+
     private Double latitude;
 
     private Double longitude;

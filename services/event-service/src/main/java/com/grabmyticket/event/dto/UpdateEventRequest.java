@@ -5,6 +5,7 @@ import java.time.Instant;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /** Full replace of an event's core fields. Ticket tiers are managed separately (see TicketTypeRequest endpoints). */
@@ -15,6 +16,8 @@ public record UpdateEventRequest(
         @NotBlank @Size(max = 200) String venueName,
         @NotBlank @Size(max = 255) String address,
         @NotBlank @Size(max = 100) String city,
+        @NotBlank @Pattern(regexp = "^[A-Z]{2}$", message = "countryCode must be an ISO 3166-1 alpha-2 code, e.g. 'IN'") String countryCode,
+        @NotBlank String timezone,
         Double latitude,
         Double longitude,
         @NotNull @Future Instant startAt,
