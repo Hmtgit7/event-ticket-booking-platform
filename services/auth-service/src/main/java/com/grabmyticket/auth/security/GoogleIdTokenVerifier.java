@@ -30,6 +30,8 @@ import com.grabmyticket.auth.exception.InvalidGoogleTokenException;
 public class GoogleIdTokenVerifier {
 
     private static final String GOOGLE_ISSUER = "https://accounts.google.com";
+    /** Google's JWKS is at a stable, well-known URI - using this instead of withIssuerLocation(GOOGLE_ISSUER) avoids an eager OIDC-discovery HTTP call at bean construction (i.e. at every app startup and every @SpringBootTest, network or not). The JWKS itself is still fetched lazily, only on the first real decode() call. */
+    private static final String GOOGLE_JWKS_URI = "https://www.googleapis.com/oauth2/v3/certs";
 
     private final NimbusJwtDecoder jwtDecoder;
 
@@ -39,7 +41,7 @@ public class GoogleIdTokenVerifier {
                     "GOOGLE_CLIENT_ID is not set. Add it to .env (or export it) before starting auth-service.");
         }
 
-        this.jwtDecoder = NimbusJwtDecoder.withIssuerLocation(GOOGLE_ISSUER).build();
+        this.jwtDecoder = NimbusJwtDecoder.withJwkSetUri(GOOGLE_JWKS_URI).build();
 
         OAuth2TokenValidator<Jwt> defaultValidators = JwtValidators.createDefaultWithIssuer(GOOGLE_ISSUER);
         OAuth2TokenValidator<Jwt> audienceValidator = jwt -> {
