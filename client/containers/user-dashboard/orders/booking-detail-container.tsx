@@ -8,7 +8,8 @@ import { CATEGORY_VISUAL } from "@/enums/event-category.enum";
 import { BookingDetailSkeleton } from "@/components/skeleton";
 import { bookingService } from "@/services/booking.service";
 import { ApiError } from "@/lib/api-client";
-import { formatEventDate, formatEventTime } from "@/lib/events";
+import { formatEventDate, formatEventTime, formatTimezoneAbbreviation } from "@/lib/events";
+import { EventTimeNote } from "@/components/common/event-time-note";
 import type { BookingResponse } from "@/interfaces/booking-api.interface";
 
 interface BookingDetailContainerProps {
@@ -102,8 +103,10 @@ export function BookingDetailContainer({ bookingId }: BookingDetailContainerProp
                 <Calendar className="size-3.5" /> Date & time
               </p>
               <p className="mt-1 text-sm font-semibold text-ink">
-                {formatEventDate(booking.eventStartAt)} · {formatEventTime(booking.eventStartAt)}
+                {formatEventDate(booking.eventStartAt, booking.eventTimezone)} · {formatEventTime(booking.eventStartAt, booking.eventTimezone)}
+                {booking.eventTimezone && <span className="text-xs"> {formatTimezoneAbbreviation(booking.eventStartAt, booking.eventTimezone)}</span>}
               </p>
+              <EventTimeNote startAt={booking.eventStartAt} timezone={booking.eventTimezone} className="mt-1" />
             </div>
             <div>
               <p className="flex items-center gap-1.5 text-xs text-ink-muted">

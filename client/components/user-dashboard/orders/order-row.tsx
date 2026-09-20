@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Ticket } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatEventDate } from "@/lib/events";
+import { formatEventDate, formatEventTime } from "@/lib/events";
 import type { BookingResponse } from "@/interfaces/booking-api.interface";
 
 interface OrderRowProps {
@@ -34,7 +34,7 @@ export function OrderRow({ order }: OrderRowProps) {
         <p className="text-xs font-bold uppercase text-ink-muted">{order.bookingCode}</p>
         <h3 className="mt-1 text-base font-bold text-ink">{order.eventTitle}</h3>
         <p className="mt-0.5 text-sm text-ink-muted">
-          {formatEventDate(order.eventStartAt)} · {order.quantity} × {order.ticketTypeName} · $
+          {formatEventDate(order.eventStartAt, order.eventTimezone)}, {formatEventTime(order.eventStartAt, order.eventTimezone)} · {order.quantity} × {order.ticketTypeName} · $
           {order.totalAmount.toFixed(2)}
         </p>
       </div>

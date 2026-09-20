@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_VISUAL } from "@/enums/event-category.enum";
-import { formatEventDate } from "@/lib/events";
+import { formatEventDate, formatEventTime, formatTimezoneAbbreviation } from "@/lib/events";
 import type { BookingResponse } from "@/interfaces/booking-api.interface";
 
 interface NextTicketCardProps {
@@ -32,7 +32,10 @@ export function NextTicketCard({ order }: NextTicketCardProps) {
           <p className="text-sm font-semibold opacity-80">Next ticket</p>
           <h2 className="mt-1 font-heading text-3xl font-extrabold">{order.eventTitle}</h2>
           <p className="mt-2 flex flex-wrap gap-3 text-sm text-white/85">
-            <span>{formatEventDate(order.eventStartAt)}</span>
+            <span>
+              {formatEventDate(order.eventStartAt, order.eventTimezone)}, {formatEventTime(order.eventStartAt, order.eventTimezone)}
+              {order.eventTimezone && <span className="text-xs"> {formatTimezoneAbbreviation(order.eventStartAt, order.eventTimezone)}</span>}
+            </span>
             <span>
               {order.quantity} × {order.ticketTypeName}
             </span>

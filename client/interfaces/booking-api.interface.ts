@@ -15,6 +15,8 @@ export interface BookingResponse {
   ticketTypeId: string;
   eventTitle: string;
   eventStartAt: string;
+  /** Nullable only for events with no timezone set (pre-globalization events) - see booking-service's Booking.eventTimezone. */
+  eventTimezone: string | null;
   eventBannerUrl: string | null;
   ticketTypeName: string;
   quantity: number;
