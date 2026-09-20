@@ -75,7 +75,12 @@ export function SelectField({
         )}
       >
         <span className="truncate">{value || placeholder}</span>
-        <ChevronDown className={cn("size-4 shrink-0 text-ink-muted transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-ink-muted transition-transform",
+            open && "rotate-180",
+          )}
+        />
       </button>
 
       {open && (
