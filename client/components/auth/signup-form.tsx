@@ -12,11 +12,13 @@ import { AwaitingVerification } from "@/components/auth/verify-email-status";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { InfoTooltip } from "@/components/auth/info-tooltip";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { useTranslations } from "@/hooks/use-translations";
 import { useSignup } from "@/modules/auth/hooks/use-signup";
 import { validateSignup, type SignupErrors } from "@/modules/auth/utils/validate-auth";
 import { cn } from "@/lib/utils";
 
 export function SignupForm() {
+  const t = useTranslations("auth");
   const { signup, isPending, errorMessage, linkPendingMessage, isAwaitingVerification } = useSignup();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,7 +63,7 @@ export function SignupForm() {
     <form className="space-y-3.5" noValidate onSubmit={submitSignup}>
       <GoogleSignInButton disabled={isPending} />
 
-      <AuthDivider label="or create account with email" />
+      <AuthDivider label={t("orCreateAccountWithEmail")} />
 
       <AuthErrorBanner message={errorMessage} />
       <AuthSuccessBanner message={linkPendingMessage} />
@@ -69,10 +71,10 @@ export function SignupForm() {
       <div className="space-y-3">
         <AuthInput
           id="signup-name"
-          label="Full name"
+          label={t("fullNameLabel")}
           type="text"
           autoComplete="name"
-          placeholder="Alex Morgan"
+          placeholder={t("fullNamePlaceholder")}
           value={fullName}
           disabled={isPending}
           error={errors.fullName}
@@ -84,10 +86,10 @@ export function SignupForm() {
 
         <AuthInput
           id="signup-email"
-          label="Email address"
+          label={t("emailLabel")}
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
           value={email}
           disabled={isPending}
           error={errors.email}
@@ -99,10 +101,10 @@ export function SignupForm() {
 
         <AuthInput
           id="signup-password"
-          label="Password"
+          label={t("passwordLabel")}
           type={showPassword ? "text" : "password"}
           autoComplete="new-password"
-          placeholder="Create a password"
+          placeholder={t("createPasswordPlaceholder")}
           value={password}
           disabled={isPending}
           error={errors.password}
@@ -114,7 +116,7 @@ export function SignupForm() {
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
               disabled={isPending}
               className="rounded-lg p-1 text-ink-muted outline-none transition hover:bg-surface-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -125,10 +127,10 @@ export function SignupForm() {
 
         <AuthInput
           id="signup-confirm-password"
-          label="Confirm password"
+          label={t("confirmPasswordLabel")}
           type={showPassword ? "text" : "password"}
           autoComplete="new-password"
-          placeholder="Confirm your password"
+          placeholder={t("confirmPasswordPlaceholder")}
           value={confirmPassword}
           disabled={isPending}
           error={errors.confirmPassword}
@@ -142,8 +144,8 @@ export function SignupForm() {
       <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-hover/50 p-3">
           <span className="text-sm font-medium leading-5 text-ink-muted">
             <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
-              Also host events as an organizer
-              <InfoTooltip description="Publish events and manage bookings from your dashboard, once your email is verified. You can add a Customer account later too, whenever you want to book a ticket yourself." />
+              {t("alsoHostEvents")}
+              <InfoTooltip description={t("organizerTooltip")} />
             </span>
           </span>
           <ToggleSwitch
@@ -167,8 +169,8 @@ export function SignupForm() {
             className="mt-0.5 size-4 rounded border-line accent-brand focus-visible:outline focus-visible:outline-3 focus-visible:outline-brand/25 disabled:cursor-not-allowed"
           />
           <span>
-            I agree to the <Link href="/terms" className="text-ink hover:underline">Terms</Link> and{" "}
-            <Link href="/privacy-policy" className="text-ink hover:underline">Privacy Policy</Link>.
+            {t("agreeToTermsPrefix")} <Link href="/terms" className="text-ink hover:underline">{t("termsLink")}</Link> {t("andWord")}{" "}
+            <Link href="/privacy-policy" className="text-ink hover:underline">{t("privacyPolicyLink")}</Link>.
           </span>
         </label>
         {errors.terms ? <p className="text-xs font-medium text-destructive">{errors.terms}</p> : null}
@@ -185,7 +187,7 @@ export function SignupForm() {
         )}
       >
         {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-        Create account
+        {t("createAccount")}
       </button>
     </form>
   );

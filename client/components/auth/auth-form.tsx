@@ -9,11 +9,13 @@ import { AuthErrorBanner } from "@/components/auth/auth-error-banner";
 import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { UnverifiedAccountNotice } from "@/components/auth/unverified-account-notice";
+import { useTranslations } from "@/hooks/use-translations";
 import { useLogin } from "@/modules/auth/hooks/use-login";
 import { validateCredentials, type CredentialErrors } from "@/modules/auth/utils/validate-auth";
 import { cn } from "@/lib/utils";
 
 export function AuthForm() {
+  const t = useTranslations("auth");
   const { login, isPending, isUnverified, reset, errorMessage } = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,17 +59,17 @@ export function AuthForm() {
     <form className="space-y-3.5" noValidate onSubmit={submitEmail}>
       <GoogleSignInButton disabled={isPending} />
 
-      <AuthDivider label="or continue with email" />
+      <AuthDivider label={t("orContinueWithEmail")} />
 
       <AuthErrorBanner message={errorMessage} />
 
       <div className="space-y-3">
         <AuthInput
           id="email"
-          label="Email address"
+          label={t("emailLabel")}
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
           value={email}
           disabled={isPending}
           error={errors.email}
@@ -79,10 +81,10 @@ export function AuthForm() {
 
         <AuthInput
           id="password"
-          label="Password"
+          label={t("passwordLabel")}
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          placeholder="Enter your password"
+          placeholder={t("passwordPlaceholder")}
           value={password}
           disabled={isPending}
           error={errors.password}
@@ -94,7 +96,7 @@ export function AuthForm() {
             <button
               type="button"
               onClick={() => setShowPassword((current) => !current)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
               disabled={isPending}
               className="rounded-lg p-1 text-ink-muted outline-none transition hover:bg-surface-hover hover:text-ink focus-visible:ring-2 focus-visible:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -114,7 +116,7 @@ export function AuthForm() {
           onClick={() => setMode("forgot")}
           className="text-brand underline-offset-4 outline-none transition hover:underline focus-visible:rounded focus-visible:ring-3 focus-visible:ring-brand/20"
         >
-          Forgot Password?
+          {t("forgotPassword")}
         </button>
       </div>
 
@@ -129,7 +131,7 @@ export function AuthForm() {
         )}
       >
         {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-        Login
+        {t("login")}
       </button>
     </form>
   );

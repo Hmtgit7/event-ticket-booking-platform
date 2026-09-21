@@ -26,10 +26,11 @@ const I18nContext = createContext<I18nContextValue>({ locale: DEFAULT_LOCALE, me
  * translations, proper <html lang>) is a bigger follow-up chunk of its own.
  */
 async function loadMessages(locale: Locale): Promise<Messages> {
-  const common = await import(`@/lib/i18n/messages/${locale}/common.json`).then(
-    (mod) => mod.default as NamespaceMessages,
-  );
-  return { common };
+  const [common, auth] = await Promise.all([
+    import(`@/lib/i18n/messages/${locale}/common.json`).then((mod) => mod.default as NamespaceMessages),
+    import(`@/lib/i18n/messages/${locale}/auth.json`).then((mod) => mod.default as NamespaceMessages),
+  ]);
+  return { common, auth };
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
