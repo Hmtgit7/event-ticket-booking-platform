@@ -63,6 +63,24 @@ export function LocationResolver() {
           locationStorage.markPrompted();
           return;
         }
+
+        // Backend has no explicit country yet. If this browser already
+        // resolved one as a guest (localStorage), this is exactly the
+        // guest-resolves-before-signup case - sync it to the new account
+        // now instead of leaving the preference unset with no further
+        // prompt (hasPrompted() is already true from the guest session,
+        // so the modal branch below would otherwise never fire again).
+        const cached = locationStorage.get();
+        if (cached?.country) {
+          setLocation(cached);
+          preferencesService
+            .update({ language: cached.language, timezone: cached.timezone, country: cached.country })
+            .catch(() => {
+              // Best-effort - local cache already reflects it, next reconciliation pass can retry.
+            });
+          return;
+        }
+
         if (!locationStorage.hasPrompted()) setModalOpen(true);
       })
       .catch(() => {
