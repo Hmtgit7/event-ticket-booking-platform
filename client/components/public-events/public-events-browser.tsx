@@ -7,12 +7,14 @@ import { EventListSkeleton } from "@/components/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { NoResultsIllustration } from "@/icons/empty-state-icons";
 import { eventService } from "@/services/event.service";
+import { useTranslations } from "@/hooks/use-translations";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
 
 export function PublicEventsBrowser() {
+  const t = useTranslations("browse");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -52,7 +54,7 @@ export function PublicEventsBrowser() {
         setKnownCities((prev) => Array.from(new Set([...prev, ...result.items.map((e) => e.city)])).sort());
       })
       .catch(() => {
-        if (!cancelled) setError("Couldn't load events. Please try again.");
+        if (!cancelled) setError(t("loadError"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -78,7 +80,7 @@ export function PublicEventsBrowser() {
         setPage(nextPage);
         setKnownCities((prev) => Array.from(new Set([...prev, ...result.items.map((e) => e.city)])).sort());
       })
-      .catch(() => setError("Couldn't load more events."))
+      .catch(() => setError(t("loadMoreError")))
       .finally(() => setLoading(false));
   }
 
@@ -114,10 +116,10 @@ export function PublicEventsBrowser() {
 
           <div className="mt-4 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-ink-muted">
-              {loading && events.length === 0 ? "Finding events…" : `${visibleEvents.length} public events found`}
+              {loading && events.length === 0 ? t("findingEvents") : `${visibleEvents.length} ${t("eventsFound")}`}
             </p>
             <button type="button" onClick={resetFilters} className="text-sm font-bold text-brand">
-              Reset filters
+              {t("resetFilters")}
             </button>
           </div>
         </div>
@@ -143,9 +145,9 @@ export function PublicEventsBrowser() {
             <EmptyState
               className="mt-6"
               icon={<NoResultsIllustration className="size-28" />}
-              title="No events match those filters"
-              description="Try a broader category, city, or price range."
-              action={{ label: "Reset filters", onClick: resetFilters }}
+              title={t("noEventsTitle")}
+              description={t("noEventsDescription")}
+              action={{ label: t("resetFilters"), onClick: resetFilters }}
             />
           )}
 
@@ -157,7 +159,7 @@ export function PublicEventsBrowser() {
                 disabled={loading}
                 className="rounded-xl border border-line bg-canvas px-6 py-2.5 text-sm font-bold text-ink shadow-sm transition hover:border-brand hover:text-brand disabled:opacity-50"
               >
-                {loading ? "Loading..." : "Load more"}
+                {loading ? t("loading") : t("loadMore")}
               </button>
             </div>
           )}

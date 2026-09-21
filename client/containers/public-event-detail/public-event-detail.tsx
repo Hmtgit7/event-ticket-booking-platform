@@ -13,6 +13,7 @@ import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
 import { formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation } from "@/lib/events";
 import { EventTimeNote } from "@/components/common/event-time-note";
+import { useTranslations } from "@/hooks/use-translations";
 import { useAuthStore } from "@/store/auth-store";
 import { BookNowAction } from "@/components/public-events/book-now-action";
 
@@ -21,6 +22,7 @@ interface PublicEventDetailProps {
 }
 
 export function PublicEventDetail({ slug }: PublicEventDetailProps) {
+  const t = useTranslations("browse");
   const [event, setEvent] = useState<EventResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
@@ -60,7 +62,7 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
     return (
       <MarketingLayout>
         <div className="mx-auto max-w-4xl px-4 py-24 text-center text-sm text-brand">
-          Couldn&apos;t load this event. Please try again.
+          {t("detailLoadError")}
         </div>
       </MarketingLayout>
     );
@@ -78,14 +80,14 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
   // BookNowAction, which itself decides whether a persona-switch confirm is needed.
   const isOwner = isSignedIn && currentUser?.id === event.organizerId;
   const eventPath = `/user/dashboard/explore/${event.slug}`;
-  const ctaLabel = isOwner ? "Manage event" : "Get ticket";
+  const ctaLabel = isOwner ? t("manageEvent") : t("getTicket");
 
   return (
     <MarketingLayout>
       <section className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <Link href="/events" className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-ink-muted transition hover:text-ink">
           <ArrowLeft className="size-4" />
-          Back to all events
+          {t("backToEvents")}
         </Link>
       </section>
 
@@ -125,7 +127,7 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
           </div>
 
           <div className="rounded-[24px] border border-line bg-canvas p-6 shadow-sm dark:bg-[#211b14]">
-            <h2 className="mb-3 text-lg font-bold text-ink">Location</h2>
+            <h2 className="mb-3 text-lg font-bold text-ink">{t("location")}</h2>
             <MockMap location={location} className="h-64" />
           </div>
         </div>
@@ -133,7 +135,7 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
         <div className="flex flex-col gap-4">
           <div className="rounded-[24px] border border-line bg-canvas p-6 shadow-sm dark:bg-[#211b14]">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink">
-              <Ticket className="size-5 text-brand" /> Tickets
+              <Ticket className="size-5 text-brand" /> {t("tickets")}
             </h2>
             <div className="flex flex-col divide-y divide-line">
               {event.ticketTypes.map((tier) => {
@@ -143,13 +145,13 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
                   <div key={tier.id} className="flex items-center justify-between gap-3 py-3">
                     <div>
                       <p className="text-sm font-semibold text-ink">{tier.name}</p>
-                      <p className="text-xs text-ink-muted">{seatsLeft <= 0 ? "Sold out" : `${seatsLeft} seats left`}</p>
+                      <p className="text-xs text-ink-muted">{seatsLeft <= 0 ? t("soldOut") : `${seatsLeft} ${t("seatsLeft")}`}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-bold text-ink">{formatPrice(tier.price)}</span>
                       {soldOut ? (
                         <span className="pointer-events-none rounded-xl bg-ink-muted/40 px-4 py-2 text-sm font-bold text-brand-foreground">
-                          Sold out
+                          {t("soldOut")}
                         </span>
                       ) : isOwner ? (
                         <Link
@@ -173,10 +175,10 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
             </div>
             <p className="mt-4 text-xs text-ink-muted">
               {isOwner
-                ? "This is your event — manage tickets and details from your dashboard."
+                ? t("ownerNotice")
                 : isSignedIn
-                  ? "You're signed in — checkout is coming soon."
-                  : "Sign in to book — checkout is coming soon."}
+                  ? t("signedInNotice")
+                  : t("signedOutNotice")}
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import type { EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation } from "@/lib/events";
+import { useTranslations } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 import { BookNowAction } from "@/components/public-events/book-now-action";
 
@@ -14,6 +15,7 @@ interface PublicEventCardProps {
 }
 
 export function PublicEventCard({ event, variant = "grid" }: PublicEventCardProps) {
+  const t = useTranslations("browse");
   const visual = CATEGORY_VISUAL[event.category as EventCategory];
   const seatsLeft = Math.max(event.totalCapacity - event.totalSold, 0);
   const eventPath = `/user/dashboard/explore/${event.slug}`;
@@ -57,20 +59,20 @@ export function PublicEventCard({ event, variant = "grid" }: PublicEventCardProp
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
           <p className="flex items-center gap-2 text-sm font-semibold text-ink">
             <Ticket className="size-4 text-brand" />
-            {seatsLeft} seats left
+            {seatsLeft} {t("seatsLeft")}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/events/${event.slug}`}
               className="rounded-xl border border-line px-4 py-2 text-sm font-bold text-ink transition hover:border-brand hover:text-brand"
             >
-              View details
+              {t("viewDetails")}
             </Link>
             <BookNowAction
               eventPath={eventPath}
               className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-brand-foreground"
             >
-              Book now
+              {t("bookNow")}
             </BookNowAction>
           </div>
         </div>
