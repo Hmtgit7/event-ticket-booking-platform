@@ -1,12 +1,10 @@
 -- Curated starter seed - ~120 major cities across ~55 countries, picked for
 -- broad global coverage plus deep India coverage (the initial launch
--- market). This is NOT the full GeoNames dataset. To expand it later:
--- download GeoNames' cities15000.txt (~25k cities, population >= 15,000,
--- includes lat/lng + timezone per row - https://download.geonames.org/export/dump/),
--- transform it into INSERT statements (or a one-off CSV + COPY, or a Spring
--- Boot data loader reading a bundled resource file), and add it as a new
--- Flyway migration - never edit this file after it's shipped, per Flyway's
--- immutable-migration rule.
+-- market). This is NOT the full GeoNames dataset. To expand it: run
+-- scripts/seed-cities-from-geonames.ps1, which downloads GeoNames'
+-- cities15000.txt (~25k cities, population >= 15,000) and generates a new
+-- Flyway migration file from it - never edit this file after it's shipped,
+-- per Flyway's immutable-migration rule.
 
 -- India (primary launch market - kept deliberately deeper than elsewhere)
 INSERT INTO cities (name, country_code, country_name, admin_name, latitude, longitude, timezone, population) VALUES
