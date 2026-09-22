@@ -82,6 +82,7 @@ Done. Useful URLs once everything is up:
   auth-service:          http://localhost:8081
   event-service:         http://localhost:8082
   booking-service:       http://localhost:8083
+  payment-service:       configured in services/payment-service/src/main/resources/application.yaml
   notification-service:  http://localhost:3003 (REST for notifications/mine + Kafka consumer)
 
 Logs:  ./$LOG_DIR/<service>.log

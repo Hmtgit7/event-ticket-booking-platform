@@ -10,8 +10,9 @@ Concert and event ticket booking platform built as a monorepo.
 |-- services/
 |   |-- auth-service/               # Spring Boot auth/JWT/OAuth2 service
 |   |-- event-service/              # Spring Boot event and venue service
-|   |-- booking-service/            # Spring Boot booking/payment/seat-lock service
-|   `-- notification-service/       # Spring Boot Kafka/mail notification service
+|   |-- booking-service/            # Spring Boot booking/seat-lock service
+|   |-- payment-service/            # Spring Boot Razorpay payment service
+|   `-- notification-service/       # NestJS Kafka/mail notification service
 |-- gateway/                        # Nginx gateway config for local/deploy proxying
 |-- infra/                          # Local Postgres, Redis, and Redpanda
 |-- docs/                           # Architecture and development docs
@@ -22,13 +23,20 @@ Concert and event ticket booking platform built as a monorepo.
 
 ```bash
 chmod +x start.sh stop.sh clean.sh   # once, after cloning
-./start.sh      # infra + all 4 services + client, backgrounded
+./start.sh      # infra + all 5 backend services + client, backgrounded
 ./stop.sh       # stop everything (processes + infra containers), keeps data
 ./clean.sh      # stop + clean .next/target/logs/pids; add --volumes to also wipe DB data, --deep to remove node_modules
 ```
 
 Each script also takes a narrower mode — see the comment header in each
 file (e.g. `./start.sh services`, `./stop.sh --infra`).
+
+## Technology stack
+
+- Frontend: Next.js, React, TypeScript, pnpm
+- Core services: Spring Boot 4, Java 21, Maven
+- Notification service: NestJS 11, TypeScript, Prisma, pnpm
+- Infrastructure: PostgreSQL, Redis, Redpanda/Kafka, and Nginx
 
 ## Development checks
 
