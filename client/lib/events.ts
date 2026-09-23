@@ -66,6 +66,37 @@ export function formatEventTime(iso: string, timeZone?: string | null): string {
   }).format(new Date(iso));
 }
 
+function dateParts(iso: string, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).formatToParts(new Date(iso));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return { year: get("year"), month: get("month"), day: get("day") };
+}
+
+/**
+ * A single-line date subtitle for an event's hero, e.g. "December 12, 2026"
+ * for a same-day event, "December 12\u201313, 2026" for a same-month multi-day
+ * event, or "December 30, 2026 \u2013 January 2, 2027" across a month/year
+ * boundary. Always in the event's OWN timezone, same rule as formatEventDate.
+ */
+export function formatEventDateRange(startAt: string, endAt: string, timeZone?: string | null): string {
+  const tz = timeZone || FALLBACK_TIMEZONE;
+  const start = dateParts(startAt, tz);
+  const end = dateParts(endAt, tz);
+
+  if (start.year === end.year && start.month === end.month && start.day === end.day) {
+    return formatEventDate(startAt, tz);
+  }
+  if (start.year === end.year && start.month === end.month) {
+    return `${start.month} ${start.day}\u2013${end.day}, ${start.year}`;
+  }
+  return `${formatEventDate(startAt, tz)} \u2013 ${formatEventDate(endAt, tz)}`;
+}
+
 export function ticketsSoldPct(totalSold: number, totalCapacity: number): number {
   if (totalCapacity <= 0) return 0;
   return Math.round((totalSold / totalCapacity) * 100);
