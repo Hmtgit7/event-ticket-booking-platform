@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, MapPin, Ticket, ArrowLeft } from "lucide-react";
+import { Ticket, ArrowLeft } from "lucide-react";
 import { CATEGORY_VISUAL, type EventCategory } from "@/enums/event-category.enum";
 import { MarketingLayout } from "@/layouts/MarketingLayout";
 import { MockMap } from "@/components/common/mock-map";
 import { EventDetailSkeleton } from "@/components/skeleton";
-import type { EventResponse } from "@/interfaces/event-api.interface";
+import type { EventResponse, EventSummaryResponse } from "@/interfaces/event-api.interface";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
-import { formatEventDate, formatEventTime, formatPrice, formatTimezoneAbbreviation } from "@/lib/events";
-import { EventTimeNote } from "@/components/common/event-time-note";
+import { formatEventDateRange, formatPrice } from "@/lib/events";
 import { useTranslations } from "@/hooks/use-translations";
 import { useAuthStore } from "@/store/auth-store";
 import { BookNowAction } from "@/components/public-events/book-now-action";
+import { EventHeroActions } from "@/components/public-events/event-hero-actions";
+import { EventAboutCard } from "@/components/public-events/event-about-card";
 
 interface PublicEventDetailProps {
   slug: string;
@@ -75,6 +76,24 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
     lat: event.latitude ?? 0,
     lng: event.longitude ?? 0,
   };
+  // EventHeroActions (share/save) takes the lighter EventSummaryResponse shape - same
+  // shape the Saved Events store persists, so a save here round-trips cleanly there.
+  const eventSummary: EventSummaryResponse = {
+    id: event.id,
+    title: event.title,
+    slug: event.slug,
+    category: event.category,
+    venueName: event.venueName,
+    city: event.city,
+    timezone: event.timezone,
+    startAt: event.startAt,
+    endAt: event.endAt,
+    bannerImageUrl: event.bannerImageUrl,
+    status: event.status,
+    fromPrice: event.ticketTypes.length ? Math.min(...event.ticketTypes.map((tier) => tier.price)) : null,
+    totalCapacity: event.ticketTypes.reduce((sum, tier) => sum + tier.quantityTotal, 0),
+    totalSold: event.ticketTypes.reduce((sum, tier) => sum + (tier.quantityTotal - tier.quantityAvailable), 0),
+  };
   // Route to the viewer's own event-management page if they're the organizer of *this*
   // event; everyone else (including organizers viewing someone else's event) goes through
   // BookNowAction, which itself decides whether a persona-switch confirm is needed.
@@ -101,30 +120,24 @@ export function PublicEventDetail({ slug }: PublicEventDetailProps) {
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute left-5 top-5 rounded-xl bg-black/55 px-3 py-1.5 text-xs font-bold text-on-elevated backdrop-blur">
-            {event.category}
+          <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-3">
+            <div className="rounded-xl bg-black/55 px-3 py-1.5 text-xs font-bold text-on-elevated backdrop-blur">
+              {event.category}
+            </div>
+            <EventHeroActions event={eventSummary} />
           </div>
           <div className="absolute bottom-6 left-5 right-5 text-on-elevated sm:left-8 sm:right-8">
             <h1 className="text-3xl font-semibold leading-tight sm:text-5xl">{event.title}</h1>
+            <p className="mt-2 text-sm font-medium text-on-elevated/85 sm:text-base">
+              {formatEventDateRange(event.startAt, event.endAt, event.timezone)}
+            </p>
           </div>
         </div>
       </section>
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.5fr_1fr] lg:px-8">
         <div className="flex flex-col gap-8">
-          <div className="rounded-[24px] border border-line bg-canvas p-6 shadow-sm dark:bg-[#211b14]">
-            <div className="grid gap-3 text-sm font-medium text-ink-muted sm:grid-cols-2">
-              <p className="flex items-center gap-2"><Calendar className="size-4" />{formatEventDate(event.startAt, event.timezone)}</p>
-              <p className="flex items-center gap-2">
-                <Clock className="size-4" />
-                {formatEventTime(event.startAt, event.timezone)} – {formatEventTime(event.endAt, event.timezone)}
-                {event.timezone && <span className="text-xs">{formatTimezoneAbbreviation(event.startAt, event.timezone)}</span>}
-              </p>
-              <p className="flex items-center gap-2 sm:col-span-2"><MapPin className="size-4" />{event.venueName}, {event.address}, {event.city}</p>
-            </div>
-            <EventTimeNote startAt={event.startAt} endAt={event.endAt} timezone={event.timezone} className="mt-2" />
-            <p className="mt-5 whitespace-pre-line text-base leading-7 text-ink-muted">{event.description}</p>
-          </div>
+          <EventAboutCard event={event} />
 
           <div className="rounded-[24px] border border-line bg-canvas p-6 shadow-sm dark:bg-[#211b14]">
             <h2 className="mb-3 text-lg font-bold text-ink">{t("location")}</h2>

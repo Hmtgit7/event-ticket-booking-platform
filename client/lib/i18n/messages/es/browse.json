@@ -20,5 +20,11 @@
   "manageEvent": "Gestionar evento",
   "ownerNotice": "Este es tu evento \u2014 gestiona entradas y detalles desde tu panel.",
   "signedInNotice": "Has iniciado sesi\u00f3n \u2014 el pago pr\u00f3ximamente.",
-  "signedOutNotice": "Inicia sesi\u00f3n para reservar \u2014 el pago pr\u00f3ximamente."
+  "signedOutNotice": "Inicia sesi\u00f3n para reservar \u2014 el pago pr\u00f3ximamente.",
+  "share": "Compartir",
+  "linkCopied": "Enlace copiado",
+  "save": "Guardar evento",
+  "saved": "Guardado",
+  "readMore": "Leer m\u00e1s",
+  "readLess": "Leer menos"
 }
